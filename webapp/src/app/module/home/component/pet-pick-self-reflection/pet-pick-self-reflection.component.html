@@ -51,22 +51,4 @@
       <p class="buttons"><button type="submit" [class.disabled]="!reconcileWith">Reconcile!</button></p>
     </form>
   }
-  @if(response.membership)
-  {
-    <form (submit)="doChangeGuild()">
-      <h5>Join a Different Guild</h5>
-      <p>
-        <select name="newGuild" [(ngModel)]="newGuild">
-          @for(g of response.guilds; track g.id)
-          {
-            @if(g.id !== response.membership.guild.id)
-            {
-              <option [value]="g.id">{{ g.name }}</option>
-            }
-          }
-        </select>
-      </p>
-      <p class="buttons"><button type="submit">Switch!</button></p>
-    </form>
-  }
 }

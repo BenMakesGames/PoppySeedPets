@@ -15,7 +15,6 @@ namespace App\Service\PetActivity;
 
 use App\Entity\PetActivityLog;
 use App\Enum\ActivityPersonalityEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityStatEnum;
@@ -34,7 +33,6 @@ use App\Service\InventoryService;
 use App\Service\IRandom;
 use App\Service\PetExperienceService;
 use App\Service\PetQuestRepository;
-use App\Service\TransactionService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class Protocol7Service implements IPetActivity
@@ -42,8 +40,6 @@ class Protocol7Service implements IPetActivity
     public function __construct(
         private readonly InventoryService $inventoryService,
         private readonly PetExperienceService $petExperienceService,
-        private readonly TransactionService $transactionService,
-        private readonly GuildService $guildService,
         private readonly EntityManagerInterface $em,
         private readonly IRandom $rng,
         private readonly PetQuestRepository $petQuestRepository
@@ -104,10 +100,7 @@ class Protocol7Service implements IPetActivity
             case 0:
             case 1:
             case 2:
-                if(!$pet->getGuildMembership() && $this->rng->rngNextInt(1, 5) === 1 && !$pet->hasMerit(MeritEnum::AFFECTIONLESS))
-                    $activityLog = $this->guildService->joinGuildProjectE($pet);
-                else
-                    $activityLog = $this->foundNothing($petWithSkills, $roll);
+                $activityLog = $this->foundNothing($petWithSkills, $roll);
                 break;
             case 3:
             case 4:
@@ -123,10 +116,7 @@ class Protocol7Service implements IPetActivity
                 $activityLog = $this->foundLayer02($petWithSkills);
                 break;
             case 9:
-                if($pet->isInGuild(GuildEnum::Correspondence))
-                    $activityLog = $this->deliverMessagesForCorrespondence($petWithSkills);
-                else
-                    $activityLog = $this->foundNothing($petWithSkills, $roll);
+                $activityLog = $this->foundNothing($petWithSkills, $roll);
                 break;
             case 10:
             case 11:
@@ -163,11 +153,6 @@ class Protocol7Service implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
 
-        if($pet->isInGuild(GuildEnum::Dwarfcraft))
-            return $this->doDwarfcraftDigging($petWithSkills);
-        else if($pet->isInGuild(GuildEnum::TimesArrow))
-            return $this->doTimesArrow($petWithSkills);
-
         $exp = (int)ceil($roll / 10);
 
         $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' accessed Project-E, but got distracted by Noisome Adverts.');
@@ -183,147 +168,6 @@ class Protocol7Service implements IPetActivity
         ;
 
         return $activityLog;
-    }
-
-    private function doTimesArrow(ComputedPetSkills $petWithSkills): PetActivityLog
-    {
-        $pet = $petWithSkills->getPet();
-
-        $roll = $this->rng->rngSkillRoll($petWithSkills->getPerception()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getScience()->getTotal() + $petWithSkills->getGatheringBonus()->getTotal() + $petWithSkills->getHackingBonus()->getTotal());
-
-        if($roll >= 15)
-        {
-            $pet->getGuildMembership()->increaseReputation();
-
-            $loot = $this->rng->rngNextFromArray([
-                'Pointer',
-                'NUL',
-                'Music Note',
-                'Recovered Archive',
-            ]);
-
-            $item = ItemRepository::findOneByName($this->em, $loot);
-
-            [$locationAndAction, $actioning] = $this->rng->rngNextFromArray([
-                [ 'an abandoned forum, and started rooting around old posts', 'rooting around in an abandoned forum' ],
-                [ 'an old BBS still somehow online, and started digging through its logs', 'digging through the logs of an old BBS' ],
-                [ 'a forgotten internet journal, and started combing through old posts and replies', 'digging through posts of a forgotten internet journal' ],
-                [ 'a crazy-old MUD no one plays anymore, and started digging through its logs', 'digging through the logs of a forgotten MUD' ],
-                [ 'an archive of ROMs from a forgotten computer system, and started trying to make sense of them', 'trying to make sense of old ROMs' ],
-            ]);
-
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% accessed Project-E, following some breadcrumbs left by other members of Time\'s Arrow. They reached ' . $locationAndAction . ', eventually piecing together ' . $item->getNameWithArticle() . '!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild' ]))
-            ;
-
-            $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' found this while ' . $actioning . ' in Project-E.', $activityLog);
-
-            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Science ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROTOCOL_7, false);
-        }
-        else
-        {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% accessed Project-E, following some breadcrumbs left by other members of Time\'s Arrow, but they lost the trail, and weren\'t able to find it again.')
-                ->setIcon('icons/activity-logs/confused')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild' ]))
-            ;
-
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Science ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROTOCOL_7, false);
-        }
-
-        return $activityLog;
-    }
-
-    private function doDwarfcraftDigging(ComputedPetSkills $petWithSkills): PetActivityLog
-    {
-        $pet = $petWithSkills->getPet();
-
-        $roll = $this->rng->rngNextInt(1, 30 + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getStamina()->getTotal() + $petWithSkills->getScience()->getTotal() + $petWithSkills->getGatheringBonus()->getTotal() + $petWithSkills->getMiningBonus()->getTotal());
-
-        if($roll < 10)
-        {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% accessed Project-E, and went to a Dwarfcraft excavation site. They dug for a while, but didn\'t find anything interesting.')
-                ->setIcon('icons/activity-logs/confused')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild' ]))
-            ;
-
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Science ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROTOCOL_7, false);
-
-            return $activityLog;
-        }
-
-        if($roll < 20)
-        {
-            $exp = 1;
-            $loot = $this->rng->rngNextFromArray([ 'NUL', 'Pointer' ]);
-            $exclaim = '...';
-        }
-        else if($roll < 30)
-        {
-            $exp = 1;
-            $loot = $this->rng->rngNextFromArray([ 'String', 'Green Dye', 'Green Dye', 'Imaginary Number' ]);
-            $exclaim = '.';
-        }
-        else if($roll < 40)
-        {
-            $exp = 2;
-            $loot = $this->rng->rngNextFromArray([ 'Iron Ore', 'Silver Ore', 'Gold Ore', 'XOR' ]);
-            $exclaim = '. Okay.';
-        }
-        else if($roll < 50)
-        {
-            $exp = 2;
-            $loot = $this->rng->rngNextFromArray([ 'Liquid-hot Magma', 'Cryptocurrency Wallet', 'Magic Smoke' ]);
-            $exclaim = '!';
-        }
-        else if($roll < 60)
-        {
-            $exp = 3;
-            $loot = $this->rng->rngNextFromArray([ 'Fiberglass', 'Blackonite', 'Piece of Cetgueli\'s Map' ]);
-            $exclaim = '! Neat!';
-        }
-        else
-        {
-            $exp = 4;
-            $loot = $this->rng->rngNextFromArray([ 'Firestone', 'Gold Ring' ]);
-            $exclaim = '! Whoa!';
-        }
-
-        $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% accessed Project-E, and went to a Dwarfcraft excavation site. They dug for a while, and found ' . $loot . $exclaim)
-            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild' ]))
-        ;
-
-        $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' found this while digging at a Dwarfcraft excavation site.', $activityLog);
-
-        $this->petExperienceService->gainExp($pet, $exp, [ PetSkillEnum::Science ], $activityLog);
-        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(40, 55) + $exp * 5, PetActivityStatEnum::PROTOCOL_7, true);
-
-        return $activityLog;
-    }
-
-    private function deliverMessagesForCorrespondence(ComputedPetSkills $petWithSkills): PetActivityLog
-    {
-        $pet = $petWithSkills->getPet();
-
-        $effectiveScience = max(2, $petWithSkills->getScience()->getTotal());
-        $minMons = min($effectiveScience, $petWithSkills->getIntelligence()->getTotal());
-
-        $moneys = $this->rng->rngNextInt(1, $effectiveScience);
-
-        if($moneys < $minMons)
-            $moneys = $minMons;
-
-        $this->transactionService->getMoney($pet->getOwner(), $moneys, $pet->getName() . ' received this for delivering messages for Correspondence.');
-
-        $pet->getGuildMembership()->increaseReputation();
-
-        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 75), PetActivityStatEnum::PROTOCOL_7, true);
-
-        return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% accessed Project-E. Correspondence had some message-delivery jobs, so %pet:' . $pet->getId() . '.name% picked a couple up, earning ' . $moneys . '~~m~~ for their trouble.')
-            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild', 'Moneys' ]))
-        ;
     }
 
     private function encounterAnnabellastasia(ComputedPetSkills $petWithSkills): PetActivityLog
@@ -361,15 +205,7 @@ class Protocol7Service implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
 
-        if($pet->isInGuild(GuildEnum::TimesArrow))
-        {
-            $roll = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() * 2 + $petWithSkills->getScience()->getTotal());
-
-            if($pet->hasMerit(MeritEnum::SOOTHING_VOICE))
-                $roll += 2;
-        }
-        else
-            $roll = $this->rng->rngSkillRoll($petWithSkills->getDexterity()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getScience()->getTotal());
+        $roll = $this->rng->rngSkillRoll($petWithSkills->getDexterity()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getScience()->getTotal());
 
         $success = $roll >= 10;
 
@@ -377,49 +213,21 @@ class Protocol7Service implements IPetActivity
         {
             $pet->increaseEsteem(1);
 
-            if($pet->isInGuild(GuildEnum::TimesArrow))
-            {
-                $pet->getGuildMembership()->increaseReputation();
-
-                if($pet->hasMerit(MeritEnum::SOOTHING_VOICE) && $this->rng->rngNextInt(1, 3) === 1)
-                    $logMessage = '%pet:' . $pet->getId() . '.name% met with a Garbage Collector in Project-E. Happy to help a member of Time\'s Arrow - especially one with such a Soothing Voice! - it handed over a Pointer.';
-                else
-                    $logMessage = '%pet:' . $pet->getId() . '.name% met with a Garbage Collector in Project-E. Happy to help a member of Time\'s Arrow, it handed over a Pointer.';
-
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, $logMessage)
-                    ->setIcon('items/resource/digital/pointer')
-                    ->addInterestingness(PetActivityLogInterestingness::HoHum + 10)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild' ]))
-                ;
-                $this->inventoryService->petCollectsItem('Pointer', $pet, $pet->getName() . ' received this from a Garbage Collector in Project-E.', $activityLog);
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% saw a Garbage Collector in Project-E, and took one of the Pointers it was discarding.')
-                    ->setIcon('items/resource/digital/pointer')
-                    ->addInterestingness(PetActivityLogInterestingness::HoHum + 10)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
-                ;
-                $this->inventoryService->petCollectsItem('Pointer', $pet, $pet->getName() . ' took this from a Garbage Collector in Project-E.', $activityLog);
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% saw a Garbage Collector in Project-E, and took one of the Pointers it was discarding.')
+                ->setIcon('items/resource/digital/pointer')
+                ->addInterestingness(PetActivityLogInterestingness::HoHum + 10)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
+            ;
+            $this->inventoryService->petCollectsItem('Pointer', $pet, $pet->getName() . ' took this from a Garbage Collector in Project-E.', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Science ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROTOCOL_7, true);
         }
         else
         {
-            if($pet->isInGuild(GuildEnum::TimesArrow))
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% met with a Garbage Collector in Project-E. It was happy to help a member of Time\'s Arrow, but didn\'t have anything at the moment.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild' ]))
-                ;
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% saw a Garbage Collector passing by in Project-E, but couldn\'t catch up to it.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
-                ;
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% saw a Garbage Collector passing by in Project-E, but couldn\'t catch up to it.')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
+            ;
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Science ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROTOCOL_7, false);
@@ -806,14 +614,7 @@ class Protocol7Service implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
 
-        if($pet->isInGuild(GuildEnum::Tapestries))
-        {
-            $check = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getPerception()->getTotal() + max($petWithSkills->getArcana()->getTotal(), $petWithSkills->getScience()->getTotal()) + $petWithSkills->getHackingBonus()->getTotal());
-        }
-        else
-        {
-            $check = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getScience()->getTotal() + $petWithSkills->getHackingBonus()->getTotal());
-        }
+        $check = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getScience()->getTotal() + $petWithSkills->getHackingBonus()->getTotal());
 
         $lucky = $pet->hasMerit(MeritEnum::LUCKY) && $this->rng->rngNextInt(1, 100) === 1;
 
@@ -879,22 +680,10 @@ class Protocol7Service implements IPetActivity
                 ]);
             }
 
-            if($pet->isInGuild(GuildEnum::Tapestries))
-            {
-                $pet->getGuildMembership()->increaseReputation();
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% found a corrupt sector in Project-E, but was able to repair it as they would repair the fabric of reality, and recover a ' . $otherLoot . ', and ' . $loot . ' from it!')
-                    ->setIcon('guilds/tapestries')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Guild', 'The Umbra' ]))
-                ;
-                $itemComment = $pet->getName() . ' recovered this by repairing a corrupt sector of Project-E!';
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% found a corrupt sector, and managed to recover a ' . $otherLoot . ', and ' . $loot . ' from it!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
-                ;
-                $itemComment = $pet->getName() . ' recovered this from a corrupt sector of Project-E!';
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% found a corrupt sector, and managed to recover a ' . $otherLoot . ', and ' . $loot . ' from it!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
+            ;
+            $itemComment = $pet->getName() . ' recovered this from a corrupt sector of Project-E!';
 
             if($lucky)
             {

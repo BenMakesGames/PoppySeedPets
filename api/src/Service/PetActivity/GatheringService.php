@@ -19,7 +19,6 @@ use App\Entity\PetSpecies;
 use App\Enum\ActivityPersonalityEnum;
 use App\Enum\DistractionLocationEnum;
 use App\Enum\FlavorEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\MoonPhaseEnum;
 use App\Enum\PetActivityLogInterestingness;
@@ -27,7 +26,6 @@ use App\Enum\PetActivityLogTagEnum;
 use App\Enum\PetActivityStatEnum;
 use App\Enum\PetLocationEnum;
 use App\Enum\PetSkillEnum;
-use App\Enum\RelationshipEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Functions\ActivityHelpers;
 use App\Functions\AdventureMath;
@@ -51,7 +49,6 @@ use App\Service\InventoryService;
 use App\Service\IRandom;
 use App\Service\PetExperienceService;
 use App\Service\PetFactory;
-use App\Service\PetRelationshipService;
 use App\Service\ResponseService;
 use App\Service\TransactionService;
 use App\Service\WeatherService;
@@ -70,7 +67,6 @@ class GatheringService implements IPetActivity
         private readonly PetFactory $petFactory,
         private readonly GatheringDistractionService $gatheringDistractions,
         private readonly Clock $clock,
-        private readonly PetRelationshipService $petRelationshipService,
         private readonly WildHedgeMazeService $wildHedgeMaze,
     )
     {
@@ -252,23 +248,7 @@ class GatheringService implements IPetActivity
 
             $petJoinsHouse = $numberOfPetsAtHome < $pet->getOwner()->getMaxPets();
 
-            if($pet->isInGuild(GuildEnum::LightAndShadow))
-            {
-                $extraMessage = ActivityHelpers::PetName($pet) . ' recognized the spirit from Light and Shadow texts: a ' . $newPet->getSpecies()->getName() . '! They began to talk - it\'s name was ' . $newPet->getName() . ', and the two formed a quick connection! ';
-
-                $this->petRelationshipService->createRelationship(
-                    $pet,
-                    '%pet.name% found %relationship.name% in an Abandoned Quarry.',
-                    $newPet,
-                    '%relationship.name% found %pet.name% in an Abandoned Quarry.',
-                    RelationshipEnum::Friend,
-                    [ RelationshipEnum::FriendlyRival, RelationshipEnum::Friend, RelationshipEnum::Friend, RelationshipEnum::BFF, RelationshipEnum::BFF, RelationshipEnum::FWB, RelationshipEnum::Mate ]
-                );
-            }
-            else
-                $extraMessage = '';
-
-            $extraMessage .= 'It followed %pet:' . $pet->getId() . '.name% home';
+            $extraMessage = 'It followed %pet:' . $pet->getId() . '.name% home';
 
             if($petJoinsHouse)
             {

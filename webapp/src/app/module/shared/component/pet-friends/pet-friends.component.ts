@@ -17,16 +17,15 @@ import {PetGroupSerializationGroup} from "../../../../model/my-pet/pet-group.ser
 import {MyAccountSerializationGroup} from "../../../../model/my-account/my-account.serialization-group";
 import {UserDataService} from "../../../../service/user-data.service";
 import {MyPetSerializationGroup} from "../../../../model/my-pet/my-pet.serialization-group";
-import {PetGuildSerializationGroup} from "../../../../model/guild/pet-guild.serialization-group";
 import {Subscription} from "rxjs";
 import { PetFriendComponent } from "../pet-friend/pet-friend.component";
 import { HasUnlockedFeaturePipe } from "../../pipe/has-unlocked-feature.pipe";
 import { ProgressBarComponent } from "../progress-bar/progress-bar.component";
 import { CommonModule } from "@angular/common";
 import { LoadingThrobberComponent } from "../loading-throbber/loading-throbber.component";
-import { DateOnlyComponent } from "../date-only/date-only.component";
 import { PetGroupProductLabelPipe } from "../../pipe/pet-group-product-label.pipe";
 import { PetGroupLabelPipe } from "../../pipe/pet-group-label.pipe";
+import { PetGroupIconPipe } from "../../pipe/pet-group-icon.pipe";
 import { HelpLinkComponent } from "../help-link/help-link.component";
 
 @Component({
@@ -38,10 +37,10 @@ import { HelpLinkComponent } from "../help-link/help-link.component";
         ProgressBarComponent,
         CommonModule,
         LoadingThrobberComponent,
-        DateOnlyComponent,
         RouterLink,
         PetGroupProductLabelPipe,
         PetGroupLabelPipe,
+        PetGroupIconPipe,
         HelpLinkComponent
     ],
     styleUrls: ['./pet-friends.component.scss']
@@ -50,14 +49,6 @@ export class PetFriendsComponent implements OnInit, OnDestroy {
 
   @Output() linkClick = new EventEmitter<void>();
   @Input() pet: MyPetSerializationGroup;
-
-  readonly GROUP_TYPE_IMAGES = [
-    '', // 0
-    'band',
-    'astronomy',
-    'gaming',
-    'sportsball'
-  ];
 
   relationships: RelationshipsModel;
   loadingFriends = true;
@@ -74,7 +65,7 @@ export class PetFriendsComponent implements OnInit, OnDestroy {
     this.petFriendsAjax = this.api.get<RelationshipsModel>('/pet/' + this.pet.id + '/friends').subscribe({
       next: (r: ApiResponseModel<RelationshipsModel>) => {
         this.relationships = r.data;
-        this.showSecondColumn = (this.relationships.groups && this.relationships.groups.length > 0) || !!this.relationships.spiritCompanion || !!this.relationships.guild;
+        this.showSecondColumn = (this.relationships.groups && this.relationships.groups.length > 0) || !!this.relationships.spiritCompanion;
         this.loadingFriends = false;
       }
     });
@@ -108,5 +99,4 @@ interface RelationshipsModel
   groups: PetGroupSerializationGroup[];
   friends: PetFriendSerializationGroup[];
   relationshipCount: number;
-  guild: PetGuildSerializationGroup|null;
 }

@@ -230,26 +230,6 @@
             </table>
           </div>
         }
-        @if(pet.guildMembership)
-        {
-          <div>
-            <h4><a [routerLink]="[ '/poppyopedia/guild/' + pet.guildMembership.guild.id ]">{{ pet.guildMembership.guild.name }}</a></h4>
-            <table class="list">
-              <tr>
-                <th>Type</th>
-                <td>Guild<app-help-link link="guilds" /></td>
-              </tr>
-              <tr>
-                <th>Rank</th>
-                <td>{{ pet.guildMembership.rank }}</td>
-              </tr>
-              <tr>
-                <th>Joined</th>
-                <td>{{ pet.guildMembership.joinedOn|date:'shortDate':'UTC' }}</td>
-              </tr>
-            </table>
-          </div>
-        }
       </div>
     }
   }

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace App\Controller\Pet;
 
-use App\Entity\Guild;
 use App\Entity\Pet;
 use App\Entity\PetRelationship;
 use App\Enum\MeritEnum;
@@ -41,23 +40,12 @@ class SelfReflectionController
 {
     #[Route("/{pet}/selfReflection", methods: ["GET"])]
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
-    public function getGuildMembership(
+    public function getSelfReflectionData(
         Pet $pet, ResponseService $responseService, EntityManagerInterface $em, UserAccessor $userAccessor
     ): JsonResponse
     {
-        // just to prevent scraping (this endpoint is currently - 2020-06-29 - used only for changing a pet's guild)
         if($pet->getOwner()->getId() !== $userAccessor->getUserOrThrow()->getId())
             throw new PSPPetNotFoundException();
-
-        $guildData = array_map(
-            function(Guild $g) {
-                return [
-                    'id' => $g->getId(),
-                    'name' => $g->getName(),
-                ];
-            },
-            $em->getRepository(Guild::class)->findAll()
-        );
 
         $numberDisliked = (int)$em->createQueryBuilder()
             ->select('COUNT(r)')->from(PetRelationship::class, 'r')
@@ -92,62 +80,9 @@ class SelfReflectionController
         $data = [
             'troubledRelationships' => $troubledRelationships,
             'troubledRelationshipsCount' => $numberDisliked,
-            'membership' => $pet->getGuildMembership(),
-            'guilds' => $guildData,
         ];
 
-        return $responseService->success($data, [ SerializationGroupEnum::PET_GUILD, SerializationGroupEnum::PET_PUBLIC_PROFILE ]);
-    }
-
-    #[IsGranted("IS_AUTHENTICATED_FULLY")]
-    #[Route("/{pet}/selfReflection/changeGuild", methods: ["POST"], requirements: ["pet" => "\d+"])]
-    public function changeGuild(
-        Pet $pet, Request $request, ResponseService $responseService, EntityManagerInterface $em,
-        UserAccessor $userAccessor
-    ): JsonResponse
-    {
-        $user = $userAccessor->getUserOrThrow();
-
-        if($user->getId() !== $pet->getOwner()->getId())
-            throw new PSPPetNotFoundException();
-
-        if($pet->getSelfReflectionPoint() < 1)
-            throw new PSPInvalidOperationException($pet->getName() . ' does not have any Self-reflection Points remaining.');
-
-        if($pet->hasMerit(MeritEnum::AFFECTIONLESS))
-            throw new PSPInvalidOperationException($pet->getName() . ' is Affectionless. It\'s uninterested in changing Guilds.');
-
-        if(!$pet->getGuildMembership())
-            throw new PSPInvalidOperationException($pet->getName() . ' isn\'t in a guild!');
-
-        $guildId = $request->request->getInt('guildId');
-
-        if(!$guildId)
-            throw new PSPFormValidationException('You gotta\' choose a guild!');
-
-        $guild = $em->getRepository(Guild::class)->find($guildId);
-
-        if(!$guild)
-            throw new PSPNotFoundException('That guild does not exist!');
-
-        if($pet->getGuildMembership()->getGuild()->getId() === $guild->getId())
-            throw new PSPInvalidOperationException($pet->getName() . ' is already a member of ' . $guild->getName() . '...');
-
-        $oldGuildName = $pet->getGuildMembership()->getGuild()->getName();
-
-        $pet->getGuildMembership()
-            ->setGuild($guild)
-        ;
-
-        $pet->increaseSelfReflectionPoint(-1);
-
-        PetActivityLogFactory::createUnreadLog($em, $pet, $pet->getName() . ' left ' . $oldGuildName . ', and joined ' . $guild->getName() . '!')
-            ->addInterestingness(PetActivityLogInterestingness::PlayerActionResponse)
-        ;
-
-        $em->flush();
-
-        return $responseService->success($pet, [ SerializationGroupEnum::MY_PET ]);
+        return $responseService->success($data, [ SerializationGroupEnum::PET_PUBLIC_PROFILE ]);
     }
 
     #[IsGranted("IS_AUTHENTICATED_FULLY")]

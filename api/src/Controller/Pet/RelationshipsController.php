@@ -73,7 +73,6 @@ class RelationshipsController
             'groups' => $normalizer->normalize($pet->getGroups(), null, [ 'groups' => [ SerializationGroupEnum::PET_GROUP ]]),
             'relationshipCount' => $relationshipCount,
             'friends' => $normalizer->normalize($relationships, null, [ 'groups' => [ SerializationGroupEnum::PET_FRIEND ]]),
-            'guild' => $normalizer->normalize($pet->getGuildMembership(), null, [ 'groups' => [ SerializationGroupEnum::PET_GUILD ]])
         ]);
     }
 

@@ -16,7 +16,6 @@ namespace App\Service\PetActivity\SpecialLocations;
 use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Enum\ActivityPersonalityEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityLogTagEnum;
@@ -394,22 +393,10 @@ class DeepSeaService implements IPetActivity
 
             $tentacles = 2;
 
-            if($pet->isInGuild(GuildEnum::HighImpact))
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Giant Squid while exploring the deep sea! As a member of High Impact, they immediately stepped up to the challenge, fought the squid, and stole a few Tentacles before it swam away!')
-                    ->setIcon('items/tool/submarine')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Submarine', 'Fighting', 'Guild' ]))
-                ;
-                $roll += 5; // guaranteed to get at least 1 more tentacle
-                $pet->getGuildMembership()->increaseReputation();
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Giant Squid while exploring the deep sea! They got out of the Submarine and fought it off, stealing a couple Tentacles!')
-                    ->setIcon('items/tool/submarine')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Submarine', 'Fighting' ]))
-                ;
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Giant Squid while exploring the deep sea! They got out of the Submarine and fought it off, stealing a couple Tentacles!')
+                ->setIcon('items/tool/submarine')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Submarine', 'Fighting' ]))
+            ;
 
             $pet->increaseEsteem($this->rng->rngNextInt(2, 4));
 
@@ -420,18 +407,6 @@ class DeepSeaService implements IPetActivity
                 $this->inventoryService->petCollectsItem('Tentacle', $pet, $pet->getName() . ' got this by defeating a Giant Squid in the deep sea!', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
-        }
-        else if($pet->isInGuild(GuildEnum::HighImpact))
-        {
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::FISH, false);
-
-            $pet->increaseSafety(-$this->rng->rngNextInt(2, 4));
-
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Giant Squid while exploring the deep sea! As a member of High Impact, they immediately stepped up to the challenge, but the squid attacked viciously, and ' . $pet->getName() . ' was forced to retreat...')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Submarine', 'Fighting', 'Guild' ]))
-            ;
-
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
         }
         else
         {

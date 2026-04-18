@@ -16,7 +16,6 @@ namespace App\Service\PetActivity;
 use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Entity\User;
-use App\Enum\GuildEnum;
 use App\Enum\LocationEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityStatEnum;
@@ -65,28 +64,13 @@ class GivingTreeGatheringService
             ]
         );
 
-        if($pet->isInGuild(GuildEnum::GizubisGarden, 1))
-        {
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(20, 30), PetActivityStatEnum::OTHER, null);
+        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(10, 20), PetActivityStatEnum::OTHER, null);
 
-            $pet->getGuildMembership()->increaseReputation();
-
-            return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited The Giving Tree, and picked up several items that other players had discarded. In honor of Gizubi\'s Tree of Life, they also took a few minutes to water the Giving Tree.')
-                ->setIcon('icons/activity-logs/giving-tree')
-                ->addInterestingness(PetActivityLogInterestingness::UncommonActivity)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Giving Tree', 'Guild' ]))
-            ;
-        }
-        else
-        {
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(10, 20), PetActivityStatEnum::OTHER, null);
-
-            return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited The Giving Tree, and picked up several items that other players had discarded.')
-                ->setIcon('icons/activity-logs/giving-tree')
-                ->addInterestingness(PetActivityLogInterestingness::UncommonActivity)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Giving Tree' ]))
-            ;
-        }
+        return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited The Giving Tree, and picked up several items that other players had discarded.')
+            ->setIcon('icons/activity-logs/giving-tree')
+            ->addInterestingness(PetActivityLogInterestingness::UncommonActivity)
+            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Giving Tree' ]))
+        ;
     }
 
 }

@@ -40,13 +40,10 @@ import { MeritComponent } from './page/merit/merit.component';
 import { PetShelterComponent } from './page/user-profile/pet-shelter/pet-shelter.component';
 import { FollowUnfollowComponent } from './component/follow-unfollow/follow-unfollow.component';
 import { SkillsComponent } from './page/help/skills/skills.component';
-import { GuildsComponent } from './page/help/guilds/guilds.component';
 import { LockedInventoryComponent } from './page/help/locked-inventory/locked-inventory.component';
 import { PetDirectoryComponent } from './page/pet-directory/pet-directory.component';
 import { SpiritCompanionDirectoryComponent } from './page/spirit-companion-directory/spirit-companion-directory.component';
 import { PetRelationshipsComponent } from './component/pet-relationships/pet-relationships.component';
-import { GuildComponent } from './page/guild/guild.component';
-import { GuildDirectoryComponent } from './page/guild-directory/guild-directory.component';
 import {GroupsHelpComponent} from "./page/help/groups/groups-help.component";
 import { DesignGoalsComponent } from './page/design-goals/design-goals.component';
 import { DesignGoalDetailsComponent } from './page/design-goal-details/design-goal-details.component';
@@ -64,6 +61,7 @@ import { DateAndTimeComponent } from "../shared/component/date-and-time/date-and
 import { PetAppearanceComponent } from "../shared/component/pet-appearance/pet-appearance.component";
 import { DateOnlyComponent } from "../shared/component/date-only/date-only.component";
 import { PetGroupLabelPipe } from "../shared/pipe/pet-group-label.pipe";
+import { PetGroupIconPipe } from "../shared/pipe/pet-group-icon.pipe";
 import { PlayerNameComponent } from "../shared/component/player-name/player-name.component";
 import { InventoryItemComponent } from "../shared/component/inventory-item/inventory-item.component";
 import { ImageComponent } from "../shared/component/image/image.component";
@@ -119,13 +117,10 @@ import { InputYesNoBothComponent } from "../filters/components/input-yes-no-both
     PetShelterComponent,
     FollowUnfollowComponent,
     SkillsComponent,
-    GuildsComponent,
     LockedInventoryComponent,
     PetDirectoryComponent,
     SpiritCompanionDirectoryComponent,
     PetRelationshipsComponent,
-    GuildComponent,
-    GuildDirectoryComponent,
     GroupsHelpComponent,
     DesignGoalsComponent,
     DesignGoalDetailsComponent,
@@ -151,6 +146,7 @@ import { InputYesNoBothComponent } from "../filters/components/input-yes-no-both
     PetAppearanceComponent,
     DateOnlyComponent,
     PetGroupLabelPipe,
+    PetGroupIconPipe,
     PlayerNameComponent,
     InventoryItemComponent,
     ImageComponent,

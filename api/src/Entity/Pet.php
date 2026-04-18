@@ -16,7 +16,6 @@ namespace App\Entity;
 use App\Enum\ActivityPersonalityEnum;
 use App\Enum\EnumInvalidValueException;
 use App\Enum\FlavorEnum;
-use App\Enum\GuildEnum;
 use App\Enum\LoveLanguageEnum;
 use App\Enum\MeritEnum;
 use App\Enum\ParkEventTypeEnum;
@@ -47,7 +46,7 @@ class Pet
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'myInventory', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'spiritCompanionPublicProfile', 'guildMember', 'petActivityLogAndPublicPet', 'helperPet'])]
+    #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'myInventory', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'spiritCompanionPublicProfile', 'petActivityLogAndPublicPet', 'helperPet'])]
     /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
@@ -56,7 +55,7 @@ class Pet
     private User $owner;
 
     #[ORM\Column(type: 'string', length: 40)]
-    #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'spiritCompanionPublicProfile', 'guildMember', 'petActivityLogAndPublicPet', 'helperPet'])]
+    #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'spiritCompanionPublicProfile', 'petActivityLogAndPublicPet', 'helperPet'])]
     private string $name;
 
     #[ORM\Column(type: 'integer')]
@@ -108,7 +107,7 @@ class Pet
 
     #[ORM\ManyToOne(targetEntity: PetSpecies::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'guildMember', 'petActivityLogAndPublicPet', 'helperPet', 'petActivityLogs'])]
+    #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'petActivityLogAndPublicPet', 'helperPet', 'petActivityLogs'])]
     private PetSpecies $species;
 
     #[ORM\OneToOne(targetEntity: Inventory::class, inversedBy: 'holder')]
@@ -225,10 +224,6 @@ class Pet
 
     #[ORM\Column(type: 'boolean')]
     private bool $claimedGrandparentMerit = false;
-
-    #[ORM\OneToOne(mappedBy: 'pet', targetEntity: GuildMembership::class, cascade: ['persist', 'remove'])]
-    #[Groups(['petPublicProfile', 'guildMember'])]
-    private ?GuildMembership $guildMembership = null;
 
     #[ORM\Column(type: 'integer')]
     private int $revealedFavoriteFlavor = 0;
@@ -557,7 +552,7 @@ class Pet
     }
 
     #[SerializedName('colorA')]
-    #[Groups(['myPet', 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'guildMember', 'petActivityLogAndPublicPet', 'helperPet', 'petActivityLogs', 'petActivityLogs'])]
+    #[Groups(['myPet', 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'petActivityLogAndPublicPet', 'helperPet', 'petActivityLogs', 'petActivityLogs'])]
     public function getPerceivedColorA(): string
     {
         if($this->hasStatusEffect(StatusEffectEnum::Invisible))
@@ -573,7 +568,7 @@ class Pet
     }
 
     #[SerializedName('colorB')]
-    #[Groups(['myPet', 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'guildMember', 'petActivityLogAndPublicPet', 'helperPet', 'petActivityLogs'])]
+    #[Groups(['myPet', 'userPublicProfile', 'petPublicProfile', 'parkEvent', 'petFriend', 'hollowEarth', 'petGroupDetails', 'petActivityLogAndPublicPet', 'helperPet', 'petActivityLogs'])]
     public function getPerceivedColorB(): string
     {
         if($this->hasStatusEffect(StatusEffectEnum::Invisible))
@@ -1517,32 +1512,6 @@ class Pet
         return $this;
     }
 
-    public function getGuildMembership(): ?GuildMembership
-    {
-        return $this->guildMembership;
-    }
-
-    public function setGuildMembership(GuildMembership $guildMembership): self
-    {
-        $this->guildMembership = $guildMembership;
-
-        // set the owning side of the relation if necessary
-        if ($guildMembership->getPet() !== $this) {
-            $guildMembership->setPet($this);
-        }
-
-        return $this;
-    }
-
-    public function isInGuild(GuildEnum $guild, int $minTitle = 1): bool
-    {
-        return
-            $this->getGuildMembership() &&
-            $this->getGuildMembership()->getGuild()->getName() === $guild->value &&
-            $this->getGuildMembership()->getTitle() >= $minTitle
-        ;
-    }
-
     public function getRevealedFavoriteFlavor(): int
     {
         return $this->revealedFavoriteFlavor;
@@ -1662,7 +1631,7 @@ class Pet
     }
 
     #[SerializedName('scale')]
-    #[Groups(["myPet", "userPublicProfile", "petPublicProfile", "parkEvent", "petFriend", "hollowEarth", "petGroupDetails", "guildMember", "helperPet", "petActivityLogAndPublicPet", 'petActivityLogs'])]
+    #[Groups(["myPet", "userPublicProfile", "petPublicProfile", "parkEvent", "petFriend", "hollowEarth", "petGroupDetails", "helperPet", "petActivityLogAndPublicPet", 'petActivityLogs'])]
     public function getPerceivedScale(): int
     {
         if(!$this->getMom())

@@ -24,7 +24,7 @@
             @for(group of relationships.groups; track group.id)
             {
               <div class="group" (click)="doViewGroup(group)" tabindex="0">
-                <img [src]="'/assets/images/groups/' + GROUP_TYPE_IMAGES[group.type] + '.svg'" [alt]="group.type|petGroupLabel">
+                <img [src]="group.type|petGroupIcon" [alt]="group.type|petGroupLabel">
                 <h5 class="link-text">{{ group.name }}</h5>
                 @if(group.makesStuff)
                 {
@@ -48,16 +48,6 @@
                 Friends for life (and probably quite longer...)
               }
             </p>
-          </div>
-        }
-
-        @if(relationships.guild)
-        {
-          <div class="guild">
-            <h4>Guild</h4>
-            <img [src]="'/assets/images/guilds/' + relationships.guild.guild.emblem + '.svg'" [alt]="relationships.guild.guild.name + ' emblem'">
-            <h5><a [routerLink]="['/poppyopedia/guild/' + relationships.guild.guild.id ]" (click)="doClose()">{{ relationships.guild.guild.name }}</a></h5>
-            <p>{{ relationships.guild.rank }}. Joined <app-date-only [dateString]="relationships.guild.joinedOn" />.</p>
           </div>
         }
       </div>

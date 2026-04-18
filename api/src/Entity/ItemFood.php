@@ -371,7 +371,7 @@ class ItemFood
         $modifiers = [];
 
         if($this->getGrantsSelfReflection())
-            $modifiers[] = 'a pet that eats this will reconcile with another pet or change Guild at your advice!';
+            $modifiers[] = 'a pet that eats this will reconcile with another pet at your advice!';
 
         if($this->food > 9)
             $modifiers[] = 'a huge meal';

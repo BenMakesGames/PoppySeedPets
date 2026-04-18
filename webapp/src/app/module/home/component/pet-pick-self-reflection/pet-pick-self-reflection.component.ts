@@ -10,7 +10,6 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {MyPetSerializationGroup} from "../../../../model/my-pet/my-pet.serialization-group";
 import {ApiService} from "../../../shared/service/api.service";
-import {PetGuildSerializationGroup} from "../../../../model/guild/pet-guild.serialization-group";
 import {PetPublicProfileSerializationGroup} from "../../../../model/public-profile/pet-public-profile.serialization-group";
 import {Subscription} from "rxjs";
 import { SelectPetComponent } from "../../../shared/component/select-pet/select-pet.component";
@@ -37,8 +36,7 @@ export class PetPickSelfReflectionComponent implements OnInit, OnDestroy {
   @Output() selectSelfReflection = new EventEmitter<PetPickSelfReflectionModel>();
 
   loading = true;
-  response: GuildMembershipResponse;
-  newGuild: number;
+  response: SelfReflectionResponse;
   reconcileWith: number;
   possibleRelationships: string;
 
@@ -49,7 +47,7 @@ export class PetPickSelfReflectionComponent implements OnInit, OnDestroy {
   petMapper = (r) => r.pet;
 
   ngOnInit() {
-    this.selfReflectionAjax = this.api.get<GuildMembershipResponse>('/pet/' + this.pet.id + '/selfReflection').subscribe({
+    this.selfReflectionAjax = this.api.get<SelfReflectionResponse>('/pet/' + this.pet.id + '/selfReflection').subscribe({
       next: (r) => {
         this.response = r.data;
         this.loading = false;
@@ -80,11 +78,6 @@ export class PetPickSelfReflectionComponent implements OnInit, OnDestroy {
     this.selectSelfReflection.emit({ route: 'reconcile', data: { petId: this.reconcileWith } });
   }
 
-  doChangeGuild()
-  {
-    this.selectSelfReflection.emit({ route: 'changeGuild', data: { guildId: this.newGuild } });
-  }
-
   doSetPossibleRelationships(possibleRelationships: string[])
   {
     this.possibleRelationships = possibleRelationships.map(r => {
@@ -100,10 +93,8 @@ export class PetPickSelfReflectionComponent implements OnInit, OnDestroy {
   }
 }
 
-export interface GuildMembershipResponse
+export interface SelfReflectionResponse
 {
-  membership: PetGuildSerializationGroup;
-  guilds: { id: number, name: string }[];
   troubledRelationshipsCount: number;
   troubledRelationships: TroubledRelationshipsModel[]|null;
 }

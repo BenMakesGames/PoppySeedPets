@@ -49,7 +49,6 @@ use App\Service\PetActivity\FatedAdventureService;
 use App\Service\PetActivity\GatheringHolidayAdventureService;
 use App\Service\PetActivity\GenericAdventureService;
 use App\Service\PetActivity\GivingTreeGatheringService;
-use App\Service\PetActivity\GuildService;
 use App\Service\PetActivity\Holiday\HuntTurkeyDragon;
 use App\Service\PetActivity\IPetActivity;
 use App\Service\PetActivity\LetterService;
@@ -77,7 +76,6 @@ class PetActivityService
         private readonly DreamingAndDaydreamingService $dreamingAndDaydreamingService,
         private readonly EatingService $eatingService,
         private readonly GatheringHolidayAdventureService $gatheringHolidayAdventureService,
-        private readonly GuildService $guildService,
         private readonly InventoryService $inventoryService,
         private readonly LetterService $letterService,
         private readonly HouseSimService $houseSimService,
@@ -262,12 +260,6 @@ class PetActivityService
         {
             $this->gatheringHolidayAdventureService->adventure($petWithSkills, GatheringHolidayEnum::LunarNewYear);
             return;
-        }
-
-        if($pet->getGuildMembership() && $this->rng->rngNextInt(1, 35) === 1)
-        {
-            if($this->guildService->doGuildActivity($petWithSkills))
-                return;
         }
 
         $activity = $this->pickActivity($petWithSkills, false)

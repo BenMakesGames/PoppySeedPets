@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace App\Service\PetActivity;
 
 use App\Entity\Letter;
-use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Entity\User;
 use App\Entity\UserLetter;
@@ -22,7 +21,6 @@ use App\Enum\LetterSenderEnum;
 use App\Enum\LocationEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityStatEnum;
-use App\Enum\RelationshipEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Functions\PetActivityLogFactory;
 use App\Functions\PetActivityLogTagHelpers;
@@ -180,69 +178,7 @@ class LetterService
 
         $petChanges = new PetChanges($pet);
 
-        $courier = $this->findRandomCourier($pet);
-
-        if($courier === null)
-        {
-            $descriptionForPet = 'some pet they didn\'t recognize.';
-        }
-        else
-        {
-            $courierChanges = new PetChanges($courier);
-            $relationship = $pet->getRelationshipWith($courier);
-
-            if($relationship)
-            {
-                switch($relationship->getCurrentRelationship())
-                {
-                    case RelationshipEnum::BrokeUp:
-                        $descriptionForPet = '%pet:' . $courier->getId() . '.name%! :( %pet:' . $courier->getId() . '.name% handed over the letter without saying a word, and left.';
-                        $descriptionForCourier = '%pet:' . $pet->getId() . '.name%! :( %pet:' . $pet->getId() . '.name% took the letter without saying a word, and left.';
-                        $pet->increaseEsteem(-$this->rng->rngNextInt(4, 8));
-                        $courier->increaseEsteem(-$this->rng->rngNextInt(4, 8));
-                        break;
-                    case RelationshipEnum::Dislike:
-                        $descriptionForPet = '%pet:' . $courier->getId() . '.name%! :| %pet:' . $courier->getId() . '.name% handed over the letter without saying a word, and left.';
-                        $descriptionForCourier = '%pet:' . $pet->getId() . '.name%! :| %pet:' . $pet->getId() . '.name% took the letter without saying a word, and left.';
-                        $pet->increaseSafety(-$this->rng->rngNextInt(2, 4));
-                        $courier->increaseSafety(-$this->rng->rngNextInt(2, 4));
-                        break;
-                    case RelationshipEnum::FriendlyRival:
-                        $descriptionForPet = 'their friendly rival, %pet:' . $courier->getId() . '.name%! %pet:' . $courier->getId() . '.name% triumphantly handed the letter over, laughed, and left.';
-                        $descriptionForCourier = '%pet:' . $pet->getId() . '.name%! %pet:' . $pet->getId() . '.name% took the letter with a smug grin! %pet:' . $courier->getId() . '.name% laughed it off, and left.';
-                        break;
-                    case RelationshipEnum::Friend:
-                    case RelationshipEnum::BFF:
-                    case RelationshipEnum::FWB:
-                        $descriptionForPet = 'their friend, %pet:' . $courier->getId() . '.name%! %pet:' . $courier->getId() . '.name% handed the letter over, and the two chatted for a while.';
-                        $descriptionForCourier = 'their friend, %pet:' . $pet->getId() . '.name%! %pet:' . $courier->getId() . '.name% handed the letter over, and the two chatted for a while.';
-                        $pet->increaseLove($this->rng->rngNextInt(2, 4))->increaseSafety($this->rng->rngNextInt(2, 4));
-                        $courier->increaseLove($this->rng->rngNextInt(2, 4))->increaseSafety($this->rng->rngNextInt(2, 4));
-                        break;
-                    case RelationshipEnum::Mate:
-                        $descriptionForPet = 'their partner, %pet:' . $courier->getId() . '.name%! %pet:' . $courier->getId() . '.name% handed the letter over, and the two chatted for a while.';
-                        $descriptionForCourier = 'their partner, %pet:' . $pet->getId() . '.name%! %pet:' . $courier->getId() . '.name% handed the letter over, and the two chatted for a while.';
-                        $pet->increaseLove($this->rng->rngNextInt(4, 8))->increaseSafety($this->rng->rngNextInt(2, 4));
-                        $courier->increaseLove($this->rng->rngNextInt(4, 8))->increaseSafety($this->rng->rngNextInt(2, 4));
-                        break;
-                    default:
-                        throw new \Exception("Unknown relationship type \"{$relationship->getCurrentRelationship()}\"");
-                }
-            }
-            else
-            {
-                $descriptionForPet = '%pet:' . $courier->getId() . '.name%.';
-                $descriptionForCourier = '%pet:' . $pet->getId() . '.name%.';
-            }
-
-            $courierActivity = PetActivityLogFactory::createUnreadLog($this->em, $courier, '%pet:' . $courier->getId() . '.name% - on a job for Correspondence - delivered a Letter from ' . $sender->value . ' to ' . $descriptionForCourier)
-                ->setIcon('icons/activity-logs/letter')
-                ->addInterestingness(PetActivityLogInterestingness::RareActivity)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Guild', 'Mail' ]))
-            ;
-
-            $courierActivity->setChanges($courierChanges->compare($courier));
-        }
+        $descriptionForPet = 'some pet they didn\'t recognize.';
 
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::OTHER, null);
 
@@ -275,49 +211,6 @@ class LetterService
             ->setParameter('sender', $sender)
             ->getQuery()
             ->getSingleScalarResult()
-        ;
-    }
-
-    private function findRandomCourier(Pet $except): ?Pet
-    {
-        $oneMonthAgo = new \DateTimeImmutable()->modify('-1 month');
-
-        $numberEligible = (int)$this->em->getRepository(Pet::class)->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
-            ->join('p.owner', 'o')
-            ->join('p.guildMembership', 'm')
-            ->join('m.guild', 'g')
-            ->andWhere('o.lastActivity>=:oneMonthAgo')
-            ->andWhere('p.id!=:exceptPetId')
-            ->andWhere('g.name=:correspondence')
-            ->andWhere('m.level>=10')
-            ->setParameter('oneMonthAgo', $oneMonthAgo)
-            ->setParameter('exceptPetId', $except->getId())
-            ->setParameter('correspondence', 'Correspondence')
-            ->getQuery()
-            ->getSingleScalarResult()
-        ;
-
-        if($numberEligible === 0)
-            return null;
-
-        $petIndex = $this->rng->rngNextInt(0, $numberEligible - 1);
-
-        return $this->em->getRepository(Pet::class)->createQueryBuilder('p')
-            ->join('p.owner', 'o')
-            ->join('p.guildMembership', 'm')
-            ->join('m.guild', 'g')
-            ->andWhere('o.lastActivity>=:oneMonthAgo')
-            ->andWhere('p.id!=:exceptPetId')
-            ->andWhere('g.name=:correspondence')
-            ->andWhere('m.level>=10')
-            ->setParameter('oneMonthAgo', $oneMonthAgo)
-            ->setParameter('exceptPetId', $except->getId())
-            ->setParameter('correspondence', 'Correspondence')
-            ->setFirstResult($petIndex)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getSingleResult()
         ;
     }
 

@@ -37,7 +37,7 @@ class PetSpecies
     #[ORM\Column(type: 'string', length: 40, unique: true)]
     private string $name;
 
-    #[Groups(["myPet", "userPublicProfile", "petEncyclopedia", "petPublicProfile", "petShelterPet", "parkEvent", "petFriend", "hollowEarth", "petGroupDetails", "guildMember", "petActivityLogAndPublicPet", "helperPet", "zoologistCatalog", "typeahead", 'petActivityLogs'])]
+    #[Groups(["myPet", "userPublicProfile", "petEncyclopedia", "petPublicProfile", "petShelterPet", "parkEvent", "petFriend", "hollowEarth", "petGroupDetails", "petActivityLogAndPublicPet", "helperPet", "zoologistCatalog", "typeahead", 'petActivityLogs'])]
     #[ORM\Column(type: 'string', length: 40)]
     private string $image;
 

@@ -18,7 +18,6 @@ use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Entity\User;
 use App\Enum\ActivityPersonalityEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityStatEnum;
 use App\Enum\PetBadgeEnum;
@@ -134,10 +133,7 @@ class MagicBeanstalkService implements IPetActivity
             case 15:
             case 16:
             case 17:
-                if($pet->isInGuild(GuildEnum::HighImpact))
-                    $activityLog = $this->foundPegasusNestHighImpact($petWithSkills);
-                else
-                    $activityLog = $this->foundPegasusNest($petWithSkills);
+                $activityLog = $this->foundPegasusNest($petWithSkills);
                 break;
             case 18:
                 $activityLog = $this->foundLightning($petWithSkills);
@@ -260,46 +256,6 @@ class MagicBeanstalkService implements IPetActivity
 
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::GATHER, true);
         }
-        else if($pet->isInGuild(GuildEnum::HighImpact))
-        {
-            if($this->rng->rngSkillRoll(max($petWithSkills->getStrength()->getTotal(), $petWithSkills->getDexterity()->getTotal()) + $petWithSkills->getBrawl()->getTotal()) >= 10)
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% climbed %user:' . $pet->getOwner()->getId() . '.name\'s% magic bean-stalk, getting as high as ~' . $meters . ' meters. There, they found a bird\'s nest, guarded by its mother. It seemed a suitable challenge for a member of High Impact, so %pet:' . $pet->getId() . '.name% fought the bird, chased it off, and raided its nest.')
-                    ->setIcon('guilds/high-impact')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Magic Beanstalk', 'Fighting', 'Guild' ]))
-                ;
-
-                $this->inventoryService->petCollectsItem('Egg', $pet, $pet->getName() . ' stole this from a Bird Nest.', $activityLog);
-                $this->inventoryService->petCollectsItem('Feathers', $pet, $pet->getName() . ' stole this from a Bird Nest.', $activityLog);
-
-                $perceptionRoll = $this->rng->rngSkillRoll($petWithSkills->getPerception()->getTotal());
-
-                if($perceptionRoll >= 20)
-                    $this->inventoryService->petCollectsItem('Black Feathers', $pet, $pet->getName() . ' stole this from a Bird Nest.', $activityLog);
-                else if($perceptionRoll >= 10)
-                    $this->inventoryService->petCollectsItem('Fluff', $pet, $pet->getName() . ' stole this from a Bird Nest.', $activityLog);
-
-                $pet->getGuildMembership()->increaseReputation();
-
-                $pet->increaseEsteem($this->rng->rngNextInt(2, 4));
-                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature, PetSkillEnum::Brawl ], $activityLog);
-
-                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% climbed %user:' . $pet->getOwner()->getId() . '.name\'s% magic bean-stalk, getting as high as ~' . $meters . ' meters. There, they found a bird\'s nest, guarded by its mother. It seemed a suitable challenge for a member of High Impact, so %pet:' . $pet->getId() . '.name% fought the bird, but the bird fought back, and %pet:' . $pet->getId() . '.name% was forced to climb back down as fast as they could...')
-                    ->setIcon('guilds/high-impact')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Magic Beanstalk', 'Fighting', 'Guild' ]))
-                ;
-
-                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature, PetSkillEnum::Brawl ], $activityLog);
-
-                $pet->increaseEsteem(-$this->rng->rngNextInt(2, 4));
-
-                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
-            }
-        }
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% climbed %user:' . $pet->getOwner()->getId() . '.name\'s% magic bean-stalk, getting as high as ~' . $meters . ' meters. They found a bird nest, but the mother bird was around, and it didn\'t seem safe to pick a fight up there, so %pet:' . $pet->getId() . '.name% left it alone.')
@@ -401,44 +357,6 @@ class MagicBeanstalkService implements IPetActivity
             $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Nature, PetSkillEnum::Stealth ], $activityLog);
 
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::GATHER, false);
-        }
-
-        return $activityLog;
-    }
-
-    private function foundPegasusNestHighImpact(ComputedPetSkills $petWithSkills): PetActivityLog
-    {
-        $pet = $petWithSkills->getPet();
-
-        $meters = $this->rng->rngNextInt(2000, 3000) / 2;
-
-        if($this->rng->rngSkillRoll(max($petWithSkills->getStrength()->getTotal(), $petWithSkills->getDexterity()->getTotal()) + $petWithSkills->getBrawl()->getTotal()) >= 18)
-        {
-            $pet->increaseEsteem($this->rng->rngNextInt(4, 8));
-
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% climbed %user:' . $pet->getOwner()->getId() . '.name\'s% magic bean-stalk, getting as high as ~' . $meters . ' meters! They found a white Pegasus\' nest. As a member of High Impact, they jumped at the challenge - literally! - and wrestled the mother Pegasus as she flew! After a while, the Pegasus, exhausted, was forced to land, and %pet:' . $pet->getId() . '.name% made off with an Egg, some Fluff, and some White Feathers!')
-                ->setIcon('guilds/high-impact')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Magic Beanstalk', 'Fighting' ]))
-            ;
-
-            $this->inventoryService->petCollectsItem('Egg', $pet, $pet->getName() . ' stole this from a white Pegasus nest.', $activityLog);
-            $this->inventoryService->petCollectsItem('White Feathers', $pet, $pet->getName() . ' stole this from a white Pegasus nest.', $activityLog);
-            $this->inventoryService->petCollectsItem('Fluff', $pet, $pet->getName() . ' stole this from a white Pegasus nest.', $activityLog);
-
-            $pet->getGuildMembership()->increaseReputation();
-
-            $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Brawl ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::HUNT, true);
-        }
-        else
-        {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% climbed %user:' . $pet->getOwner()->getId() . '.name\'s% magic bean-stalk, getting as high as ~' . $meters . ' meters! They found a white Pegasus\' nest. As a member of High Impact, they jumped at the challenge - literally! - and wrestled the mother Pegasus as she flew! The Pegasus dove down, through some trees, knocking %pet:' . $pet->getId() . '.name% off with nothing to show for their efforts...')
-                ->setIcon('guilds/high-impact')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Magic Beanstalk', 'Fighting' ]))
-            ;
-
-            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::HUNT, false);
         }
 
         return $activityLog;
