@@ -75,6 +75,9 @@ export class BasementComponent implements OnInit, OnDestroy {
         if('filter.name' in p)
           this.search.name = p['filter.name'];
 
+        if('filter.itemGroup' in p)
+          this.search.itemGroup = p['filter.itemGroup'];
+        
         this.inventoryAjax = this.loadInventory(0).subscribe({
           next: r => this.processInventoryResponse(r),
           error: () => {},
