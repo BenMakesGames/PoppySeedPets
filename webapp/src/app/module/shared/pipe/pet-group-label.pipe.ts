@@ -21,6 +21,7 @@ export class PetGroupLabelPipe implements PipeTransform {
     'Astronomy Lab',
     'Gaming Group',
     'Sportsball Team',
+    'Gardening Club'
   ];
 
   transform(value: number): any {

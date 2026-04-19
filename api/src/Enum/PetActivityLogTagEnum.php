@@ -40,6 +40,7 @@ final class PetActivityLogTagEnum
     public const string Fireplace = 'Fireplace';
     public const string Fishing = 'Fishing';
     public const string Gaming_Group = 'Gaming Group';
+    public const string Gardening_Club = 'Gardening Club';
     public const string Gathering = 'Gathering';
     public const string Giving_Tree = 'Giving Tree';
     public const string Gourmand = 'Gourmand';

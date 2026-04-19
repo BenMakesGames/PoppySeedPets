@@ -2881,12 +2881,6 @@ parameters:
 			path: src/Entity/PetBaby.php
 
 		-
-			message: '#^Match arm comparison between App\\Enum\\PetGroupTypeEnum\:\:Sportsball and App\\Enum\\PetGroupTypeEnum\:\:Sportsball is always true\.$#'
-			identifier: match.alwaysTrue
-			count: 2
-			path: src/Entity/PetGroup.php
-
-		-
 			message: '#^Property App\\Entity\\PetGroup\:\:\$members with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types\: TKey, T$#'
 			identifier: missingType.generics
 			count: 1
@@ -5377,20 +5371,8 @@ parameters:
 			path: src/Service/PetExperienceService.php
 
 		-
-			message: '#^Binary operation "\." between ''Ben forgot to…'' and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/PetGroupService.php
-
-		-
 			message: '#^Binary operation "\." between ''Unhandled group…'' and mixed results in an error\.$#'
 			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/PetGroupService.php
-
-		-
-			message: '#^Match arm comparison between App\\Enum\\PetGroupTypeEnum\:\:Sportsball and App\\Enum\\PetGroupTypeEnum\:\:Sportsball is always true\.$#'
-			identifier: match.alwaysTrue
 			count: 1
 			path: src/Service/PetGroupService.php
 
