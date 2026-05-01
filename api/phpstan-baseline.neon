@@ -823,28 +823,10 @@ parameters:
 			path: src/Command/ViewMonsterFoodsCommand.php
 
 		-
-			message: '#^Parameter \#2 \$userId of static method App\\Functions\\UserStyleFunctions\:\:findCurrent\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Account/GetAccountController.php
-
-		-
 			message: '#^Method App\\Controller\\Account\\GetByIdController\:\:getLinks\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Controller/Account/GetByIdController.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Functions\\UserStyleFunctions\:\:findCurrent\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Account/GetByIdController.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Functions\\UserStyleFunctions\:\:findCurrent\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Account/LogInController.php
 
 		-
 			message: '#^Parameter \#1 \$backgroundColor of method App\\Entity\\UserStyle\:\:setBackgroundColor\(\) expects string, mixed given\.$#'
@@ -1531,12 +1513,6 @@ parameters:
 			path: src/Controller/Inventory/MoveController.php
 
 		-
-			message: '#^Parameter \#2 \$userId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/Blueprint/FishStatueBlueprintController.php
-
-		-
 			message: '#^Parameter \#3 \$species of method App\\Service\\PetFactory\:\:createPet\(\) expects App\\Entity\\PetSpecies, App\\Entity\\PetSpecies\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1579,46 +1555,10 @@ parameters:
 			path: src/Controller/Item/GizbuisShovelController.php
 
 		-
-			message: '#^Parameter \#2 \$itemId of method App\\Service\\InventoryService\:\:loseItem\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/GoldRingController.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/GoldRingController.php
-
-		-
-			message: '#^Parameter \#3 \$itemId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/GoldRingController.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/MothController.php
-
-		-
-			message: '#^Parameter \#3 \$itemId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/MothController.php
-
-		-
 			message: '#^Parameter \#2 \$timestamp of function date expects int\|null, int\|false given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Controller/Item/Note/CreepyMaskDayController.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/Pinata/RecoveredArchiveController.php
 
 		-
 			message: '#^Cannot call method getMaxDarkPlants\(\) on App\\Entity\\Greenhouse\|null\.$#'
@@ -2155,12 +2095,6 @@ parameters:
 			path: src/Controller/StarKindred/RestartRemix.php
 
 		-
-			message: '#^Parameter \#2 \$userId of static method App\\Functions\\UserStyleFunctions\:\:findCurrent\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Style/SaveCurrentController.php
-
-		-
 			message: '#^Parameter \#1 \$backgroundColor of method App\\Entity\\UserStyle\:\:setBackgroundColor\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -2251,12 +2185,6 @@ parameters:
 			path: src/Controller/Style/SetCurrentController.php
 
 		-
-			message: '#^Parameter \#2 \$userId of static method App\\Functions\\UserStyleFunctions\:\:findCurrent\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Style/SetCurrentController.php
-
-		-
 			message: '#^Parameter \#1 \$backgroundColor of method App\\Entity\\UserStyle\:\:setBackgroundColor\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -2342,12 +2270,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$warningColor of method App\\Entity\\UserStyle\:\:setWarningColor\(\) expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Style/ShareController.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Functions\\UserStyleFunctions\:\:findCurrent\(\) expects int, int\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Controller/Style/ShareController.php
@@ -2873,12 +2795,6 @@ parameters:
 			identifier: property.unusedType
 			count: 1
 			path: src/Entity/PetBaby.php
-
-		-
-			message: '#^Match arm comparison between App\\Enum\\PetGroupTypeEnum\:\:Sportsball and App\\Enum\\PetGroupTypeEnum\:\:Sportsball is always true\.$#'
-			identifier: match.alwaysTrue
-			count: 2
-			path: src/Entity/PetGroup.php
 
 		-
 			message: '#^Property App\\Entity\\PetGroup\:\:\$members with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types\: TKey, T$#'
@@ -3469,12 +3385,6 @@ parameters:
 			path: src/Model/HouseSim.php
 
 		-
-			message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, int\|null given\.$#'
-			identifier: argument.type
-			count: 5
-			path: src/Model/HouseSim.php
-
-		-
 			message: '#^Property App\\Model\\HouseSim\:\:\$inventoryToRemoveFromDatabase \(array\<App\\Entity\\Inventory\>\) does not accept array\<App\\Entity\\Inventory\|null\>\.$#'
 			identifier: assign.propertyType
 			count: 1
@@ -3503,12 +3413,6 @@ parameters:
 			identifier: identical.alwaysTrue
 			count: 1
 			path: src/Model/TraderOffer.php
-
-		-
-			message: '#^Method App\\Model\\WeatherData\:\:isRaining\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Model/WeatherData.php
 
 		-
 			message: '#^Parameter \#1 \$min \(0\) of function random_int expects lower number than parameter \#2 \$max \(int\<\-1, max\>\)\.$#'
@@ -3763,12 +3667,6 @@ parameters:
 			path: src/Service/BookstoreService.php
 
 		-
-			message: '#^Parameter \#2 \$itemId of method App\\Service\\InventoryService\:\:loseItem\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/BookstoreService.php
-
-		-
 			message: '#^Method App\\Service\\CacheHelper\:\:getOrCompute\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -3813,12 +3711,6 @@ parameters:
 		-
 			message: '#^Cannot access property \$quantity on App\\Model\\ItemQuantity\|null\.$#'
 			identifier: property.nonObject
-			count: 1
-			path: src/Service/CookingService.php
-
-		-
-			message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, int\|null given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Service/CookingService.php
 
@@ -4303,25 +4195,13 @@ parameters:
 			path: src/Service/HattierService.php
 
 		-
-			message: '#^Method App\\Service\\HattierService\:\:getAurasAvailable\(\) should return array\<array\{id\: int\|null, unlockedOn\: DateTimeImmutable\|null, comment\: string\|null, name\: string, aura\: App\\Entity\\Enchantment\|null\}\> but returns array\<array\{id\: int\|null, unlockedOn\: DateTimeImmutable, comment\: string, name\: string, aura\: App\\Entity\\Aura\|null\}\|array\{id\: null, unlockedOn\: null, comment\: null, name\: string, aura\: null\}\>\.$#'
+			message: '#^Method App\\Service\\HattierService\:\:getAurasAvailable\(\) should return array\<array\{id\: int\|null, unlockedOn\: DateTimeImmutable\|null, comment\: string\|null, name\: string, aura\: App\\Entity\\Enchantment\|null\}\> but returns array\<array\{id\: int, unlockedOn\: DateTimeImmutable, comment\: string, name\: string, aura\: App\\Entity\\Aura\|null\}\|array\{id\: null, unlockedOn\: null, comment\: null, name\: string, aura\: null\}\>\.$#'
 			identifier: return.type
 			count: 1
 			path: src/Service/HattierService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(mixed\)\: mixed\)\|null, Closure\(App\\Entity\\Enchantment\)\: \(array\{id\: int\|null, unlockedOn\: DateTimeImmutable, comment\: string, name\: string, aura\: App\\Entity\\Aura\|null\}\|array\{id\: null, unlockedOn\: null, comment\: null, name\: string, aura\: null\}\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/HattierService.php
-
-		-
 			message: '#^Parameter \#1 \$unlockedOn of method App\\Entity\\UserUnlockedAura\:\:setUnlockedOn\(\) expects DateTimeImmutable, DateTimeImmutable\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/HattierService.php
-
-		-
-			message: '#^Parameter \#2 \$array of function array_map expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Service/HattierService.php
@@ -4459,12 +4339,6 @@ parameters:
 			path: src/Service/HollowEarthService.php
 
 		-
-			message: '#^Method App\\Service\\HollowEarthService\:\:getAllCardIdsOnMap\(\) should return array\<int\> but returns list\<int\|null\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Service/HollowEarthService.php
-
-		-
 			message: '#^Method App\\Service\\HollowEarthService\:\:getDice\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -4504,12 +4378,6 @@ parameters:
 			message: '#^Parameter \#1 \$description of static method App\\Service\\HollowEarthService\:\:formatEventDescription\(\) expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Service/HollowEarthService.php
-
-		-
-			message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, int\|null given\.$#'
-			identifier: argument.type
-			count: 2
 			path: src/Service/HollowEarthService.php
 
 		-
@@ -4783,12 +4651,6 @@ parameters:
 			path: src/Service/MarketService.php
 
 		-
-			message: '#^Parameter \$inventoryId of class App\\Entity\\DailyMarketInventoryTransaction constructor expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/MarketService.php
-
-		-
 			message: '#^Binary operation "\." between non\-falsy\-string and mixed results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
@@ -4813,38 +4675,8 @@ parameters:
 			path: src/Service/ParkEvent/TriDChessService.php
 
 		-
-			message: '#^Offset int\|null might not exist on array\<int, App\\Entity\\Pet\>\.$#'
-			identifier: offsetAccess.notFound
-			count: 3
-			path: src/Service/ParkEvent/TriDChessService.php
-
-		-
-			message: '#^Offset int\|null might not exist on array\<int, int\>\.$#'
-			identifier: offsetAccess.notFound
-			count: 3
-			path: src/Service/ParkEvent/TriDChessService.php
-
-		-
-			message: '#^Property App\\Service\\ParkEvent\\TriDChessService\:\:\$defeatedBy \(array\<int, App\\Entity\\Pet\>\) does not accept array\<int\|string, App\\Entity\\Pet\>\.$#'
-			identifier: assign.propertyType
-			count: 2
-			path: src/Service/ParkEvent/TriDChessService.php
-
-		-
-			message: '#^Property App\\Service\\ParkEvent\\TriDChessService\:\:\$wins \(array\<int, int\>\) does not accept array\<int\|string, int\>\.$#'
-			identifier: assign.propertyType
-			count: 3
-			path: src/Service/ParkEvent/TriDChessService.php
-
-		-
 			message: '#^Binary operation "\+" between mixed and 1 results in an error\.$#'
 			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/ParkService.php
-
-		-
-			message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, int\|null given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Service/ParkService.php
 
@@ -5077,12 +4909,6 @@ parameters:
 			path: src/Service/PetActivity/PregnancyService.php
 
 		-
-			message: '#^Method App\\Service\\PetActivity\\Relationship\\LoveService\:\:getAncestorIds\(\) should return array\<int\> but returns array\<int\|null\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Service/PetActivity/Relationship/LoveService.php
-
-		-
 			message: '#^Method App\\Service\\PetActivity\\Relationship\\RelationshipChangeService\:\:determineWhoChangesTheirMind\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -5263,20 +5089,8 @@ parameters:
 			path: src/Service/PetExperienceService.php
 
 		-
-			message: '#^Binary operation "\." between ''Ben forgot to…'' and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/PetGroupService.php
-
-		-
 			message: '#^Binary operation "\." between ''Unhandled group…'' and mixed results in an error\.$#'
 			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/PetGroupService.php
-
-		-
-			message: '#^Match arm comparison between App\\Enum\\PetGroupTypeEnum\:\:Sportsball and App\\Enum\\PetGroupTypeEnum\:\:Sportsball is always true\.$#'
-			identifier: match.alwaysTrue
 			count: 1
 			path: src/Service/PetGroupService.php
 
@@ -5329,22 +5143,10 @@ parameters:
 			path: src/Service/PetSocialActivityService.php
 
 		-
-			message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/PetSocialActivityService.php
-
-		-
 			message: '#^Parameter \#2 \$callback of function array_filter expects \(callable\(mixed\)\: bool\)\|null, Closure\(App\\Entity\\PetRelationship\)\: bool given\.$#'
 			identifier: argument.type
 			count: 2
 			path: src/Service/PetSocialActivityService.php
-
-		-
-			message: '#^Method App\\Service\\RecyclingService\:\:recycleInventory\(\) should return array\<int\> but returns array\<int\|null\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Service/RecyclingService.php
 
 		-
 			message: '#^Cannot access offset ''menu'' on array\|ArrayObject\|bool\|float\|int\|string\|null\.$#'
@@ -5372,12 +5174,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(mixed\)\: mixed\)\|null, Closure\(App\\Entity\\UnreadPetActivityLog\)\: App\\Service\\FlashMessage given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/ResponseService.php
-
-		-
-			message: '#^Parameter \#1 \$id of class App\\Service\\FlashMessage constructor expects int, int\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Service/ResponseService.php
@@ -5557,12 +5353,6 @@ parameters:
 			path: src/Service/StoryService.php
 
 		-
-			message: '#^Parameter \#2 \$itemId of method App\\Service\\InventoryService\:\:loseItem\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/StoryService.php
-
-		-
 			message: '#^Parameter \#2 \$itemName of static method App\\Functions\\ItemRepository\:\:getIdByName\(\) expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -5696,24 +5486,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$value of static method App\\Enum\\MonsterOfTheWeekEnum\:\:tryFrom\(\) expects int\|string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/TraderService.php
-
-		-
-			message: '#^Parameter \#2 \$itemId of method App\\Service\\InventoryService\:\:loseItem\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/TraderService.php
-
-		-
-			message: '#^Parameter \#2 \$userId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/TraderService.php
-
-		-
-			message: '#^Parameter \#3 \$itemId of static method App\\Service\\InventoryService\:\:countInventory\(\) expects int, int\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Service/TraderService.php

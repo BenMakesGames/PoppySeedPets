@@ -11,30 +11,28 @@ declare(strict_types=1);
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Model;
+namespace DoctrineMigrations;
 
-use App\Enum\HolidayEnum;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
 
-final class WeatherData
+final class Version20260418185900 extends AbstractMigration
 {
-    /**
-     * @param HolidayEnum[] $holidays
-     */
-    public function __construct(
-        public readonly \DateTimeImmutable $date,
-        public readonly array $holidays,
-        public readonly WeatherSky $sky
-    )
+    public function getDescription(): string
     {
+        return '';
     }
 
-    public function isHoliday(HolidayEnum $holiday): bool
+    public function up(Schema $schema): void
     {
-        return in_array($holiday, $this->holidays);
+        // Gardening Club:
+        $this->addSql(<<<EOSQL
+        INSERT INTO `pet_activity_log_tag` (`id`, `title`, `color`, `emoji`) VALUES (101, 'Gardening Club', '38C789', '🧤')
+        ON DUPLICATE KEY UPDATE `id` = `id`;
+        EOSQL);
     }
 
-    public function isRaining(): bool
+    public function down(Schema $schema): void
     {
-        return $this->sky === WeatherSky::Rainy || $this->sky === WeatherSky::Stormy;
     }
 }

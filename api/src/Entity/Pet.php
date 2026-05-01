@@ -346,9 +346,9 @@ class Pet
         $this->affectionExpressions = implode('', $affectionExpressions);
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getOwner(): User
@@ -1355,6 +1355,11 @@ class Pet
         return $this;
     }
 
+    /**
+     * Canonical "does this pet have merit X?" check. Pass a MeritEnum constant,
+     * e.g. `$pet->hasMerit(MeritEnum::LUCKY)`. See docs/features/merits.md for
+     * the full catalogue and the conventions around adding merit behaviour.
+     */
     public function hasMerit(string $merit): bool
     {
         foreach($this->merits as $m)

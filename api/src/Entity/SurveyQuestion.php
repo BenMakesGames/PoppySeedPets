@@ -38,9 +38,9 @@ class SurveyQuestion
     #[ORM\JoinColumn(nullable: false)]
     private Survey $survey;
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getTitle(): ?string

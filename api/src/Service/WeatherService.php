@@ -30,15 +30,13 @@ class WeatherService
 
     public static function getWeather(\DateTimeImmutable $dt): WeatherData
     {
-        $weather = new WeatherData();
-
         $isLeapDay = CalendarFunctions::isLeapDay($dt);
 
-        $weather->date = $dt;
-        $weather->holidays = CalendarFunctions::getEventData($dt);
-        $weather->sky = $isLeapDay ? WeatherSky::Snowy : WeatherService::getSky($dt);
-
-        return $weather;
+        return new WeatherData(
+            $dt,
+            CalendarFunctions::getEventData($dt),
+            $isLeapDay ? WeatherSky::Snowy : WeatherService::getSky($dt)
+        );
     }
 
     public static function getSky(\DateTimeImmutable $dt): WeatherSky

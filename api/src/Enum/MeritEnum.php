@@ -13,6 +13,12 @@ declare(strict_types=1);
 
 namespace App\Enum;
 
+/**
+ * Merits are named traits attached to a Pet (stat bonuses, unlocks, appearance
+ * tweaks, gated activities, etc.). For a full catalogue of every merit — what
+ * it does, how it's acquired, and the conventions for wiring one in — see
+ * docs/features/merits.md.
+ */
 final class MeritEnum
 {
     /** @use FakeEnum<string> */
