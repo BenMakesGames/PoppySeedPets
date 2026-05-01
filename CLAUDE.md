@@ -20,6 +20,11 @@ Poppy Seed Pets is a browser-based pet adoption and activity simulation game (po
 * [docs/architecture/Departures from Symfony Standard.md](docs/architecture/Departures from Symfony Standard.md)
 * [docs/architecture/Project Patterns.md](docs/architecture/Project Patterns.md)
 
+## Feature References
+
+* [docs/features/merits.md](docs/features/merits.md) — every pet merit (trait), what it does, how it's acquired, and the conventions for each
+* [docs/features/satyr-dice.md](docs/features/satyr-dice.md) — satyr dice mechanic
+
 ## Cron Jobs (api/tasks/AllTasks.php)
 
 - **Every minute**: `app:increase-time` (pet activity time), `app:run-park-events`

@@ -1355,6 +1355,11 @@ class Pet
         return $this;
     }
 
+    /**
+     * Canonical "does this pet have merit X?" check. Pass a MeritEnum constant,
+     * e.g. `$pet->hasMerit(MeritEnum::LUCKY)`. See docs/features/merits.md for
+     * the full catalogue and the conventions around adding merit behaviour.
+     */
     public function hasMerit(string $merit): bool
     {
         foreach($this->merits as $m)
