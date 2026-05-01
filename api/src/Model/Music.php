@@ -562,5 +562,8 @@ class Music
 
         // Low Rider, by War
         'Low. Ri. Der don\'t use no gas, now... Low. Ri. Der don\'t drive too fast...',
+
+        // Still Alive, by Solar Fields
+        'I\'ve learned to looose, I\'ve learned to wiiin, I turn my faaace against the wiiind...',
     ];
 }

@@ -35,6 +35,7 @@
     <table [class.disabled]="!resultsSubscription.closed">
       <thead>
         <tr>
+          <th></th>
           <th>Name &amp; Type</th>
           <th>Created</th>
           <th>Last Met</th>
@@ -44,6 +45,7 @@
         @for(group of results.results; track group.id)
         {
           <tr [routerLink]="[ '/poppyopedia/group/' + group.id ]" tabindex="0">
+            <td class="type-icon-cell"><img [src]="group.type|petGroupIcon" alt="" aria-hidden="true"></td>
             <td>
               <span class="link-text">{{ group.name }}</span>
               <small>{{ group.type|petGroupLabel }}</small>

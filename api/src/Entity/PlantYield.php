@@ -26,7 +26,7 @@ class PlantYield
     /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: 'App\Entity\Plant', inversedBy: 'plantYields')]
+    #[ORM\ManyToOne(targetEntity: Plant::class, inversedBy: 'plantYields')]
     #[ORM\JoinColumn(nullable: false)]
     private Plant $plant;
 
@@ -40,14 +40,16 @@ class PlantYield
     #[ORM\OneToMany(targetEntity: PlantYieldItem::class, mappedBy: 'plantYield', orphanRemoval: true)]
     private Collection $items;
 
-    public function __construct()
+    public function __construct(int $min, int $max)
     {
         $this->items = new ArrayCollection();
+        $this->min = $min;
+        $this->max = $max;
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getPlant(): ?Plant
@@ -62,7 +64,7 @@ class PlantYield
         return $this;
     }
 
-    public function getMin(): ?int
+    public function getMin(): int
     {
         return $this->min;
     }
@@ -74,7 +76,7 @@ class PlantYield
         return $this;
     }
 
-    public function getMax(): ?int
+    public function getMax(): int
     {
         return $this->max;
     }

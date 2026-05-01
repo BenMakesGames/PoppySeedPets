@@ -33,10 +33,9 @@ The selection process follows this priority order:
 8. **Letters & Generic Adventures** - Random chance (1 in 50)
 9. **Tool Adventures** - If pet has a tool equipped
 10. **Holiday Events** - If it's a special day (Easter, St. Patrick's, Chinese New Year, etc.)
-11. **Guild Activities** - If pet is in a guild (1 in 35 chance)
 
 **Default Priority**
-12. **Normal Activities** - Call `pickActivity()` to choose from all available `IPetActivity` implementations
+11. **Normal Activities** - Call `pickActivity()` to choose from all available `IPetActivity` implementations
 
 ### 4. The `IPetActivity` Interface
 

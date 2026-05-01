@@ -47,7 +47,6 @@ class PetFilterService implements FilterServiceInterface
                 'species' => $this->filterSpecies(...),
                 'owner' => $this->filterOwner(...),
                 'location' => $this->filterLocation(...),
-                'guild' => $this->filterGuild(...),
                 'merit' => $this->filterMerit(...),
                 'toolOrHat' => $this->filterToolOrHat(...),
                 'isPregnant' => $this->filterIsPregnant(...),
@@ -119,17 +118,6 @@ class PetFilterService implements FilterServiceInterface
                 ->setParameter('location', $value)
             ;
         }
-    }
-
-    public function filterGuild(QueryBuilder $qb, mixed $value): void
-    {
-        if(!in_array('guildMembership', $qb->getAllAliases()))
-            $qb->join('p.guildMembership', 'guildMembership');
-
-        $qb
-            ->andWhere('guildMembership.guild=:guild')
-            ->setParameter('guild', (int)$value)
-        ;
     }
 
     public function filterMerit(QueryBuilder $qb, mixed $value): void

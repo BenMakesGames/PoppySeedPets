@@ -62,6 +62,7 @@ class HattierService
      */
     public function getAurasAvailable(User $user): array
     {
+        /** @var Enchantment[] $allAuras */
         $allAuras = $this->em->getRepository(Enchantment::class)->createQueryBuilder('e')
             ->andWhere('e.aura IS NOT NULL')
             ->getQuery()

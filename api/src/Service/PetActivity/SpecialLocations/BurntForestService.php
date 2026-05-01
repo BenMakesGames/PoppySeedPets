@@ -17,7 +17,6 @@ use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Entity\User;
 use App\Enum\ActivityPersonalityEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogTagEnum;
 use App\Enum\PetActivityStatEnum;
@@ -302,12 +301,6 @@ class BurntForestService implements IPetActivity
         $pet = $petWithSkills->getPet();
         $umbraRoll = $this->rng->rngSkillRoll($petWithSkills->getArcana()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getPerception()->getTotal());
         $brawlRoll = $this->rng->rngSkillRoll($petWithSkills->getBrawl()->getTotal() + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getDexterity()->getTotal());
-        $exp = 1;
-
-        if($pet->isInGuild(GuildEnum::LightAndShadow))
-            $brawlRoll = 0;
-        else if($pet->isInGuild(GuildEnum::TheUniverseForgets))
-            $umbraRoll = 0;
 
         $loot = $this->rng->rngNextFromArray([
             'Crooked Stick',
@@ -319,25 +312,13 @@ class BurntForestService implements IPetActivity
         {
             if($umbraRoll >= 15)
             {
-                if($pet->isInGuild(GuildEnum::LightAndShadow))
-                {
-                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a fire spirit burning a still-living tree! ' . $pet->getName() . ' realized that the spirit was just hungry, and found it a piece of Charcoal to eat, instead. Grateful, the tree offered them ' . $loot . '.')
-                        ->setIcon('guilds/light-and-shadow')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Guild' ]))
-                    ;
-                    $pet->getGuildMembership()->increaseReputation();
-                    $exp = 2;
-                }
-                else
-                {
-                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a fire spirit burning a still-living tree! ' . $pet->getName() . ' found a piece of Charcoal, and convinced the spirit to eat that, instead. Grateful, the tree offered them ' . $loot . '.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
-                    ;
-                }
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a fire spirit burning a still-living tree! ' . $pet->getName() . ' found a piece of Charcoal, and convinced the spirit to eat that, instead. Grateful, the tree offered them ' . $loot . '.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
+                ;
 
                 $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' was given this by a tree in the Burnt Forest, as thanks for saving it!', $activityLog);
                 $pet->increaseLove($this->rng->rngNextInt(2, 4));
-                $this->petExperienceService->gainExp($pet, $exp, [ PetSkillEnum::Arcana ], $activityLog);
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Arcana ], $activityLog);
 
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::UMBRA, true);
 
@@ -377,25 +358,13 @@ class BurntForestService implements IPetActivity
         {
             if($brawlRoll >= 15)
             {
-                if($pet->isInGuild(GuildEnum::TheUniverseForgets))
-                {
-                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a fire spirit burning a still-living tree! ' . $pet->getName() . ' immediately put the fire out so that it could no longer harm anyone; grateful, the tree offered them ' . $loot . '.')
-                        ->setIcon('guilds/the-universe-forgets')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Fighting', 'Guild' ]))
-                    ;
-                    $pet->getGuildMembership()->increaseReputation();
-                    $exp = 2;
-                }
-                else
-                {
-                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a fire spirit burning a still-living tree! ' . $pet->getName() . ' was able to put the fire out; grateful, the tree offered them ' . $loot . '.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Fighting' ]))
-                    ;
-                }
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a fire spirit burning a still-living tree! ' . $pet->getName() . ' was able to put the fire out; grateful, the tree offered them ' . $loot . '.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Fighting' ]))
+                ;
 
                 $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' was given this by a tree in the Burnt Forest, as thanks for saving it!', $activityLog);
                 $pet->increaseLove($this->rng->rngNextInt(2, 4));
-                $this->petExperienceService->gainExp($pet, $exp, [ PetSkillEnum::Brawl ], $activityLog);
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
 
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::UMBRA, true);
             }
@@ -421,22 +390,10 @@ class BurntForestService implements IPetActivity
 
         if($roll >= 13)
         {
-            if($pet->isInGuild(GuildEnum::Tapestries))
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a tear in the fabric of reality! They were able to stitch it back together, and got some Quintessence!')
-                    ->setIcon('guild/tapestries')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Guild' ]))
-                ;
-                $this->inventoryService->petCollectsItem('Quintessence', $pet, $pet->getName() . ' got this in the Burnt Forest while repairing a tear in the fabric of reality.', $activityLog);
-                $pet->getGuildMembership()->increaseReputation();
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a tear in the fabric of reality! It was a little intimidating, but they managed to harvest some Quintessence!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
-                ;
-                $this->inventoryService->petCollectsItem('Quintessence', $pet, $pet->getName() . ' got this in the Burnt Forest from tear in the fabric of reality.', $activityLog);
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a tear in the fabric of reality! It was a little intimidating, but they managed to harvest some Quintessence!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
+            ;
+            $this->inventoryService->petCollectsItem('Quintessence', $pet, $pet->getName() . ' got this in the Burnt Forest from tear in the fabric of reality.', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Arcana ], $activityLog);
 
@@ -444,18 +401,9 @@ class BurntForestService implements IPetActivity
         }
         else
         {
-            if($pet->isInGuild(GuildEnum::Tapestries))
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a tear in the fabric of reality! They tried to repair it, but were worried about getting unraveled, themselves!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Guild' ]))
-                ;
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a tear in the fabric of reality! They thought about harvesting some Quintessence, but were worried about getting unraveled, themselves!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
-                ;
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% visited the Burnt Forest, and found a tear in the fabric of reality! They thought about harvesting some Quintessence, but were worried about getting unraveled, themselves!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
+            ;
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Arcana ], $activityLog);
 

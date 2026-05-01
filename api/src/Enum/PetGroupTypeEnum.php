@@ -19,4 +19,5 @@ enum PetGroupTypeEnum: int
     case Astronomy = 2;
     case Gaming = 3;
     case Sportsball = 4;
+    case Gardening = 5;
 }

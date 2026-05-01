@@ -31,7 +31,7 @@ class Item
     /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
-    #[Groups(["myPet", "myInventory", "userPublicProfile", "petPublicProfile", "itemEncyclopedia", "museum", "marketItem", "knownRecipe", "mySeeds", "fireplaceMantle", "fireplaceFuel", "myBeehive", "itemTypeahead", "guildEncyclopedia", "greenhouseFertilizer", "dragonTreasure", "petActivityLogAndPublicPet", "myBids", "myHollowEarthTiles", "myLetters", "zoologistCatalog", "petActivityLogAndPublicPet"])]
+    #[Groups(["myPet", "myInventory", "userPublicProfile", "petPublicProfile", "itemEncyclopedia", "museum", "marketItem", "knownRecipe", "mySeeds", "fireplaceMantle", "fireplaceFuel", "myBeehive", "itemTypeahead", "greenhouseFertilizer", "dragonTreasure", "petActivityLogAndPublicPet", "myBids", "myHollowEarthTiles", "myLetters", "zoologistCatalog", "petActivityLogAndPublicPet"])]
     #[ORM\Column(type: 'string', length: 45, unique: true)]
     private string $name = '';
 
@@ -39,7 +39,7 @@ class Item
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[Groups(["myPet", "myInventory", "userPublicProfile", "petPublicProfile", "itemEncyclopedia", "museum", "marketItem", "knownRecipe", "mySeeds", "hollowEarth", "fireplaceMantle", "fireplaceFuel", "myBeehive", "petGroupDetails", "itemTypeahead", "guildEncyclopedia", "greenhouseFertilizer", "dragonTreasure", "petActivityLogAndPublicPet", "myBids", "myHollowEarthTiles", "helperPet", "petActivityLogAndPublicPet"])]
+    #[Groups(["myPet", "myInventory", "userPublicProfile", "petPublicProfile", "itemEncyclopedia", "museum", "marketItem", "knownRecipe", "mySeeds", "hollowEarth", "fireplaceMantle", "fireplaceFuel", "myBeehive", "petGroupDetails", "itemTypeahead", "greenhouseFertilizer", "dragonTreasure", "petActivityLogAndPublicPet", "myBids", "myHollowEarthTiles", "helperPet", "petActivityLogAndPublicPet"])]
     #[ORM\Column(type: 'string', length: 255)]
     private string $image = '';
 
@@ -52,7 +52,7 @@ class Item
     private ?ItemTool $tool = null;
 
     #[Groups(["myInventory", "itemEncyclopedia"])]
-    #[ORM\OneToOne(targetEntity: 'App\Entity\ItemFood', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: ItemFood::class, cascade: ['persist', 'remove'])]
     private ?ItemFood $food = null;
 
     #[ORM\Column(type: 'integer')]
@@ -85,7 +85,7 @@ class Item
     private int $recycleValue = 0;
 
     #[Groups(["myInventory", "marketItem", "itemEncyclopedia"])]
-    #[ORM\ManyToOne(targetEntity: 'App\Entity\Enchantment')]
+    #[ORM\ManyToOne(targetEntity: Enchantment::class)]
     private ?Enchantment $enchants = null;
 
     #[ORM\OneToOne(targetEntity: ItemGrammar::class, mappedBy: 'item', cascade: ['persist', 'remove'], fetch: 'EAGER')]
@@ -125,9 +125,9 @@ class Item
         $this->itemGroups = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getName(): string

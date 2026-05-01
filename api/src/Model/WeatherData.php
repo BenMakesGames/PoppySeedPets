@@ -17,19 +17,23 @@ use App\Enum\HolidayEnum;
 
 final class WeatherData
 {
-    public \DateTimeImmutable $date;
-
-    /** @var HolidayEnum[] */
-    public array $holidays;
-
-    public WeatherSky $sky;
+    /**
+     * @param HolidayEnum[] $holidays
+     */
+    public function __construct(
+        public readonly \DateTimeImmutable $date,
+        public readonly array $holidays,
+        public readonly WeatherSky $sky
+    )
+    {
+    }
 
     public function isHoliday(HolidayEnum $holiday): bool
     {
         return in_array($holiday, $this->holidays);
     }
 
-    public function isRaining()
+    public function isRaining(): bool
     {
         return $this->sky === WeatherSky::Rainy || $this->sky === WeatherSky::Stormy;
     }

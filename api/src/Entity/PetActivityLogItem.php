@@ -40,9 +40,9 @@ class PetActivityLogItem
         $this->item = $item;
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getLog(): PetActivityLog

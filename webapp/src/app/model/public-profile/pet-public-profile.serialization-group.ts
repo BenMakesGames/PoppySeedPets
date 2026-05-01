@@ -24,6 +24,5 @@ export interface PetPublicProfileSerializationGroup
   costume: string;
   maximumFriends: number;
   groups: { id: number, name: string, type: PetGroupTypeEnum, createdOn: string, memberCount: number }[];
-  guildMembership: { guild: { name: string, id: number }, rank: string, joinedOn: string }|null;
   badges: { badge: string, dateAcquired: string }[];
 }

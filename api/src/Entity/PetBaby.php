@@ -36,7 +36,7 @@ class PetBaby
     #[ORM\Column(type: 'integer')]
     private int $affection = 0;
 
-    #[ORM\ManyToOne(targetEntity: 'App\Entity\PetSpecies')]
+    #[ORM\ManyToOne(targetEntity: PetSpecies::class)]
     #[ORM\JoinColumn(nullable: false)]
     private PetSpecies $species;
 
@@ -62,9 +62,9 @@ class PetBaby
         $this->colorB = $colorB;
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getGrowth(): int

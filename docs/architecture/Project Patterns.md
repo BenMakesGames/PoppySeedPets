@@ -50,3 +50,25 @@ Core game loop documented in detail at `api/src/Service/PetActivity/CLAUDE.md`. 
 
 ### Service Layer Details
 See `api/src/Service/CLAUDE.md` for ResponseService patterns, activity log creation, and service conventions.
+
+### PhpStan baseline hygiene
+
+PhpStan runs with a baseline (`api/phpstan-baseline.neon`). When you delete a file or refactor code so that previously-ignored errors disappear, the baseline must be updated in the same commit, or phpstan will fail:
+
+- Deleting a file: every `path: src/...` entry for the deleted file must be removed. Unused baseline entries are fatal.
+- Reducing error occurrences: if the `count:` on a remaining entry is now too high (e.g., you deleted a method containing one of three `(int)$mixed` casts), decrement `count:` accordingly. PhpStan reports an "expected N times, occurred M times" error.
+
+### Serialization group strings live as literals
+
+Most `#[Groups([...])]` annotations on entity fields use **string literals** (`'petGuild'`, `'guildMember'`, `'myPet'`), not enum references. Removing an entry from `SerializationGroupEnum` does NOT remove literal-string references scattered across `Pet`, `Item`, `PetSpecies`, etc. After renaming or deleting a group:
+
+```
+# catch string-literal references (both single- and double-quoted)
+grep -rn "'petGuild'\|\"petGuild\"" api/src
+```
+
+Stale group strings don't break serialization (they just never match), but they're dead code and actively misleading.
+
+### Pet entity: one-to-one inverse side
+
+`Pet` is the inverse side of several 1:1 relations (e.g., `mappedBy: 'pet'`). The FK column therefore lives on the *other* table, not on `pet`. When writing a "drop feature X" migration, verify this by grepping historical migrations for the column name before adding ALTER TABLE pet DROP COLUMN statements that will fail.

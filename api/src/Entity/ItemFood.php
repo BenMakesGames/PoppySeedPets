@@ -116,9 +116,9 @@ class ItemFood
     #[ORM\ManyToOne(targetEntity: ItemGroup::class)]
     private ?ItemGroup $bonusItemGroup = null;
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getFood(): int
@@ -371,7 +371,7 @@ class ItemFood
         $modifiers = [];
 
         if($this->getGrantsSelfReflection())
-            $modifiers[] = 'a pet that eats this will reconcile with another pet or change Guild at your advice!';
+            $modifiers[] = 'a pet that eats this will reconcile with another pet at your advice!';
 
         if($this->food > 9)
             $modifiers[] = 'a huge meal';

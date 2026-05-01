@@ -17,7 +17,6 @@ use App\Entity\Dragon;
 use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Enum\ActivityPersonalityEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityLogTagEnum;
@@ -30,7 +29,6 @@ use App\Functions\ActivityHelpers;
 use App\Functions\ArrayFunctions;
 use App\Functions\CalendarFunctions;
 use App\Functions\GrammarFunctions;
-use App\Functions\ItemRepository;
 use App\Functions\NumberFunctions;
 use App\Functions\PetActivityLogFactory;
 use App\Functions\PetActivityLogTagHelpers;
@@ -57,7 +55,6 @@ class UmbraService implements IPetActivity
         private readonly InventoryService $inventoryService,
         private readonly PetExperienceService $petExperienceService,
         private readonly TransactionService $transactionService,
-        private readonly GuildService $guildService,
         private readonly StrangeUmbralEncounters $strangeUmbralEncounters,
         private readonly FieldGuideService $fieldGuideService,
         private readonly IRandom $rng,
@@ -259,10 +256,6 @@ class UmbraService implements IPetActivity
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::UMBRA, true);
-        }
-        else if($this->rng->rngNextInt(1, 3) === 1 && $pet->getGuildMembership() === null && !$pet->hasMerit(MeritEnum::AFFECTIONLESS))
-        {
-            $activityLog = $this->guildService->joinGuildUmbra($petWithSkills);
         }
         else {
             // visit a floor of the library and read some books
@@ -554,45 +547,6 @@ class UmbraService implements IPetActivity
         else
             $prize = $this->rng->rngNextFromArray($prizes);
 
-        if($pet->isInGuild(GuildEnum::LightAndShadow))
-        {
-            $skill = 20 + $petWithSkills->getArcana()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getStamina()->getTotal();
-
-            $roll = $this->rng->rngNextInt(1, $skill);
-            $success = $roll >= 12;
-
-            if($success)
-            {
-                $pet->getGuildMembership()->increaseReputation();
-
-                $prizeItem = ItemRepository::findOneByName($this->em, $prize);
-
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While exploring the Umbra, ' . '%pet:' . $pet->getId() . '.name% encountered a super gross-looking mummy dragging its long arms through the Umbral sand. It screeched and swung wildly; but ' . $pet->getName() . ' endured its attacks long enough to calm it down! It eventually wandered away, dropping ' . $prizeItem->getNameWithArticle() . ' as it went...')
-                    ->setIcon('guilds/light-and-shadow')
-                    ->addInterestingness(PetActivityLogInterestingness::HoHum + 13)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Guild' ]))
-                ;
-
-                $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' defeated a gross-looking mummy with crazy-long arms, and took this.', $activityLog);
-
-                $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Arcana ], $activityLog);
-                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::UMBRA, true);
-
-                return $activityLog;
-            }
-            else {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While exploring the Umbra, ' . '%pet:' . $pet->getId() . '.name% encountered a super gross-looking mummy dragging its long arms through the Umbral sand. It screeched and swung wildly. ' . $pet->getName() . ' tried to endure its attacks long enough to calm it down, but was eventually forced to retreat!')
-                    ->setIcon('guilds/light-and-shadow')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Guild' ]))
-                ;
-
-                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Arcana ], $activityLog);
-                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::UMBRA, false);
-
-                return $activityLog;
-            }
-        }
-
         $skill = 20 + max($petWithSkills->getBrawl()->getTotal(), $petWithSkills->getArcana()->getTotal()) + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getDexterity()->getTotal();
 
         $roll = $this->rng->rngNextInt(1, $skill);
@@ -604,21 +558,10 @@ class UmbraService implements IPetActivity
 
         if($success)
         {
-            if($pet->isInGuild(GuildEnum::TheUniverseForgets))
-            {
-                $pet->getGuildMembership()->increaseReputation();
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While exploring the Umbra, ' . '%pet:' . $pet->getId() . '.name% encountered a super gross-looking mummy dragging its long arms through the Umbral sand. It screeched and swung wildly; but ' . $pet->getName() . ' ' . $defeated . ', and claimed its ' . $prize . '!')
-                    ->setIcon('guilds/the-universe-forgets')
-                    ->addInterestingness(PetActivityLogInterestingness::HoHum + 13)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Fighting' ]))
-                ;
-            }
-            else {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While exploring the Umbra, ' . '%pet:' . $pet->getId() . '.name% encountered a super gross-looking mummy dragging its long arms through the Umbral sand. It screeched and swung wildly; but ' . $pet->getName() . ' ' . $defeated . ', and claimed its ' . $prize . '!')
-                    ->addInterestingness(PetActivityLogInterestingness::HoHum + 13)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Fighting' ]))
-                ;
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While exploring the Umbra, ' . '%pet:' . $pet->getId() . '.name% encountered a super gross-looking mummy dragging its long arms through the Umbral sand. It screeched and swung wildly; but ' . $pet->getName() . ' ' . $defeated . ', and claimed its ' . $prize . '!')
+                ->addInterestingness(PetActivityLogInterestingness::HoHum + 13)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra', 'Fighting' ]))
+            ;
 
             $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' defeated a gross-looking mummy with crazy-long arms, and took this.', $activityLog);
 

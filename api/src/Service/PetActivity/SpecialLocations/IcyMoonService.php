@@ -17,7 +17,6 @@ use App\Entity\Pet;
 use App\Entity\PetActivityLog;
 use App\Entity\Spice;
 use App\Enum\ActivityPersonalityEnum;
-use App\Enum\GuildEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityLogTagEnum;
@@ -278,20 +277,9 @@ class IcyMoonService implements IPetActivity
 
             $pieces = 1;
 
-            if($pet->isInGuild(GuildEnum::HighImpact))
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Mini Crystalline Entity while exploring an Icy Moon! As a member of High Impact, they immediately stepped up to the challenge and fought the creature, breaking off a piece of it before it flew away!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Location_Icy_Moon, 'Fighting', 'Guild' ]))
-                ;
-                $roll += 5; // greater chance to get more stuff
-                $pet->getGuildMembership()->increaseReputation();
-            }
-            else
-            {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Mini Crystalline Entity while exploring an Icy Moon! They fought the creature, breaking off a piece of it before it flew away!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Location_Icy_Moon, 'Fighting' ]))
-                ;
-            }
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Mini Crystalline Entity while exploring an Icy Moon! They fought the creature, breaking off a piece of it before it flew away!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Location_Icy_Moon, 'Fighting' ]))
+            ;
 
             $pet->increaseEsteem($this->rng->rngNextInt(2, 4));
 
@@ -305,26 +293,6 @@ class IcyMoonService implements IPetActivity
                 $this->inventoryService->petCollectsItem($this->rng->rngNextFromArray([ 'Glass', 'Gypsum', 'Fiberglass' ]), $pet, $pet->getName() . ' got this by defeating a Mini Crystalline Entity on an Icy Moon!', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 1 + $pieces, [ PetSkillEnum::Brawl ], $activityLog);
-        }
-        else if($pet->isInGuild(GuildEnum::HighImpact))
-        {
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
-
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was attacked by a Mini Crystalline Entity while exploring an Icy Moon! As a member of High Impact, they immediately stepped up to the challenge, but the creature was wildly throwing sparks and electricity, and ' . $pet->getName() . ' was forced to retreat...')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Location_Icy_Moon, 'Fighting', 'Guild' ]))
-            ;
-
-            if($pet->hasMerit(MeritEnum::SHOCK_RESISTANT))
-            {
-                $activityLog
-                    ->appendEntry('(Their shock-resistance helped, but dang, that thing is crazy!)')
-                    ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
-                ;
-            }
-            else
-                $pet->increaseSafety(-$this->rng->rngNextInt(2, 4));
-
-            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
         }
         else
         {

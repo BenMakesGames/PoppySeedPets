@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Pet;
+use App\Entity\PetActivityLog;
 use App\Entity\PetGroup;
 use App\Entity\PetRelationship;
 use App\Entity\PetSkills;
@@ -28,6 +29,7 @@ use App\Model\PetChanges;
 use App\Service\PetActivity\Group\AstronomyClubService;
 use App\Service\PetActivity\Group\BandService;
 use App\Service\PetActivity\Group\GamingGroupService;
+use App\Service\PetActivity\Group\GardeningClubService;
 use App\Service\PetActivity\Group\SportsBallService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
@@ -41,6 +43,7 @@ class PetGroupService
         PetGroupTypeEnum::Astronomy->value => 'astronomy lab',
         PetGroupTypeEnum::Gaming->value => 'gaming group',
         PetGroupTypeEnum::Sportsball->value => 'sportsball team',
+        PetGroupTypeEnum::Gardening->value => 'gardening club',
     ];
 
     public function __construct(
@@ -50,7 +53,8 @@ class PetGroupService
         private readonly AstronomyClubService $astronomyClubService,
         private readonly IRandom $rng,
         private readonly GamingGroupService $gamingGroupService,
-        private readonly SportsBallService $sportsBallService
+        private readonly SportsBallService $sportsBallService,
+        private readonly GardeningClubService $gardeningClubService
     )
     {
     }
@@ -81,6 +85,10 @@ class PetGroupService
 
             case PetGroupTypeEnum::Sportsball:
                 $this->sportsBallService->meet($group);
+                break;
+
+            case PetGroupTypeEnum::Gardening:
+                $this->gardeningClubService->meet($group);
                 break;
 
             default:
@@ -419,9 +427,15 @@ class PetGroupService
             [
                 'type' => PetGroupTypeEnum::Sportsball,
                 'description' => self::GroupTypeNames[PetGroupTypeEnum::Sportsball->value],
-                'icon' => 'groups/gaming',
+                'icon' => 'groups/sportsball',
                 'preference' => 2 + PetGroupService::weightSkill($pet->getSkills()->getBrawl()),
-            ]
+            ],
+            [
+                'type' => PetGroupTypeEnum::Gardening,
+                'description' => self::GroupTypeNames[PetGroupTypeEnum::Gardening->value],
+                'icon' => 'groups/gardening',
+                'preference' => 2 + PetGroupService::weightSkill($pet->getSkills()->getNature()),
+            ],
         ];
 
         $groupType = ArrayFunctions::pick_one_weighted($groupTypePreferences, fn($t) => $t['preference']);
@@ -450,6 +464,12 @@ class PetGroupService
             case PetGroupTypeEnum::Sportsball:
                 usort($availableFriends, function (ComputedPetSkills $a, ComputedPetSkills $b) {
                     return $b->getBrawl()->getTotal() + $b->getStealth()->getTotal() / 2 <=> $a->getBrawl()->getTotal() + $b->getStealth()->getTotal() / 2;
+                });
+                break;
+
+            case PetGroupTypeEnum::Gardening:
+                usort($availableFriends, function (ComputedPetSkills $a, ComputedPetSkills $b) {
+                    return $b->getNature()->getTotal() <=> $a->getNature()->getTotal();
                 });
                 break;
 
@@ -489,7 +509,7 @@ class PetGroupService
             PetGroupTypeEnum::Astronomy => $this->astronomyClubService->generateGroupName(),
             PetGroupTypeEnum::Gaming => $this->gamingGroupService->generateGroupName(),
             PetGroupTypeEnum::Sportsball => $this->sportsBallService->generateGroupName(),
-            default => throw new \Exception('Ben forgot to program group names for groups of type "' . $type->name . '"! (Bad Ben!)'),
+            PetGroupTypeEnum::Gardening => $this->gardeningClubService->generateGroupName(),
         };
     }
 }

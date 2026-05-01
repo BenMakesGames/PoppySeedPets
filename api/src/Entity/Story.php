@@ -27,13 +27,13 @@ class Story
     #[ORM\Column(type: 'string', length: 40)]
     private string $title;
 
-    #[ORM\OneToOne(targetEntity: 'App\Entity\StorySection', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: StorySection::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private StorySection $firstSection;
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getTitle(): string

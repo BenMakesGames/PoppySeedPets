@@ -507,7 +507,7 @@ class TreasureMapService
 
             $inventoryItem = $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' received this in a trade with the Fluffmonger.', $activityLog);
 
-            if(array_key_exists('locked', $trade) && $trade['locked'])
+            if($inventoryItem && array_key_exists('locked', $trade) && $trade['locked'])
                 $inventoryItem->setLockedToOwner(true);
 
             PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::MetTheFluffmonger, $activityLog);
@@ -556,7 +556,7 @@ class TreasureMapService
     {
         $changes = new PetChanges($pet);
 
-        if($pet->getTool()->getItem()->getName() !== 'Skewered Marshmallow')
+        if($pet->getTool()?->getItem()->getName() !== 'Skewered Marshmallow')
             throw new \Exception('Cannot toast a Skewered Marshmallow without a Skewered Marshmallow!');
 
         $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went to the foot of the island\'s volcano, and toasted their Skewered Marshmallow - it\'s now a Toasted Marshmallow!')

@@ -207,7 +207,7 @@ class HouseSim implements IHouseSim
     {
         return array_filter(
             $this->inventory,
-            fn($i) => $i->getId() === null
+            fn($i) => !$i->hasId()
         );
     }
 }

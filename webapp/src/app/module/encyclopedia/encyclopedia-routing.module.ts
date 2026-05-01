@@ -37,12 +37,9 @@ import {ToolsAndHatsComponent} from "./page/help/tools-and-hats/tools-and-hats.c
 import {MeritComponent} from "./page/merit/merit.component";
 import {PetShelterComponent} from "./page/user-profile/pet-shelter/pet-shelter.component";
 import {SkillsComponent} from "./page/help/skills/skills.component";
-import {GuildsComponent} from "./page/help/guilds/guilds.component";
 import {LockedInventoryComponent} from "./page/help/locked-inventory/locked-inventory.component";
 import {PetDirectoryComponent} from "./page/pet-directory/pet-directory.component";
 import {SpiritCompanionDirectoryComponent} from "./page/spirit-companion-directory/spirit-companion-directory.component";
-import {GuildDirectoryComponent} from "./page/guild-directory/guild-directory.component";
-import {GuildComponent} from "./page/guild/guild.component";
 import {GroupsHelpComponent} from "./page/help/groups/groups-help.component";
 import { DesignGoalsComponent } from "./page/design-goals/design-goals.component";
 import { DesignGoalDetailsComponent } from "./page/design-goal-details/design-goal-details.component";
@@ -69,8 +66,6 @@ const routes: Routes = [
   { path: 'group/:group', component: GroupComponent, canActivate: [ AnyGuard ] },
   { path: 'merit', component: MeritComponent, canActivate: [ AnyGuard ] },
   { path: 'statusEffects', component: StatusEffectsComponent, canActivate: [ AnyGuard ] },
-  { path: 'guild', component: GuildDirectoryComponent, canActivate: [ AnyGuard ] },
-  { path: 'guild/:guild', component: GuildComponent, canActivate: [ AnyGuard ] },
   { path: 'designGoal', component: DesignGoalsComponent, canActivate: [ AnyGuard ] },
   { path: 'designGoal/:designGoal', component: DesignGoalDetailsComponent, canActivate: [ AnyGuard ] },
 
@@ -81,7 +76,6 @@ const routes: Routes = [
   { path: 'help/beehive', component: BeehiveHelpComponent, canActivate: [ AnyGuard ] },
   { path: 'help/flavors', component: FoodFlavorsComponent, canActivate: [ AnyGuard ] },
   { path: 'help/groups', component: GroupsHelpComponent, canActivate: [ AnyGuard ] },
-  { path: 'help/guilds', component: GuildsComponent, canActivate: [ AnyGuard ] },
   { path: 'help/howToPlay', component: HowToPlayComponent, canActivate: [ AnyGuard ] },
   { path: 'help/lockedInventory', component: LockedInventoryComponent, canActivate: [ AnyGuard ] },
   { path: 'help/lunchboxes', component: LunchboxesComponent, canActivate: [ AnyGuard ] },

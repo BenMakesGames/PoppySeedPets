@@ -280,7 +280,7 @@ class GreenhouseService
             ]);
         }
 
-        if(!$weeds->getId())
+        if(!$weeds->hasId())
             $this->em->flush();
 
         return $weedText;

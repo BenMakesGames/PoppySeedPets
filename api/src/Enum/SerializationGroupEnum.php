@@ -44,7 +44,6 @@ final class SerializationGroupEnum
     public const string PET_GROUP = 'petGroup';
     public const string PET_GROUP_DETAILS = 'petGroupDetails';
     public const string PET_GROUP_INDEX = 'petGroupIndex';
-    public const string PET_GUILD = 'petGuild';
     public const string GREENHOUSE_PLANT = 'greenhousePlant';
     public const string MY_GREENHOUSE = 'myGreenhouse';
     public const string MY_SEEDS = 'mySeeds';
@@ -60,8 +59,6 @@ final class SerializationGroupEnum
     public const string MERIT_ENCYCLOPEDIA = 'meritEncyclopedia';
     public const string SPIRIT_COMPANION_PUBLIC_PROFILE = 'spiritCompanionPublicProfile';
     public const string ITEM_TYPEAHEAD = 'itemTypeahead';
-    public const string GUILD_ENCYCLOPEDIA= 'guildEncyclopedia';
-    public const string GUILD_MEMBER = 'guildMember';
     public const string MY_LETTERS = 'myLetters';
     public const string MY_DRAGON = 'myDragon';
     public const string DRAGON_TREASURE = 'dragonTreasure';

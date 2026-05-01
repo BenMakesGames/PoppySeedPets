@@ -11,21 +11,28 @@ declare(strict_types=1);
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Controller\Guilds;
+namespace DoctrineMigrations;
 
-use App\Entity\Guild;
-use App\Enum\SerializationGroupEnum;
-use App\Service\ResponseService;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
 
-#[Route("/guild")]
-class GetAllController
+final class Version20260418185900 extends AbstractMigration
 {
-    #[Route("", methods: ["GET"])]
-    public function getAll(ResponseService $responseService, EntityManagerInterface $em): JsonResponse
+    public function getDescription(): string
     {
-        return $responseService->success($em->getRepository(Guild::class)->findAll(), [ SerializationGroupEnum::GUILD_ENCYCLOPEDIA ]);
+        return '';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // Gardening Club:
+        $this->addSql(<<<EOSQL
+        INSERT INTO `pet_activity_log_tag` (`id`, `title`, `color`, `emoji`) VALUES (101, 'Gardening Club', '38C789', '🧤')
+        ON DUPLICATE KEY UPDATE `id` = `id`;
+        EOSQL);
+    }
+
+    public function down(Schema $schema): void
+    {
     }
 }

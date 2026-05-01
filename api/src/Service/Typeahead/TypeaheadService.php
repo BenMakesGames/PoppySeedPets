@@ -51,6 +51,7 @@ abstract class TypeaheadService
 
         $qb = $this->addQueryBuilderConditions($qb);
 
+        /** @var T[] $entities */
         $entities = $qb->getQuery()->execute();
 
         if(count($entities) < $maxResults)

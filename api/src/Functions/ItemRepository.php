@@ -45,6 +45,7 @@ final class ItemRepository
 
     public static function findOneById(EntityManagerInterface $em, int $itemId): Item
     {
+        /** @var Item|null $item */
         $item = $em->getRepository(Item::class)->createQueryBuilder('i')
             ->where('i.id=:id')
             ->setParameter('id', $itemId)

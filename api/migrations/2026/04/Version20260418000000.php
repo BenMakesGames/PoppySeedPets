@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -11,17 +12,27 @@ declare(strict_types=1);
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Enum;
+namespace DoctrineMigrations;
 
-enum GuildEnum: string
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+final class Version20260418000000 extends AbstractMigration
 {
-    case TimesArrow = 'Time\'s Arrow';
-    case LightAndShadow = 'Light and Shadow';
-    case Tapestries = 'Tapestries';
-    case InnerSanctum = 'Inner Sanctum';
-    case Dwarfcraft = 'Dwarfcraft';
-    case GizubisGarden = 'Gizubi\'s Garden';
-    case HighImpact = 'High Impact';
-    case TheUniverseForgets = 'The Universe Forgets';
-    case Correspondence = 'Correspondence';
+    public function getDescription(): string
+    {
+        return 'Drop pet-guild tables.';
+    }
+
+    public function up(Schema $schema): void
+    {
+        $this->addSql('ALTER TABLE guild_membership DROP FOREIGN KEY FK_E7D8D2A966F7FB6');
+        $this->addSql('ALTER TABLE guild_membership DROP FOREIGN KEY FK_E7D8D2A5F2131EF');
+        $this->addSql('DROP TABLE guild_membership');
+        $this->addSql('DROP TABLE guild');
+    }
+
+    public function down(Schema $schema): void
+    {
+    }
 }

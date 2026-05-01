@@ -134,7 +134,7 @@ class PetExperienceService
         return $levelUp;
     }
 
-    public function forceIncreaseSkill(Pet $pet, string $skill, int $amount, PetActivityLog $activityLog)
+    public function forceIncreaseSkill(Pet $pet, string $skill, int $amount, PetActivityLog $activityLog): void
     {
         if(!PetSkillEnum::isAValue($skill))
             throw new EnumInvalidValueException(PetSkillEnum::class, $skill);
@@ -335,12 +335,10 @@ class PetExperienceService
 
 class FocusingStatusEffect
 {
-    function __construct(string $skill, StatusEffectEnum $statusEffect)
+    function __construct(
+        public readonly string $skill,
+        public readonly StatusEffectEnum $statusEffect
+    )
     {
-        $this->skill = $skill;
-        $this->statusEffect = $statusEffect;
     }
-
-    public string $skill;
-    public StatusEffectEnum $statusEffect;
 }

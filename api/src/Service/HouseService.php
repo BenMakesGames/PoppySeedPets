@@ -108,7 +108,7 @@ class HouseService
         /** @var list<Pet> $petsWithTime */
         // array_filter preserves keys, so we use array_values to reset them, because PHP...
         $petsWithTime = array_values(array_filter($petsAtHome, fn(Pet $pet) =>
-            $pet->getHouseTime()?->getActivityTime() >= 60 ||
+            $pet->getHouseTime()->getActivityTime() >= 60 ||
             (
                 $pet->getHouseTime()->getSocialEnergy() >= PetExperienceService::SocialEnergyPerHangOut &&
                 $pet->getHouseTime()->getCanAttemptSocialHangoutAfter() < $now

@@ -24,7 +24,7 @@ class PlantYieldItem
     /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: 'App\Entity\PlantYield', inversedBy: 'items')]
+    #[ORM\ManyToOne(targetEntity: PlantYield::class, inversedBy: 'items')]
     #[ORM\JoinColumn(nullable: false)]
     private PlantYield $plantYield;
 
@@ -41,9 +41,9 @@ class PlantYieldItem
         $this->percentChance = $percentChance;
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
     }
 
     public function getPlantYield(): PlantYield
