@@ -77,7 +77,7 @@ class HuntingService implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
         $desire = max($petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal(), 
-            $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth->getTotal());
+            $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal());
 
         // when a pet is equipped, the equipment bonus counts twice for affecting a pet's desires
         if($pet->getTool() && $pet->getTool()->getItem()->getTool())
@@ -101,7 +101,7 @@ class HuntingService implements IPetActivity
         $pet = $petWithSkills->getPet();
         $maxSkill = 10 
             + max($petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal(), 
-            $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth->getTotal())
+            $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
             - $pet->getAlcohol() 
             - $pet->getPsychedelic();
 
@@ -314,12 +314,13 @@ class HuntingService implements IPetActivity
                 ->setIcon('items/ambiguous/fluff')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
                     PetActivityLogTagEnum::Hunting,
+                    PetActivityLogTagEnum::Fighting,
                     PetActivityLogTagEnum::Stealth,
                     PetActivityLogTagEnum::Location_At_Home,
                 ]))
             ;
             $this->inventoryService->petCollectsItem('Fluff', $pet, 'The remains of a Dust Bunny that ' . $pet->getName() . ' hunted.', $activityLog);
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth, PetSkillEnum::Stealth ], $activityLog);
 
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, true);
         }
@@ -333,6 +334,7 @@ class HuntingService implements IPetActivity
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . $chased . ' a Dust Bunny, ' . $failMessage)
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
                     PetActivityLogTagEnum::Hunting,
+                    PetActivityLogTagEnum::Fighting,
                     PetActivityLogTagEnum::Stealth,
                     PetActivityLogTagEnum::Location_At_Home,
                 ]))
@@ -383,6 +385,7 @@ class HuntingService implements IPetActivity
                 ->setIcon('items/ambiguous/fluff')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
                     PetActivityLogTagEnum::Hunting,
+                    PetActivityLogTagEnum::Fighting,
                     PetActivityLogTagEnum::Stealth,
                     PetActivityLogTagEnum::Location_At_Home,
                 ]))
@@ -401,6 +404,7 @@ class HuntingService implements IPetActivity
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . $chased . ' a Plastic Bag, ' . $failMessage)
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
                     PetActivityLogTagEnum::Hunting,
+                    PetActivityLogTagEnum::Fighting,
                     PetActivityLogTagEnum::Stealth,
                     PetActivityLogTagEnum::Location_At_Home,
                 ]))
@@ -640,7 +644,7 @@ class HuntingService implements IPetActivity
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' beat up a Giant Toad, and took two of its legs.')
                     ->setIcon('items/animal/meat/legs-frog')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $this->inventoryService->petCollectsItem('Toad Legs', $pet, $pet->getName() . ' took these from a Giant Toad. It still has two left, so it\'s probably fine >_>', $activityLog);
             }
@@ -648,7 +652,7 @@ class HuntingService implements IPetActivity
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' wrestled a Toadstool off the back of a Giant Toad.')
                     ->setIcon('items/fungus/toadstool')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $this->inventoryService->petCollectsItem('Toadstool', $pet, $pet->getName() . ' wrestled this from a Giant Toad.', $activityLog);
             }
@@ -659,7 +663,7 @@ class HuntingService implements IPetActivity
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' picked a fight with a Giant Toad, but lost.')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
             ;
             $pet->increaseEsteem(-2);
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
