@@ -696,18 +696,42 @@ class HuntingService implements IPetActivity
 
         if($this->rng->rngNextInt(1, $skill) >= 6)
         {
-            $loot = $this->rng->rngNextFromArray(
-                [
-                'Silica Grounds',
-                'Silica Grounds',
-                'Silica Grounds',
-                'Small Plastic Bucket'
-                ]);
+            $isLucky = false;
+            $gotShell = false;
+            if($pet->hasMerit(MeritEnum::LUCKY) && $this->rng->rngNextInt(1, 30) == 1)
+            {
+                $isLucky = true;
+                $gotShell = true;
+                $loot[] = 'Secret Seashell';
+            }
+            else if($this->rng->rngNextInt(1, 100) == 1)
+            {
+                $gotShell = true;
+                $loot[] = 'Secret Seashell';
+            }
+            else
+                $loot = $this->rng->rngNextFromArray(
+                    [
+                    'Silica Grounds',
+                    'Silica Grounds',
+                    'Silica Grounds',
+                    'Seaweed',
+                    'Plastic'
+                    ]);
 
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' snuck up on a Sand Castle, taking its ' . $loot . '!')
-                ->setIcon('items/mineral/silca')
+            $defeatMethod = $isRanged ? ' picked off' : ' ambushed';
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . $defeatMethod . ' a Sand Castle, looting its ' . $loot . '!' . ($isLucky ? ' (Lucky~!)' : ''))
+                ->setIcon($gotShell ? 'items/animal/seashell-secret' : 'items/mineral/silca')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
             ;
+
+            if($isLucky)
+            {
+                $activityLog->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit);
+                $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Lucky ]));
+            }
+
             $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' stole this from a Sand Castle', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
