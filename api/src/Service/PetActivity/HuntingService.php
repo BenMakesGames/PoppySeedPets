@@ -99,16 +99,15 @@ class HuntingService implements IPetActivity
     public function run(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
+        $doStealthHunt = $this->stealthBetterThanBrawl($petWithSkills);
         $maxSkill = 10 
-            + max($petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal(), 
+            + (!$doStealthHunt ? $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal() : 
             $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
             - $pet->getAlcohol() 
             - $pet->getPsychedelic();
 
         $maxSkill = NumberFunctions::clamp($maxSkill, 1, 22);
-
-        $doStealthHunt = $this->stealthBetterThanBrawl($petWithSkills);          
-
+  
         $useThanksgivingPrey = CalendarFunctions::isThanksgivingMonsters($this->clock->now) && $this->rng->rngNextBool();
         $usePassoverPrey = CalendarFunctions::isEaster($this->clock->now);
 
@@ -166,7 +165,7 @@ class HuntingService implements IPetActivity
                     break;
                 case 12:
                     if($doStealthHunt)
-                        $activityLog = $this->huntedWithStealth($petWithSkills); //TODO add monster to stealth hunt... or something using a mind skill - onion boy is a lil funky
+                        $activityLog = $this->huntedLeafMeister($petWithSkills); //TODO pile of leaves thing
                     else
                         $activityLog = $this->huntedOnionBoy($petWithSkills);
                     break;
