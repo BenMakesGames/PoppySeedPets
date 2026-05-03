@@ -165,7 +165,10 @@ class HuntingService implements IPetActivity
                     $activityLog = $this->huntedScarecrow($petWithSkills);
                     break;
                 case 12:
-                    $activityLog = $this->huntedOnionBoy($petWithSkills);
+                    if($doStealthHunt)
+                        $activityLog = $this->huntedWithStealth($petWithSkills); //TODO add monster to stealth hunt... or something using a mind skill - onion boy is a lil funky
+                    else
+                        $activityLog = $this->huntedOnionBoy($petWithSkills);
                     break;
                 case 13:
                     $activityLog = $this->huntedBeaver($petWithSkills);
@@ -197,13 +200,19 @@ class HuntingService implements IPetActivity
                     break;
                 case 21:
                     if($useThanksgivingPrey)
-                        $activityLog = $this->huntTurkeyDragon->hunt($petWithSkills);
+                        if($doStealthHunt)
+                            $activityLog = $this->huntedWithStealth($petWithSkills); //TODO add monster to stealth hunt
+                        else
+                            $activityLog = $this->huntTurkeyDragon->hunt($petWithSkills);
                     else
                         $activityLog = $this->huntedLeshyDemon($petWithSkills);
                     break;
                 case 22:
                 default:
-                    $activityLog = $this->huntedEggSaladMonstrosity($petWithSkills);
+                    if($doStealthHunt)
+                        $activityLog = $this->huntedWithStealth($petWithSkills); //TODO add monster to stealth hunt
+                    else
+                        $activityLog = $this->huntedEggSaladMonstrosity($petWithSkills);
                     break;
             }
         }
@@ -1491,9 +1500,9 @@ class HuntingService implements IPetActivity
         {
             $prize = ItemRepository::findOneByName($this->em, $this->rng->rngNextFromArray($possibleLoot));
 
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went out hunting, and encountered an Egg Salad Monstrosity! After a grueling (and sticky) battle, ' . $pet->getName() . ' took a huge bite out of the monster, slaying it! (Ah~! A true Gourmand!) Finally, they dug ' . $prize->getNameWithArticle() . ' out of the lumpy corpse, and brought it home.')
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered an Egg Salad Monstrosity! After a grueling (and sticky) battle, ' . ActivityHelpers::PetName($pet) . ' took a huge bite out of the monster, slaying it! (Ah~! A true Gourmand!) Finally, they dug ' . $prize->getNameWithArticle() . ' out of the lumpy corpse, and brought it home.')
                 ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting', 'Eating', 'Gourmand' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Gourmand, PetActivityLogTagEnum::Location_Neighborhood ]))
             ;
 
             $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' collected this from the remains of an Egg Salad Monstrosity.', $activityLog);
@@ -1514,8 +1523,8 @@ class HuntingService implements IPetActivity
                 $this->rng->rngNextFromArray($possibleLoot),
             ];
 
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went out hunting, and encountered an Egg Salad Monstrosity! After a grueling (and sticky) battle, ' . $pet->getName() . ' won, and claimed its ' . ArrayFunctions::list_nice_sorted($loot) . '!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered an Egg Salad Monstrosity! After a grueling (and sticky) battle, ' . ActivityHelpers::PetName($pet) . ' won, and claimed its ' . ArrayFunctions::list_nice_sorted($loot) . '!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Location_Neighborhood ]))
             ;
 
             foreach($loot as $itemName)
@@ -1529,8 +1538,8 @@ class HuntingService implements IPetActivity
         }
         else
         {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went out hunting, and encountered an Egg Salad Monstrosity, which chased ' . $pet->getName() . ' away!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered an Egg Salad Monstrosity, which chased ' . ActivityHelpers::PetName($pet) . ' away!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Location_Neighborhood ]))
             ;
             $pet->increaseSafety(-3);
 
