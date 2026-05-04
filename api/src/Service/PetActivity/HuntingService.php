@@ -49,6 +49,7 @@ use App\Service\PetActivity\Holiday\HuntTurkeyDragon;
 use App\Service\PetExperienceService;
 use App\Service\TransactionService;
 use App\Service\UserStatsService;
+use App\Functions\SpiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class HuntingService implements IPetActivity
@@ -69,14 +70,20 @@ class HuntingService implements IPetActivity
     {
     }
 
-    public function preferredWithFullHouse(): bool { return false; }
+    public function preferredWithFullHouse(): bool
+    {
+        return false;
+    }
 
-    public function groupKey(): string { return 'hunting'; }
+    public function groupKey(): string
+    {
+        return 'hunting';
+    }
 
     public function groupDesire(ComputedPetSkills $petWithSkills): int
     {
         $pet = $petWithSkills->getPet();
-        $desire = max($petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal(), 
+        $desire = max($petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal(),
             $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal());
 
         // when a pet is equipped, the equipment bonus counts twice for affecting a pet's desires
@@ -100,14 +107,14 @@ class HuntingService implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
         $doStealthHunt = $this->stealthBetterThanBrawl($petWithSkills);
-        $maxSkill = 10 
-            + (!$doStealthHunt ? $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal() : 
-            $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
-            - $pet->getAlcohol() 
+        $maxSkill = 10
+            + (!$doStealthHunt ? $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal() :
+                $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
+            - $pet->getAlcohol()
             - $pet->getPsychedelic();
 
         $maxSkill = NumberFunctions::clamp($maxSkill, 1, 22);
-  
+
         $useThanksgivingPrey = CalendarFunctions::isThanksgivingMonsters($this->clock->now) && $this->rng->rngNextBool();
         $usePassoverPrey = CalendarFunctions::isEaster($this->clock->now);
 
@@ -146,6 +153,8 @@ class HuntingService implements IPetActivity
                         $activityLog = $this->huntedTurkey($petWithSkills);
                     else if($usePassoverPrey)
                         $activityLog = $this->noGoats($pet);
+                    else if($doStealthHunt)
+                        $activityLog = $this->huntedAntelope($petWithSkills);
                     else
                         $activityLog = $this->huntedGoat($petWithSkills);
                     break;
@@ -165,12 +174,15 @@ class HuntingService implements IPetActivity
                     break;
                 case 12:
                     if($doStealthHunt)
-                        $activityLog = $this->huntedLeafMeister($petWithSkills); //TODO pile of leaves thing
+                        $activityLog = $this->huntedLeafMeister($petWithSkills);
                     else
                         $activityLog = $this->huntedOnionBoy($petWithSkills);
                     break;
                 case 13:
-                    $activityLog = $this->huntedBeaver($petWithSkills);
+                    if($doStealthHunt)
+                        $activityLog = $this->huntedGiantSpider($petWithSkills);
+                    else
+                        $activityLog = $this->huntedBeaver($petWithSkills);
                     break;
                 case 14:
                 case 15:
@@ -187,12 +199,13 @@ class HuntingService implements IPetActivity
                 case 19:
                     if($useThanksgivingPrey)
                         $activityLog = $this->huntedPossessedTurkey($petWithSkills);
-                    else if($usePassoverPrey)
-                        $activityLog = $this->noGoats($pet);
                     else if($pet->hasStatusEffect(StatusEffectEnum::BittenByAVampire))
-                        $activityLog = $this->huntedSatyr($petWithSkills);
+                        if($usePassoverPrey)
+                            $activityLog = $this->noGoats($pet);
+                        else
+                            $activityLog = $this->huntedSatyr($petWithSkills);
                     else
-                        $activityLog = $this->huntedPaperGolem($petWithSkills); // fallback, in case none of the above are good
+                        $activityLog = $this->huntedPaperGolem($petWithSkills);
                     break;
                 case 20:
                     $activityLog = $this->huntedPaperGolem($petWithSkills);
@@ -200,16 +213,19 @@ class HuntingService implements IPetActivity
                 case 21:
                     if($useThanksgivingPrey)
                         if($doStealthHunt)
-                            $activityLog = $this->huntedWithStealth($petWithSkills); //TODO add monster to stealth hunt
+                            $activityLog = $this->huntTurkeyDragonEggs($petWithSkills);
                         else
                             $activityLog = $this->huntTurkeyDragon->hunt($petWithSkills);
                     else
-                        $activityLog = $this->huntedLeshyDemon($petWithSkills);
+                        if($doStealthHunt)
+                            $activityLog = $this->huntedGreaterDustBunny($petWithSkills);
+                        else
+                            $activityLog = $this->huntedLeshyDemon($petWithSkills);
                     break;
                 case 22:
                 default:
                     if($doStealthHunt)
-                        $activityLog = $this->huntedWithStealth($petWithSkills); //TODO add monster to stealth hunt
+                        $activityLog = $this->huntedNanerCrab($petWithSkills);
                     else
                         $activityLog = $this->huntedEggSaladMonstrosity($petWithSkills);
                     break;
@@ -285,8 +301,8 @@ class HuntingService implements IPetActivity
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting', 'Greenhouse' ]))
             ;
 
-            if($pet->getSkills()->getBrawl() < 5)
-                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+            if($pet->getSkills()->getBrawl() < 5 && $pet->getSkills()->getStealth() < 5)
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
 
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, false);
         }
@@ -334,7 +350,7 @@ class HuntingService implements IPetActivity
         }
         else
         {
-            if ($petWithSkills->getStealth()->getTotal() > $petWithSkills->getBrawl()->getTotal())
+            if($petWithSkills->getStealth()->getTotal() > $petWithSkills->getBrawl()->getTotal())
                 $failMessage = 'but wasn\'t able to sneak up on it.';
             else
                 $failMessage = 'but wasn\'t able to catch up with it.';
@@ -438,14 +454,14 @@ class HuntingService implements IPetActivity
             if($this->rng->rngNextInt(1, 2) === 1)
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Goat, and won, receiving Creamy Milk.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $this->inventoryService->petCollectsItem('Creamy Milk', $pet, $pet->getName() . '\'s prize for out-wrestling a Goat.', $activityLog);
             }
             else
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Goat, and won, receiving Butter.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $this->inventoryService->petCollectsItem('Butter', $pet, $pet->getName() . '\'s prize for out-wrestling a Goat.', $activityLog);
             }
@@ -457,14 +473,14 @@ class HuntingService implements IPetActivity
             if($this->rng->rngNextInt(1, 4) === 1)
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Goat. The Goat won.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $this->inventoryService->petCollectsItem('Fluff', $pet, $pet->getName() . ' wrestled a Goat, and lost, but managed to grab a fistful of Fluff.', $activityLog);
             }
             else
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Goat. The Goat won.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
             }
 
@@ -476,6 +492,31 @@ class HuntingService implements IPetActivity
         return $activityLog;
     }
 
+    private function huntedAntelope(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+        $skill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal();
+
+        if($this->rng->rngNextInt(1, $skill) >= 6)
+        {
+            $loot = $this->rng->rngNextFromArray([ 'Creamy Milk', 'Talon' ]);
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' stalked an Antelope, and took it down, receiving ' . $loot . '.')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+
+            $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . '\'s prize for hunting down an Antelope.', $activityLog);
+        }
+        else
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' stalked an Antelope, and but it noticed ' . ActivityHelpers::PetName($pet) . ' and ran off!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+        }
+
+        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+
+        return $activityLog;
+    }
+
     private function huntedDoughGolem(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
@@ -483,11 +524,11 @@ class HuntingService implements IPetActivity
         $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat Flour';
 
         $possibleLoot = [
-            $wheatOrCorn, 'Oil', 'Butter', 'Yeast', 'Sugar'
+            $wheatOrCorn, 'Oil', 'Butter', 'Yeast', 'Sugar',
         ];
 
         $possibleLootSansOil = [
-            $wheatOrCorn, 'Butter', 'Yeast', 'Sugar'
+            $wheatOrCorn, 'Butter', 'Yeast', 'Sugar',
         ];
 
         $stealth = $this->rng->rngNextInt(1, 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal());
@@ -605,33 +646,65 @@ class HuntingService implements IPetActivity
     private function huntedTurkey(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
-        $skill = 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl(false)->getTotal();
+        $stealth = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal();
+        $brawl = 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl(false)->getTotal();
 
         $pet->increaseFood(-1);
 
-        if($this->rng->rngNextInt(1, $skill) >= 6)
+        if($brawl > $stealth)
         {
-            $item = $this->rng->rngNextFromArray([ 'Talon', 'Feathers', 'Giant Turkey Leg', 'Smallish Pumpkin Spice' ]);
+            if($this->rng->rngNextInt(1, $brawl) >= 6)
+            {
+                $item = $this->rng->rngNextFromArray([ 'Talon', 'Feathers', 'Giant Turkey Leg', 'Smallish Pumpkin Spice' ]);
 
-            $aOrSome = $item === 'Feathers' ? 'some' : 'a';
+                $aOrSome = $item === 'Feathers' ? 'some' : 'a';
 
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Turkey! The Turkey fled, but not before ' . $pet->getName() . ' took ' . $aOrSome . ' ' . $item . '!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Special Event', 'Thanksgiving' ]))
-            ;
-            $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' wrestled this from a Turkey.', $activityLog);
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' wrestled a Turkey! The Turkey fled, but not before ' . ActivityHelpers::PetName($pet) . ' took ' . $aOrSome . ' ' . $item . '!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ;
+                $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' wrestled this from a Turkey.', $activityLog);
 
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+            }
+            else
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' picked a fight with a Turkey, but lost.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ;
+                $pet->increaseEsteem(-2);
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+            }
         }
         else
         {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% picked a fight with a Turkey, but lost.')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Special Event', 'Thanksgiving' ]))
-            ;
-            $pet->increaseEsteem(-2);
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+            if($this->rng->rngNextInt(1, $stealth) >= 6)
+            {
+                $item = $this->rng->rngNextFromArray([ 'Talon', 'Feathers', 'Giant Turkey Leg', 'Smallish Pumpkin Spice' ]);
+
+                $aOrSome = $item === 'Feathers' ? 'some' : 'a';
+
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' ambushed a Turkey! The Turkey fled, but not before ' . ActivityHelpers::PetName($pet) . ' took ' . $aOrSome . ' ' . $item . '!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ;
+                $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' snatched this from a Turkey.', $activityLog);
+
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+            }
+            else
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to hunt down a Turkey, but ' . ActivityHelpers::PetName($pet) . ' was spotted and the Turkey flew away!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ;
+                $pet->increaseEsteem(-2);
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+            }
         }
+
+        $activityLog->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent);
 
         return $activityLog;
     }
@@ -702,22 +775,21 @@ class HuntingService implements IPetActivity
             {
                 $isLucky = true;
                 $gotShell = true;
-                $loot[] = 'Secret Seashell';
+                $loot = 'Secret Seashell';
             }
             else if($this->rng->rngNextInt(1, 100) == 1)
             {
                 $gotShell = true;
-                $loot[] = 'Secret Seashell';
+                $loot = 'Secret Seashell';
             }
             else
-                $loot = $this->rng->rngNextFromArray(
-                    [
+                $loot = $this->rng->rngNextFromArray([
                     'Silica Grounds',
                     'Silica Grounds',
                     'Silica Grounds',
                     'Seaweed',
-                    'Plastic'
-                    ]);
+                    'Plastic',
+                ]);
 
             $defeatMethod = $isRanged ? ' picked off' : ' ambushed';
 
@@ -732,7 +804,7 @@ class HuntingService implements IPetActivity
                 $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Lucky ]));
             }
 
-            $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' stole this from a Sand Castle', $activityLog);
+            $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' looted this from a Sand Castle', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
@@ -776,7 +848,7 @@ class HuntingService implements IPetActivity
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% snuck up on a Scarecrow, and picked its pockets... and also its ' . $bodyPart . '! ' . $pet->getName() . ' walked away with ' . $moneys . '~~m~~, and some ' . $itemName . '.')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Stealth', 'Moneys' ]))
             ;
-            $this->inventoryService->petCollectsItem($itemName, $pet, $pet->getName() . ' stole this from a Scarecrow\'s ' . $bodyPart .'.', $activityLog);
+            $this->inventoryService->petCollectsItem($itemName, $pet, $pet->getName() . ' stole this from a Scarecrow\'s ' . $bodyPart . '.', $activityLog);
             $this->transactionService->getMoney($pet->getOwner(), $moneys, $pet->getName() . ' stole this from a Scarecrow.');
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
@@ -863,14 +935,14 @@ class HuntingService implements IPetActivity
         $pet = $petWithSkills->getPet();
         $skill = 10 + $petWithSkills->getStamina()->getTotal();
 
-        $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Onion Boy', ActivityHelpers::PetName($pet). ' encountered an Onion Boy at the edge of town...');
+        $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Onion Boy', ActivityHelpers::PetName($pet) . ' encountered an Onion Boy at the edge of town...');
 
         if($pet->hasMerit(MeritEnum::GOURMAND) && $this->rng->rngNextInt(1, 2) === 1)
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered an Onion Boy. The fumes were powerful, but ' . $pet->getName() . ' didn\'t even flinch, and swallowed the Onion Boy whole! (Ah~! A true Gourmand!)')
                 ->setIcon('items/veggie/onion')
                 ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Eating', 'Gourmand' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Gourmand, PetActivityLogTagEnum::Location_Neighborhood ]))
             ;
 
             $pet
@@ -885,7 +957,7 @@ class HuntingService implements IPetActivity
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered an Onion Boy. The fumes were powerful, but ' . $pet->getName() . ' attacked from a distance using their ' . InventoryModifierFunctions::getNameWithModifiers($pet->getTool()) . '! The Onion Boy ran off, dropping an Onion as it ran.')
                 ->setIcon('items/veggie/onion')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Location_Neighborhood ]))
             ;
             $this->inventoryService->petCollectsItem('Onion', $pet, 'Dropped by an Onion Boy that ' . $pet->getName() . ' encountered.', $activityLog);
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature, PetSkillEnum::Brawl ], $activityLog);
@@ -901,7 +973,7 @@ class HuntingService implements IPetActivity
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered an Onion Boy. The fumes were powerful, but ' . $pet->getName() . ' powered through it, and grabbed onto its... clothes? The creature ran off, causing it to drop an Onion.')
                     ->setIcon('items/veggie/onion')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
 
                 $loot = $this->rng->rngNextFromArray([ 'Paper', 'Filthy Cloth' ]);
@@ -914,7 +986,7 @@ class HuntingService implements IPetActivity
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered an Onion Boy. The fumes were powerful, but ' . $pet->getName() . ' powered through it, scaring the creature off, causing it to drop an Onion.')
                     ->setIcon('items/veggie/onion')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
             }
 
@@ -926,11 +998,64 @@ class HuntingService implements IPetActivity
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered an Onion Boy. The fumes were overwhelming, and ' . $pet->getName() . ' fled.')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
             ;
             $pet->increaseSafety(-2);
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, false);
+        }
+
+        return $activityLog;
+    }
+
+    private function huntedLeafMeister(ComputedPetSkills $petWithSkills): PetActivityLog //Kamaitachi-inspired
+    {
+        $pet = $petWithSkills->getPet();
+        $skill = 10 + $petWithSkills->getDexterity()->getTotal();
+
+        if($this->rng->rngNextInt(1, $skill) >= 7)
+        {
+            $exp = 2;
+            $ambush = $this->rng->rngSkillRoll($petWithSkills->getStamina()->getTotal() + $petWithSkills->getStealth()->getTotal()) >= 20;
+
+            $loot = $this->rng->rngNextFromArray([
+                'Red',
+                'Orange',
+                'Pamplemousse',
+                'Apricot',
+            ]);
+
+            if($ambush)
+            {
+                $bonusLoot = $this->rng->rngNextFromArray([ 'Fluff', 'Talon', 'Rock' ]); //Rock is a standin for pure iron
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' stalked a whirling Leaf Meister through the woods, until they managed to catch it by surprise taking its ' . $loot . ' and a part of its body!?')
+                    ->setIcon('items/plant/big-leaf')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+
+                $this->inventoryService->petCollectsItem($bonusLoot, $pet, 'Snatched from a whirling Leaf Meister ' . $pet->getName() . ' encountered.', $activityLog);
+                $exp++;
+            }
+            else
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' caught up to a whirling Leaf Meister, scattering its leaves and taking its ' . $loot . '!')
+                    ->setIcon('items/plant/big-leaf')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+            }
+
+            $this->inventoryService->petCollectsItem($loot, $pet, 'Snatched from a whirling Leaf Meister ' . $pet->getName() . ' encountered.', $activityLog);
+
+            $this->petExperienceService->gainExp($pet, $exp, [ PetSkillEnum::Nature, PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, true);
+        }
+        else
+        {
+            $pet->increaseFood(-2);
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to chase down whirling Leaf Meister, but couldn\'t keep up!')
+                ->setIcon('items/plant/big-leaf')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature, PetSkillEnum::Stealth ], $activityLog);
         }
 
         return $activityLog;
@@ -948,7 +1073,7 @@ class HuntingService implements IPetActivity
             $item = $this->rng->rngNextFromArray([ 'Fluff', 'Castoreum' ]);
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a beaver! It fled, but not before ' . ActivityHelpers::PetName($pet) . ' took some of its ' . $item . '!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
             ;
             $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' wrestled this from a beaver.', $activityLog);
 
@@ -958,10 +1083,45 @@ class HuntingService implements IPetActivity
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% picked a fight with a beaver, but lost.')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
             ;
             $pet->increaseEsteem(-2);
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+        }
+
+        return $activityLog;
+    }
+
+    private function huntedGiantSpider(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+        $skill = 20 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getStealth()->getTotal();
+
+        $pet->increaseFood(-2);
+
+        if($this->rng->rngNextInt(1, $skill) >= 15)
+        {
+            $item = $this->rng->rngNextFromArray([ 'Cobweb', 'Spider Roe' ]);
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' snuck up on a giant spider! It fled, but not before ' . ActivityHelpers::PetName($pet) . ' took some of its ' . $item . '!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+            ;
+            $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' stole this from a giant spider.', $activityLog);
+
+            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+        }
+        else
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to steal from a giant spider, but got bitten instead!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+            ;
+
+            $pet->increaseEsteem(-1);
+            $pet->increasePoison(2);
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
         }
 
@@ -975,7 +1135,7 @@ class HuntingService implements IPetActivity
 
         $pet = $petWithSkills->getPet();
         $intSkill = 10 + $petWithSkills->getIntelligence()->getTotal();
-        $dexSkill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getBrawl()->getTotal();
+        $dexSkill = 10 + $petWithSkills->getDexterity()->getTotal() + max($petWithSkills->getBrawl()->getTotal(), $petWithSkills->getStealth()->getTotal());
 
         $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
 
@@ -1003,10 +1163,10 @@ class HuntingService implements IPetActivity
             ;
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% was outsmarted by a Thieving Magpie, ' . $description)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Moneys' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Moneys ]))
             ;
 
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
         }
         else if($this->rng->rngNextInt(1, $dexSkill) >= 9)
@@ -1025,7 +1185,7 @@ class HuntingService implements IPetActivity
                     $this->transactionService->getMoney($pet->getOwner(), $moneys, $pet->getName() . ' shot at a Thieving Magpie, forcing it to drop this money.');
                     $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% shot at a Thieving Magpie; it dropped its ' . $moneys . ' moneys and sped away.')
                         ->setIcon('icons/activity-logs/moneys')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting', 'Moneys' ]))
+                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Moneys, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Stealth ]))
                     ;
                 }
                 else
@@ -1033,7 +1193,7 @@ class HuntingService implements IPetActivity
                     $this->transactionService->getMoney($pet->getOwner(), $moneys, $pet->getName() . ' pounced on a Thieving Magpie, and liberated this money.');
                     $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% pounced on a Thieving Magpie, and liberated its ' . $moneys . ' moneys.')
                         ->setIcon('icons/activity-logs/moneys')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting', 'Moneys' ]))
+                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Moneys, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Stealth ]))
                     ;
                 }
             }
@@ -1043,30 +1203,30 @@ class HuntingService implements IPetActivity
                 {
                     $item = $this->rng->rngNextFromArray([ 'String', 'Rice', 'Plastic' ]);
                     $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% shot at a Thieving Magpie, forcing it to drop some ' . $item . '.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
+                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Moneys, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Stealth ]))
                     ;
                 }
                 else
                 {
                     $item = $this->rng->rngNextFromArray([ 'Egg', 'String', 'Rice', 'Plastic' ]);
                     $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% pounced on a Thieving Magpie, and liberated ' . ($item === 'Egg' ? 'an' : 'some') . ' ' . $item . '.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
+                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Moneys, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Stealth ]))
                     ;
                 }
 
                 $this->inventoryService->petCollectsItem($item, $pet, 'Liberated from a Thieving Magpie.', $activityLog);
             }
 
-            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
+            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
         }
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to take down a Thieving Magpie, but it got away.')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Moneys, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Stealth ]))
             ;
             $pet->increaseSafety(-1);
-            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
         }
 
@@ -1114,7 +1274,7 @@ class HuntingService implements IPetActivity
             $hidSomehow = $this->rng->rngNextFromArray([
                 'ducked behind a boulder', 'ducked behind a tree',
                 'dove into a bush', 'ducked behind a river bank',
-                'jumped into a hollow log'
+                'jumped into a hollow log',
             ]);
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'A Pirate Ghost tried to haunt %pet:' . $pet->getId() . '.name%, but %pet:' . $pet->getId() . '.name% ' . $hidSomehow . ', eluding the ghost!')
@@ -1133,7 +1293,7 @@ class HuntingService implements IPetActivity
             ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
         ;
         $pet->increaseSafety(-3);
-        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Arcana ], $activityLog);
+        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth, PetSkillEnum::Arcana ], $activityLog);
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 75), PetActivityStatEnum::HUNT, false);
 
         return $activityLog;
@@ -1144,10 +1304,20 @@ class HuntingService implements IPetActivity
         $pet = $petWithSkills->getPet();
 
         $loot = $this->rng->rngNextFromArray([
-            'Quintessence', 'Black Feathers', 'Giant Turkey Leg', 'Smallish Pumpkin Spice'
+            'Quintessence', 'Black Feathers', 'Giant Turkey Leg', 'Smallish Pumpkin Spice',
         ]);
 
-        $skill = 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getBrawl()->getTotal();
+
+        if($petWithSkills->getBrawl() > $petWithSkills->getStealth())
+        {
+            $skill = 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getBrawl()->getTotal();
+            $useStealth = false;
+        }
+        else
+        {
+            $skill = 10 + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal();
+            $useStealth = true;
+        }
 
         $pet->increaseFood(-1);
 
@@ -1155,25 +1325,36 @@ class HuntingService implements IPetActivity
         {
             $item = ItemRepository::findOneByName($this->em, $loot);
 
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered a Possessed Turkey! They fought hard, took ' . $item->getNameWithArticle() . ', and drove the creature away!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Special Event', 'Thanksgiving' ]))
+            $message = $useStealth
+                ? ActivityHelpers::PetName($pet) . ' encountered a Possessed Turkey! They prepped an ambush, took ' . $item->getNameWithArticle() . ', and drove the creature away!'
+                : ActivityHelpers::PetName($pet) . ' encountered a Possessed Turkey! They fought hard, took ' . $item->getNameWithArticle() . ', and drove the creature away!';
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, $message)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
             ;
+            $activityLog->addTags($useStealth ? [ PetActivityLogTagEnum::Stealth ] : [ PetActivityLogTagEnum::Fighting ]);
+
             $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' got this by defeating a Possessed Turkey.', $activityLog);
             $pet->increaseSafety(3);
             $pet->increaseEsteem(2);
 
-            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
+            $this->petExperienceService->gainExp($pet, 2, $useStealth ? [ PetSkillEnum::Stealth ] : [ PetSkillEnum::Brawl ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
 
             return $activityLog;
         }
 
-        $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered and fought a Possessed Turkey, but was chased away by a flurry of kicks and pecks!')
-            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Special Event', 'Thanksgiving' ]))
+        $loseMessage = $useStealth ? ' stalked' : ' fought';
+        $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered and' . $loseMessage . ' a Possessed Turkey, but was chased away by a flurry of kicks and pecks!')
+            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+            ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
         ;
+        $activityLog->addTags($useStealth ? [ PetActivityLogTagEnum::Stealth ] : [ PetActivityLogTagEnum::Fighting ]);
+
         $pet->increaseEsteem(-$this->rng->rngNextInt(1, 3));
         $pet->increaseSafety(-$this->rng->rngNextInt(2, 4));
-        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
+        $this->petExperienceService->gainExp($pet, 1, $useStealth ? [ PetSkillEnum::Stealth ] : [ PetSkillEnum::Brawl ], $activityLog);
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
 
         return $activityLog;
@@ -1187,15 +1368,16 @@ class HuntingService implements IPetActivity
         $pet = $petWithSkills->getPet();
 
         $brawlRoll = $this->rng->rngNextInt(1, 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal());
+        $stealthRoll = $this->rng->rngNextInt(1, 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal());
         $musicSkill = $this->rng->rngNextInt(1, 10 + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getMusic()->getTotal());
 
         $pet->increaseFood(-1);
 
         if($pet->hasStatusEffect(StatusEffectEnum::Cordial))
         {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered a Satyr; the Satyr was so enamored by ' . $pet->getName() . '\'s cordiality, they had a simply _wonderful_ time, and offered gifts before leaving in peace.')
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr; the Satyr was so enamored by ' . ActivityHelpers::PetName($pet) . '\'s cordiality, they had a simply _wonderful_ time, and offered gifts before leaving in peace.')
                 ->setIcon('icons/activity-logs/drunk-satyr')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fae-kind' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fae_kind ]))
                 ->addInterestingness(PetActivityLogInterestingness::UncommonActivity)
             ;
             $pet->increaseEsteem(1);
@@ -1210,9 +1392,10 @@ class HuntingService implements IPetActivity
         }
         else if($pet->hasMerit(MeritEnum::EIDETIC_MEMORY) && $pet->hasMerit(MeritEnum::SOOTHING_VOICE))
         {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered a Satyr, but remembered that Satyrs love music, so sang a song. The Satyr was so enthralled by ' . $pet->getName() . '\'s Soothing Voice, that it offered gifts before leaving in peace.')
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr, but remembered that Satyrs love music, so sang a song. The Satyr was so enthralled by ' . ActivityHelpers::PetName($pet) . '\'s Soothing Voice, that it offered gifts before leaving in peace.')
                 ->setIcon('icons/activity-logs/drunk-satyr')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fae-kind' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fae_kind ]))
+                ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
             ;
             $pet->increaseEsteem(1);
             $this->inventoryService->petCollectsItem('Blackberry Wine', $pet, 'Gifts for ' . $pet->getName() . ', from a Satyr.', $activityLog);
@@ -1225,13 +1408,14 @@ class HuntingService implements IPetActivity
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Music ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
         }
-        else if($musicSkill > $brawlRoll)
+        else if($musicSkill > $brawlRoll && $musicSkill > $stealthRoll)
         {
             if($pet->hasMerit(MeritEnum::SOOTHING_VOICE))
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered a Satyr, who upon hearing ' . $pet->getName() . '\'s voice, bade them sing. ' . $pet->getName() . ' did so; the Satyr was so enthralled by their soothing voice, that it offered gifts before leaving in peace.')
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr, who upon hearing ' . ActivityHelpers::PetName($pet) . '\'s voice, bade them sing. ' . $pet->getName() . ' did so; the Satyr was so enthralled by their soothing voice, that it offered gifts before leaving in peace.')
                     ->setIcon('icons/activity-logs/drunk-satyr')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fae-kind' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fae_kind ]))
+                    ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
                 ;
                 $pet->increaseEsteem(1);
                 $this->inventoryService->petCollectsItem('Blackberry Wine', $pet, 'Gifts for ' . $pet->getName() . ', from a Satyr.', $activityLog);
@@ -1246,9 +1430,9 @@ class HuntingService implements IPetActivity
             }
             else if($musicSkill >= 15)
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered a Satyr, who challenged ' . $pet->getName() . ' to a sing. It was surprised by ' . $pet->getName() . '\'s musical skill, and apologetically offered gifts before leaving in peace.')
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr, who challenged ' . ActivityHelpers::PetName($pet) . ' to a sing. It was surprised by ' . ActivityHelpers::PetName($pet) . '\'s musical skill, and apologetically offered gifts before leaving in peace.')
                     ->setIcon('icons/activity-logs/drunk-satyr')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fae-kind' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fae_kind ]))
                 ;
                 $pet->increaseEsteem(2);
                 $this->inventoryService->petCollectsItem('Blackberry Wine', $pet, 'Gifts for ' . $pet->getName() . ', from a Satyr.', $activityLog);
@@ -1263,11 +1447,37 @@ class HuntingService implements IPetActivity
             }
             else
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% encountered a Satyr, who challenged ' . $pet->getName() . ' to a sing. The Satyr quickly cut ' . $pet->getName() . ' off, complaining loudly, and leaving in a huff.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fae-kind' ]))
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr, who challenged ' . ActivityHelpers::PetName($pet) . ' to a sing. The Satyr quickly cut ' . ActivityHelpers::PetName($pet) . ' off, complaining loudly, and leaving in a huff.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fae_kind ]))
                 ;
                 $pet->increaseEsteem(-1);
                 $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Music ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+            }
+        }
+        else if($stealthRoll > $brawlRoll)
+        {
+            if($stealthRoll >= 15)
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr. They carefully pickpocketed some goodies before taking their leave.')
+                    ->setIcon('icons/activity-logs/drunk-satyr')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Fae_kind ]))
+                ;
+                $pet->increaseEsteem(2);
+                $this->inventoryService->petCollectsItem('Blackberries', $pet, 'Stolen by ' . $pet->getName() . ', from a Satyr.', $activityLog);
+                $this->inventoryService->petCollectsItem('Plain Yogurt', $pet, 'Stolen by ' . $pet->getName() . ', from a Satyr.', $activityLog);
+
+                $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Stealth ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+            }
+            else
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' encountered a Satyr. They tried to pickpocket it but it just kept moving around drunkenly and it just made ' . ActivityHelpers::PetName($pet) . ' dizzy...')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Fae_kind ]))
+                ;
+                $pet->increaseSafety(-1);
+                $pet->increaseEsteem(-1);
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
             }
         }
@@ -1279,16 +1489,16 @@ class HuntingService implements IPetActivity
                 $pet->increaseEsteem(2);
                 if($this->rng->rngNextInt(1, 2) === 1)
                 {
-                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% fought a Satyr, and won, receiving its Yogurt (gross), and Wine.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Fae-kind' ]))
+                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' fought a Satyr, and won, receiving its Yogurt (gross), and Wine.')
+                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Fae_kind ]))
                     ;
                     $this->inventoryService->petCollectsItem('Plain Yogurt', $pet, 'Satyr loot, earned by ' . $pet->getName() . '.', $activityLog);
                     $this->inventoryService->petCollectsItem('Blackberry Wine', $pet, 'Satyr loot, earned by ' . $pet->getName() . '.', $activityLog);
                 }
                 else
                 {
-                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% fought a Satyr, and won, receiving its Yogurt (gross), and Horn. Er: Talon, I guess.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Fae-kind' ]))
+                    $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' fought a Satyr, and won, receiving its Yogurt (gross), and Horn. Er: Talon, I guess.')
+                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Fae_kind ]))
                     ;
                     $this->inventoryService->petCollectsItem('Plain Yogurt', $pet, 'Satyr loot, earned by ' . $pet->getName() . '.', $activityLog);
                     $this->inventoryService->petCollectsItem('Talon', $pet, 'Satyr loot, earned by ' . $pet->getName() . '.', $activityLog);
@@ -1299,9 +1509,9 @@ class HuntingService implements IPetActivity
             }
             else
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to fight a drunken Satyr, but the Satyr misinterpreted ' . $pet->getName() . '\'s intentions, and it started to get really weird, so ' . $pet->getName() . ' ran away.')
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to fight a drunken Satyr, but the Satyr misinterpreted ' . ActivityHelpers::PetName($pet) . '\'s intentions, and it started to get really weird, so ' . ActivityHelpers::PetName($pet) . ' ran away.')
                     ->setIcon('icons/activity-logs/drunk-satyr')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Fae-kind' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Fae_kind ]))
                 ;
                 $pet->increaseSafety(-$this->rng->rngNextInt(1, 5));
                 $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
@@ -1318,7 +1528,8 @@ class HuntingService implements IPetActivity
 
         return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went out hunting, expecting to find some goats, but there don\'t seem to be any around today...')
             ->setIcon('icons/activity-logs/confused')
-            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting', 'Special Event', 'Easter' ]))
+            ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
+            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Easter ]))
         ;
     }
 
@@ -1341,15 +1552,15 @@ class HuntingService implements IPetActivity
 
             if($stealthRoll >= 15)
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% snuck up behind a Paper Golem, and unfolded it!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Stealth' ]))
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' snuck up behind a Paper Golem, and unfolded it!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
                 $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Stealth ], $activityLog);
             }
             else
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% unfolded a Paper Golem!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Crafting' ]))
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' unfolded a Paper Golem!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
 
                 $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Crafts, PetSkillEnum::Brawl ], $activityLog);
@@ -1364,7 +1575,8 @@ class HuntingService implements IPetActivity
             if($this->rng->rngNextInt(1, 10) === 1 && $pet->hasMerit(MeritEnum::LUCKY))
             {
                 $this->inventoryService->petCollectsItem($recipe, $pet, $pet->getName() . ' got this by unfolding a Paper Golem. Lucky~!', $activityLog);
-                $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Lucky~!' ]));
+                $activityLog->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit);
+                $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Lucky ]));
             }
             else if($this->rng->rngNextInt(1, 20) === 1)
                 $this->inventoryService->petCollectsItem($recipe, $pet, $pet->getName() . ' got this by unfolding a Paper Golem.', $activityLog);
@@ -1386,25 +1598,25 @@ class HuntingService implements IPetActivity
 
             if($this->rng->rngNextInt(1, 30) === 1 && $pet->hasMerit(MeritEnum::LUCKY))
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to unfold a Paper Golem, but got a nasty paper cut! During the fight, however, a small, glowing die rolled out from within the folds of the golem! Lucky~! ' . $pet->getName() . ' grabbed it before fleeing.')
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to unfold a Paper Golem, but got a nasty paper cut! During the fight, however, a small, glowing die rolled out from within the folds of the golem! Lucky~! ' . $pet->getName() . ' grabbed it before fleeing.')
                     ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Crafting', 'Lucky~!' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Lucky, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
 
                 $this->inventoryService->petCollectsItem('Glowing Six-sided Die', $pet, 'While ' . $pet->getName() . ' was fighting a Paper Golem, this fell out from it! Lucky~!', $activityLog);
             }
             else if($this->rng->rngNextInt(1, 20) === 1)
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to unfold a Paper Golem, but got a nasty paper cut! During the fight, however, a small, glowing die rolled out from within the folds of the golem. ' . $pet->getName() . ' grabbed it before fleeing.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Crafting' ]))
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to unfold a Paper Golem, but got a nasty paper cut! During the fight, however, a small, glowing die rolled out from within the folds of the golem. ' . $pet->getName() . ' grabbed it before fleeing.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
 
                 $this->inventoryService->petCollectsItem('Glowing Six-sided Die', $pet, 'While ' . $pet->getName() . ' was fighting a Paper Golem, this fell out from it.', $activityLog);
             }
             else
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to unfold a Paper Golem, but got a nasty paper cut!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Crafting' ]))
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to unfold a Paper Golem, but got a nasty paper cut!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Location_Neighborhood ]))
                 ;
             }
 
@@ -1435,7 +1647,7 @@ class HuntingService implements IPetActivity
             if($this->rng->rngNextInt(1, 5) === 1)
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While %pet:' . $pet->getId() . '.name% was out hunting, something started throwing sticks and throwing branches at them! %pet:' . $pet->getId() . '.name% spotted an Argopelter in the trees! They chased after the creature, and defeated it with one of its own sticks!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
 
                 $this->inventoryService->petCollectsItem('Crooked Stick', $pet, $pet->getName() . ' beat up an Argopelter with the help of this stick, which the Argopelter had thrown at them!', $activityLog);
@@ -1443,7 +1655,7 @@ class HuntingService implements IPetActivity
             else
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While %pet:' . $pet->getId() . '.name% was out hunting, something started throwing sticks and throwing branches at them! %pet:' . $pet->getId() . '.name% spotted an Argopelter in the trees! They chased after the creature, and quickly defeated it before it could get away!')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
 
                 $this->inventoryService->petCollectsItem('Crooked Stick', $pet, 'An Argopelter threw this at ' . $pet->getName() . '!', $activityLog);
@@ -1457,7 +1669,7 @@ class HuntingService implements IPetActivity
                     'Crooked Stick',
                     'Feathers',
                     'Quintessence',
-                    'Witch-hazel'
+                    'Witch-hazel',
                 ]);
 
                 $this->inventoryService->petCollectsItem($extraItem, $pet, $pet->getName() . ' took this from a defeated Argopelter.', $activityLog);
@@ -1473,13 +1685,13 @@ class HuntingService implements IPetActivity
             if($pet->hasMerit(MeritEnum::EIDETIC_MEMORY))
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While %pet:' . $pet->getId() . '.name% was out hunting in the woods, something started throwing sticks and thorny branches at them! %pet:' . $pet->getId() . '.name% never saw their tormenter, but it was surely an Agropelter...')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
             }
             else
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'While %pet:' . $pet->getId() . '.name% was out hunting in the woods, something started throwing sticks and thorny branches at them! %pet:' . $pet->getId() . '.name% looked around for their tormenter, but didn\'t see anything...')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $pet->increaseEsteem(-1);
             }
@@ -1496,6 +1708,78 @@ class HuntingService implements IPetActivity
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+        }
+
+        return $activityLog;
+    }
+
+    private function huntTurkeyDragonEggs(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+        $skill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getStealth()->getTotal();
+
+        $pet->increaseFood(-1);
+
+        $getExtraItem = $this->rng->rngSkillRoll($petWithSkills->getNature()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getGatheringBonus()->getTotal()) >= 15;
+
+        $loot = [
+            'Egg',
+            'Egg',
+            'Feathers',
+            'Charcoal',
+            'Scales',
+            'Quintessence'
+        ];
+
+        $autumnal = SpiceRepository::findOneByName($this->em, 'Autumnal');
+        
+        if($this->rng->rngNextInt(1, $skill) >= 18)
+        {
+            $pet->increaseEsteem(4);
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and stumbled upon a nest of Turkeydragon eggs! ' . ActivityHelpers::PetName($pet) . ' carefully took as many as they could, and brought them home.')
+                ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+            ;
+
+            $numItems = $getExtraItem ? 3 : 2;
+
+            for($i = 0; $i < $numItems; $i++)
+            {
+                $itemName = $this->rng->rngNextFromArray($loot);
+
+                if($this->rng->rngNextInt(1, 2) === 1)
+                    $this->inventoryService->petCollectsEnhancedItem($itemName, null, $autumnal, $pet, $pet->getName() . ' stole this from a Turkeydragon\'s nest.', $activityLog);
+                else
+                    $this->inventoryService->petCollectsItem($itemName, $pet, $pet->getName() . ' stole this from a Turkeydragon\'s nest.', $activityLog);
+            }
+
+            $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+        }
+        else
+        {
+            if($getExtraItem)
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and stumbled upon a nest of Turkeydragon eggs! ' . ActivityHelpers::PetName($pet) . ' could only grab a single egg before the Turkeydragon returned...')
+                    ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ;
+
+                $this->inventoryService->petCollectsEnhancedItem('Egg', null, $autumnal, $pet, $pet->getName() . ' stole this from a Turkeydragon\'s nest.', $activityLog);
+            }
+            else
+            {
+                $pet->increaseEsteem(-2);
+
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and stumbled upon a nest of Turkeydragon eggs! ' . ActivityHelpers::PetName($pet) . ' tried to steal from the nest but almost broke an egg! They fled before the Turkeydragon returned...')
+                    ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
+                ;
+            }
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
         }
 
         return $activityLog;
@@ -1573,11 +1857,11 @@ class HuntingService implements IPetActivity
         return $activityLog;
     }
 
-    private function stealthBetterThanBrawl(ComputedPetSkills $petWithSkills) : bool
+    private function stealthBetterThanBrawl(ComputedPetSkills $petWithSkills): bool
     {
         $stealth = $this->rng->rngNextInt(1, 10) + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal();
         $brawl = $this->rng->rngNextInt(1, 10) + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal();
-            
+
         return $stealth > $brawl;
     }
 }
