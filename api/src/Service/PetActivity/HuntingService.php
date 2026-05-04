@@ -154,7 +154,7 @@ class HuntingService implements IPetActivity
                     else if($usePassoverPrey)
                         $activityLog = $this->noGoats($pet);
                     else if($doStealthHunt)
-                        $activityLog = $this->huntedAntelope($petWithSkills);
+                        $activityLog = $this->huntedCapricornus($petWithSkills);
                     else
                         $activityLog = $this->huntedGoat($petWithSkills);
                     break;
@@ -472,7 +472,7 @@ class HuntingService implements IPetActivity
         {
             if($this->rng->rngNextInt(1, 4) === 1)
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Goat. The Goat won.')
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% wrestled a Goat. The Goat won, but ' . ActivityHelpers::PetName($pet) . ' managed to grab a fistful of its fur!')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting ]))
                 ;
                 $this->inventoryService->petCollectsItem('Fluff', $pet, $pet->getName() . ' wrestled a Goat, and lost, but managed to grab a fistful of Fluff.', $activityLog);
@@ -492,23 +492,47 @@ class HuntingService implements IPetActivity
         return $activityLog;
     }
 
-    private function huntedAntelope(ComputedPetSkills $petWithSkills): PetActivityLog
+    private function huntedCapricornus(ComputedPetSkills $petWithSkills): PetActivityLog // mergoat like the star sign
     {
         $pet = $petWithSkills->getPet();
         $skill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal();
 
+        $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
+
+        if(!$isRanged)
+            $pet->increaseFood(-1);
+
         if($this->rng->rngNextInt(1, $skill) >= 6)
         {
-            $loot = $this->rng->rngNextFromArray([ 'Creamy Milk', 'Talon' ]);
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' stalked an Antelope, and took it down, receiving ' . $loot . '.')
+            $loot = $this->rng->rngNextFromArray([ 'Fluff', 'Fish' ]);
+
+            $defeated = $isRanged ? 'sunk' : 'ambushed';
+
+            if ($loot === 'Fish')
+                $spice = SpiceRepository::findOneByName($this->em, 'Buttery');
+            else
+                $spice = SpiceRepository::findOneByName($this->em, 'Fishy');
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, and ' . $defeated . ' it, receiving its ' . $loot . '.')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
 
-            $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . '\'s prize for hunting down an Antelope.', $activityLog);
+            $this->inventoryService->petCollectsEnhancedItem($loot, null, $spice, $pet, $pet->getName() . '\'s prize for hunting down a Capricornus.', $activityLog);
         }
         else
         {
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' stalked an Antelope, and but it noticed ' . ActivityHelpers::PetName($pet) . ' and ran off!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+            if($this->rng->rngNextInt(1, 4) === 1)
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, but it noticed ' . ActivityHelpers::PetName($pet) . ' and swam off!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+
+                $this->inventoryService->petCollectsItem('Scales', $pet, 'A Capricornus left this behind after ' . $pet->getName() . ' spooked it.', $activityLog);
+            }
+            else
+            {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, but it noticed ' . ActivityHelpers::PetName($pet) . ' and swam off!')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
+            }
+            
         }
 
         $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
