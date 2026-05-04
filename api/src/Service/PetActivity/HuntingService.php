@@ -522,7 +522,7 @@ class HuntingService implements IPetActivity
         {
             if($this->rng->rngNextInt(1, 4) === 1)
             {
-                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, but it noticed ' . ActivityHelpers::PetName($pet) . ' and swam off!')
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, but it noticed ' . ActivityHelpers::PetName($pet) . ' and swam off! It left some of its scales floating upon the water.')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
 
                 $this->inventoryService->petCollectsItem('Scales', $pet, 'A Capricornus left this behind after ' . $pet->getName() . ' spooked it.', $activityLog);
