@@ -27,6 +27,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Enum\MoonNameEnum;
 
 class OpenNatureBoxController
 {
@@ -43,7 +44,7 @@ class OpenNatureBoxController
         ItemControllerHelpers::validateInventory($user, $inventory, 'box/nature/#/open');
         ItemControllerHelpers::validateLocationSpace($inventory, $em);
 
-        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
 
         /** @var Inventory[] $newInventory */
         $newInventory = [];

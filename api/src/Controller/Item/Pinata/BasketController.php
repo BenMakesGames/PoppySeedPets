@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\UserAccessor;
+use App\Enum\MoonNameEnum;
 
 #[Route("/item/basket")]
 class BasketController
@@ -129,7 +130,7 @@ class BasketController
         $location = $inventory->getLocation();
         $lockedToOwner = $inventory->getLockedToOwner();
 
-        $weirdItem = DateFunctions::isCornMoon($clock->now) ? null : $rng->rngNextFromArray([ 'Wheat Flour', 'Flour Tortilla' ]);
+        $weirdItem = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? null : $rng->rngNextFromArray([ 'Wheat Flour', 'Flour Tortilla' ]);
 
         $possibleFlowers = [
             'Rice Flower',

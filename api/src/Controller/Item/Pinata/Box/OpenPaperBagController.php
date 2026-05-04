@@ -27,6 +27,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Enum\MoonNameEnum;
 
 class OpenPaperBagController
 {
@@ -42,7 +43,7 @@ class OpenPaperBagController
 
         ItemControllerHelpers::validateInventory($user, $inventory, 'box/paperBag/#/open');
 
-        $wheatFlourOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat Flour';
+        $wheatFlourOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat Flour';
 
         $item = ItemRepository::findOneByName($em, $rng->rngNextFromArray([
             'Apricot', 'Baking Soda', 'Beans', 'Blackberry Lassi', 'Blueberries', 'Butter', 'Canned Food', 'Celery',

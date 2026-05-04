@@ -20,18 +20,18 @@ final class DateFunctions
     public const float MoonCycleLength = 29.53058868;
 
     public const array FullMoonNames = [
-        1 => 'Wolf',
-        2 => 'Snow',
-        3 => 'Worm',
-        4 => 'Pink',
-        5 => 'Flower',
-        6 => 'Strawberry',
-        7 => 'Buck',
-        8 => 'Sturgeon',
-        9 => 'Corn',
-        10 => 'Hunter\'s',
-        11 => 'Beaver',
-        12 => 'Cold'
+        1 => MoonNameEnum::WolfMoon,
+        2 => MoonNameEnum::SnowMoon,
+        3 => MoonNameEnum::WormMoon,
+        4 => MoonNameEnum::PinkMoon,
+        5 => MoonNameEnum::FlowerMoon,
+        6 => MoonNameEnum::StrawberryMoon,
+        7 => MoonNameEnum::BuckMoon,
+        8 => MoonNameEnum::SturgeonMoon,
+        9 => MoonNameEnum::CornMoon,
+        10 => MoonNameEnum::HuntersMoon,
+        11 => MoonNameEnum::BeaverMoon,
+        12 => MoonNameEnum::ColdMoon
     ];
 
     // adapted from https://github.com/BenMakesGames/PsyPets/blob/a22ba399c051f2a8ea38e9e0f48369f9606fd557/commons/moonphase.php
@@ -164,9 +164,9 @@ final class DateFunctions
         return (\DateTimeImmutable::createFromFormat('Y n j', $year . ' ' . $month . ' ' . $day))->setTime(0, 0, 0);
     }
 
-    public static function isCornMoon(\DateTimeImmutable $dt): bool
+    public static function isSpecificMoon(\DateTimeImmutable $dt, string $moonName): bool
     {
-        return DateFunctions::getFullMoonName($dt) === 'Corn';
+        return DateFunctions::getFullMoonName($dt) === $moonName;
     }
 
     public static function getFullMoonName(\DateTimeImmutable $dt): ?string
@@ -189,7 +189,7 @@ final class DateFunctions
         if($exactFullMoonDay == $fullMoonDaysThatMonth[0])
             return self::FullMoonNames[$fullMoonMonth];
         else
-            return 'Blue';
+            return MoonNameEnum::BlueMoon;
     }
 
     public static function moonStrength(\DateTimeInterface $dt): int

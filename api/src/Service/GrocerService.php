@@ -19,6 +19,7 @@ use App\Functions\DateFunctions;
 use App\Functions\ItemRepository;
 use App\Functions\RandomFunctions;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Enum\MoonNameEnum;
 
 class GrocerService
 {
@@ -137,7 +138,7 @@ class GrocerService
 
         $inventory[] = $this->createInventoryData(self::HotBarItems[$hotBarIndex], true);
 
-        $items = self::getItems(DateFunctions::isCornMoon($now));
+        $items = self::getItems(DateFunctions::isSpecificMoon($now, MoonNameEnum::CornMoon));
 
         foreach($items as $item)
             $inventory[] = $this->createInventoryData($item, false);

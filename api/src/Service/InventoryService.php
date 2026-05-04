@@ -27,6 +27,7 @@ use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\StatusEffectEnum;
 use App\Enum\UnlockableFeatureEnum;
+use App\Enum\MoonNameEnum;
 use App\Exceptions\PSPNotFoundException;
 use App\Functions\ArrayFunctions;
 use App\Functions\DateFunctions;
@@ -209,7 +210,7 @@ class InventoryService
         {
             if($item->getName() === 'Gold Bar' || $item->getName() === 'Gold Ore')
             {
-                if(DateFunctions::isCornMoon($this->clock->now))
+                if(DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon))
                 {
                     $activityLog
                         ->appendEntry('The ' . $item->getName() . ' was transformed into... Corn??? (That\'s not how the curse is supposed to work!)')

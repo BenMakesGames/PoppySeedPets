@@ -117,11 +117,13 @@ class HuntingService implements IPetActivity
 
         $useThanksgivingPrey = CalendarFunctions::isThanksgivingMonsters($this->clock->now) && $this->rng->rngNextBool();
         $usePassoverPrey = CalendarFunctions::isEaster($this->clock->now);
+        $beaverTakeover = DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && DateFunctions::getFullMoonName() === 'Beaver' && $this->rng->rngNextBool();
 
         $roll = $this->rng->rngNextInt(1, $maxSkill);
 
         if(DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && $this->rng->rngNextInt(1, 100) === 1)
             $activityLog = $this->werecreatureEncounterService->encounterWerecreature($petWithSkills, 'hunting', [ PetActivityLogTagEnum::Hunting ]);
+        else if(DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && $this->rng->rngNextInt(1, 100) === 1))
         else
         {
             switch($roll)
@@ -545,7 +547,7 @@ class HuntingService implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
 
-        $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat Flour';
+        $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat Flour';
 
         $possibleLoot = [
             $wheatOrCorn, 'Oil', 'Butter', 'Yeast', 'Sugar',
@@ -856,7 +858,7 @@ class HuntingService implements IPetActivity
         $brawlRoll = $this->rng->rngNextInt(1, 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal());
         $stealthSkill = $this->rng->rngNextInt(1, 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal());
 
-        $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
 
         $pet->increaseFood(-1);
 
@@ -1130,6 +1132,7 @@ class HuntingService implements IPetActivity
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' snuck up on a giant spider! It fled, but not before ' . ActivityHelpers::PetName($pet) . ' took some of its ' . $item . '!')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+                ->setIcon('items/animal/cobweb')
             ;
             $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' stole this from a giant spider.', $activityLog);
 
@@ -1140,6 +1143,7 @@ class HuntingService implements IPetActivity
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tried to steal from a giant spider, but got bitten instead!')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+                ->setIcon('items/animal/cobweb')
             ;
 
             $pet->increaseEsteem(-1);

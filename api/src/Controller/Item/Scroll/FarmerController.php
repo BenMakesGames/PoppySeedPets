@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\UserAccessor;
+use App\Enum\MoonNameEnum;
 
 #[Route("/item/scroll")]
 class FarmerController
@@ -46,7 +47,7 @@ class FarmerController
         ItemControllerHelpers::validateInventory($user, $inventory, 'scroll/farmers/#/invoke');
         ItemControllerHelpers::validateLocationSpace($inventory, $em);
 
-        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
 
         $em->remove($inventory);
 

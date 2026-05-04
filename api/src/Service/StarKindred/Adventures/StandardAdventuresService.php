@@ -16,6 +16,7 @@ namespace App\Service\StarKindred\Adventures;
 use App\Entity\Enchantment;
 use App\Entity\MonthlyStoryAdventureStep;
 use App\Enum\UnlockableFeatureEnum;
+use App\Enum\MoonNameEnum;
 use App\Functions\ArrayFunctions;
 use App\Functions\DateFunctions;
 use App\Model\ComputedPetSkills;
@@ -66,7 +67,7 @@ class StandardAdventuresService
     {
         $roll = $this->rng->rngNextInt(1, 20);
 
-        $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
 
         $loot = $this->getAdventureLoot(
             $step->getTreasure(),

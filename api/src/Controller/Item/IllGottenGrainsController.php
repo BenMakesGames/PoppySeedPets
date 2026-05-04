@@ -15,6 +15,7 @@ namespace App\Controller\Item;
 
 use App\Entity\Inventory;
 use App\Exceptions\PSPInvalidOperationException;
+use App\Enum\MoonNameEnum;
 use App\Functions\DateFunctions;
 use App\Service\Clock;
 use App\Service\InventoryService;
@@ -47,7 +48,7 @@ class IllGottenGrainsController
 
         ItemControllerHelpers::validateInventory($user, $inventory, 'illGottenGrains/#/rummage');
 
-        if(DateFunctions::isCornMoon($clock->now))
+        if(DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon))
             return $responseService->itemActionSuccess('It seems the magic of the Corn Moon is preventing this morally-questionable item from being used!');
 
         $location = $inventory->getLocation();

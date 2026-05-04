@@ -18,6 +18,7 @@ use App\Entity\User;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityStatEnum;
 use App\Enum\PetSkillEnum;
+use App\Enum\MoonNameEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Exceptions\UnreachableException;
 use App\Functions\DateFunctions;
@@ -239,7 +240,7 @@ class PetSummonedAwayService
         switch($this->rng->rngNextInt(1, 2))
         {
             case 1:
-                $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat';
+                $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
                 $location = 'a farm';
                 $description = 'work a farm';
                 $descriptioning = 'working a farm';
