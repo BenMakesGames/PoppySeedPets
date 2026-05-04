@@ -28,6 +28,7 @@ use App\Enum\PetSkillEnum;
 use App\Enum\StatusEffectEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
+use App\Enum\MoonNameEnum;
 use App\Functions\ActivityHelpers;
 use App\Functions\AdventureMath;
 use App\Functions\ArrayFunctions;
@@ -117,13 +118,14 @@ class HuntingService implements IPetActivity
 
         $useThanksgivingPrey = CalendarFunctions::isThanksgivingMonsters($this->clock->now) && $this->rng->rngNextBool();
         $usePassoverPrey = CalendarFunctions::isEaster($this->clock->now);
-        $beaverTakeover = DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && DateFunctions::getFullMoonName() === 'Beaver' && $this->rng->rngNextBool();
+        $beaverTakeover = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::BeaverMoon);
 
         $roll = $this->rng->rngNextInt(1, $maxSkill);
 
         if(DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && $this->rng->rngNextInt(1, 100) === 1)
             $activityLog = $this->werecreatureEncounterService->encounterWerecreature($petWithSkills, 'hunting', [ PetActivityLogTagEnum::Hunting ]);
-        else if(DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && $this->rng->rngNextInt(1, 100) === 1))
+        else if($beaverTakeover && $this->rng->rngNextInt(1, 4) === 1)
+            $activityLog = $this->huntedBeaver($petWithSkills);
         else
         {
             switch($roll)
