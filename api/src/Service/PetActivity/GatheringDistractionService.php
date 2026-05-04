@@ -325,7 +325,7 @@ class GatheringDistractionService
         if($location === DistractionLocationEnum::AtHome)
         {
             $distractions[] = [
-                'description' => 'they saw a fruit fly into a spider\'s web! They watched as it got helplessly cocooned...(RIP.)',
+                'description' => 'they saw a fruit fly fly into a spider\'s web! They watched as it got helplessly cocooned...(RIP.)',
                 'skills' => [ PetSkillEnum::Nature, PetSkillEnum::Brawl ],
             ];
         }
