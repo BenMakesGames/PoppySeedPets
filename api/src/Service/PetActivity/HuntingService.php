@@ -470,6 +470,7 @@ class HuntingService implements IPetActivity
                 $this->inventoryService->petCollectsItem('Butter', $pet, $pet->getName() . '\'s prize for out-wrestling a Goat.', $activityLog);
             }
 
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
         }
         else
@@ -488,11 +489,9 @@ class HuntingService implements IPetActivity
                 ;
             }
 
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
         }
-
-        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
-
         return $activityLog;
     }
 
@@ -517,10 +516,13 @@ class HuntingService implements IPetActivity
             else
                 $spice = SpiceRepository::findOneByName($this->em, 'Fishy');
 
-            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, and ' . $defeated . ' it, receiving its ' . $loot . '.')
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, and ' . $defeated . ' it, taking its ' . $loot . '.')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
 
             $this->inventoryService->petCollectsEnhancedItem($loot, null, $spice, $pet, $pet->getName() . '\'s prize for hunting down a Capricornus.', $activityLog);
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
         }
         else
         {
@@ -536,11 +538,10 @@ class HuntingService implements IPetActivity
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' tracked a Capricornus, but it noticed ' . ActivityHelpers::PetName($pet) . ' and swam off!')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
             }
-            
-        }
 
-        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
-        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+        }
 
         return $activityLog;
     }
@@ -740,7 +741,7 @@ class HuntingService implements IPetActivity
     private function huntedLargeToad(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'hunting in the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Hunting ], 'hunting in the woods');
 
         $pet = $petWithSkills->getPet();
         $skill = 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl(false)->getTotal();
@@ -785,7 +786,7 @@ class HuntingService implements IPetActivity
     private function huntedSandCastle(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Beach, 'hunting at the beach');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Beach, [ PetActivityLogTagEnum::Hunting ], 'hunting at the beach');
 
         $pet = $petWithSkills->getPet();
         $skill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal();
@@ -853,7 +854,7 @@ class HuntingService implements IPetActivity
     private function huntedScarecrow(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::InTown, 'hunting around town');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::InTown, [ PetActivityLogTagEnum::Hunting ], 'hunting around town');
 
         $pet = $petWithSkills->getPet();
 
@@ -1084,6 +1085,7 @@ class HuntingService implements IPetActivity
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]));
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature, PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, false);
         }
 
         return $activityLog;
@@ -1161,7 +1163,7 @@ class HuntingService implements IPetActivity
     private function huntedThievingMagpie(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'hunting in the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Hunting ], 'hunting in the woods');
 
         $pet = $petWithSkills->getPet();
         $intSkill = 10 + $petWithSkills->getIntelligence()->getTotal();
@@ -1266,7 +1268,7 @@ class HuntingService implements IPetActivity
     private function huntedGhosts(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'hunting in the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Hunting ], 'hunting in the woods');
 
         $pet = $petWithSkills->getPet();
 
@@ -1393,7 +1395,7 @@ class HuntingService implements IPetActivity
     private function huntedSatyr(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'hunting in the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Hunting ], 'hunting in the woods');
 
         $pet = $petWithSkills->getPet();
 
@@ -1566,7 +1568,7 @@ class HuntingService implements IPetActivity
     private function huntedPaperGolem(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::InTown, 'hunting around town');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::InTown, [ PetActivityLogTagEnum::Hunting ], 'hunting around town');
 
         $pet = $petWithSkills->getPet();
 
@@ -1660,7 +1662,7 @@ class HuntingService implements IPetActivity
     private function huntedLeshyDemon(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'hunting in the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Hunting ], 'hunting in the woods');
 
         $pet = $petWithSkills->getPet();
 
@@ -1743,6 +1745,69 @@ class HuntingService implements IPetActivity
         return $activityLog;
     }
 
+    private function huntedGreaterDustBunny(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        if($this->rng->rngNextInt(1, 20) === 1)
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::AtHome, [ PetActivityLogTagEnum::Hunting ], 'hunting at home');
+
+        $pet = $petWithSkills->getPet();
+        $skill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getStealth()->getTotal();
+
+        if($petWithSkills->getCanSeeInTheDark() <= 0)
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' searched under the couch, but it was too dark too see anything under there!')
+                ->setIcon('items/ambiguous/fluff')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Dark, PetActivityLogTagEnum::Location_At_Home ]))
+            ;
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 45), PetActivityStatEnum::HUNT, false);
+        }
+        else
+        { 
+            if($this->rng->rngNextInt(1, $skill) >= 16)
+            {
+                $pet->increaseEsteem(2);
+
+                $item = $this->rng->rngNextFromArray([
+                    'Plastic',
+                    'Paper',
+                    'Bubblegum',
+                    'Glass',
+                    'Fluff',
+                    'Moon Dust',
+                    'Baking Powder'
+                ]);
+
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' searched under the couch, and encountered a dustier bunny! They carefully snuck up behind it an pounced, scattering the dust and leaving behind Fluff and ' . $item . '!')
+                    ->setIcon('items/ambiguous/fluff')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Dark, PetActivityLogTagEnum::Location_At_Home ]))
+                ;
+
+                $this->inventoryService->petCollectsItem('Fluff', $pet, $pet->getName() . ' took this from a vanquished dustier bunny.', $activityLog);
+                $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' took this from a vanquished dustier bunny.', $activityLog);
+
+                $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Stealth ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45,60), PetActivityStatEnum::HUNT, true);
+            }
+            else
+            {
+                $pet->increaseEsteem(-4);
+                $pet->increaseSafety(-1);
+
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' searched under the couch, and encountered a dustier bunny! They tried to sneak behind it, but got noticed expelling waaay too much dust to escape, leaving behind nothing behind but a coughing fit for ' . ActivityHelpers::PetName($pet) . '!')
+                    ->setIcon('items/ambiguous/fluff')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Dark, PetActivityLogTagEnum::Location_At_Home ]))
+                ;
+
+                $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth ], $activityLog);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
+            }
+        }
+
+        return $activityLog;
+    }
+
     private function huntTurkeyDragonEggs(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
@@ -1809,7 +1874,7 @@ class HuntingService implements IPetActivity
             }
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
-            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
         }
 
         return $activityLog;
@@ -1818,7 +1883,7 @@ class HuntingService implements IPetActivity
     private function huntedEggSaladMonstrosity(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::InTown, 'hunting around town');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::InTown, [ PetActivityLogTagEnum::Hunting ], 'hunting around town');
 
         $pet = $petWithSkills->getPet();
 
