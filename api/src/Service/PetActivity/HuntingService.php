@@ -108,6 +108,7 @@ class HuntingService implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
         $doStealthHunt = $this->stealthBetterThanBrawl($petWithSkills);
+        $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
         $maxSkill = 10
             + (!$doStealthHunt ? $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal() :
                 $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
@@ -135,7 +136,10 @@ class HuntingService implements IPetActivity
                     $activityLog = $this->failedToHunt($petWithSkills);
                     break;
                 case 3:
-                    $activityLog = $this->huntedSnail($petWithSkills);
+                    if($isRanged && $this->rng->rngNextInt(1, 2) === 1)
+                        $activityLog = $this->huntedBirds($petWithSkills);
+                     else
+                        $activityLog = $this->huntedSnail($petWithSkills);
                     break;
                 case 4:
                     $activityLog = $this->huntedDustBunny($petWithSkills);
@@ -319,6 +323,25 @@ class HuntingService implements IPetActivity
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Hunting' ]))
             ;
         }
+
+        return $activityLog;
+    }
+
+    private function huntedBirds(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+
+        $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'After looking around a bit for something interesting to hunt, ' . ActivityHelpers::PetName($pet) . ' tried their hand at fowling, and scored a few birds.')
+            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
+                PetActivityLogTagEnum::Hunting,
+                PetActivityLogTagEnum::Location_Neighborhood,
+            ]))
+        ;
+
+        $this->inventoryService->petCollectsItem('Feathers', $pet, $pet->getName() . ' bounty after doing some fowling.', $activityLog);
+        $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
+
+        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, false);
 
         return $activityLog;
     }
