@@ -229,7 +229,7 @@ class HuntingService implements IPetActivity
                 case 22:
                 default:
                     if($doStealthHunt)
-                        $activityLog = $this->huntedNanerCrab($petWithSkills);
+                        $activityLog = $this->huntedMiniatureNanerCrab($petWithSkills);
                     else
                         $activityLog = $this->huntedEggSaladMonstrosity($petWithSkills);
                     break;
@@ -511,7 +511,7 @@ class HuntingService implements IPetActivity
 
             $defeated = $isRanged ? 'sunk' : 'ambushed';
 
-            if ($loot === 'Fish')
+            if($loot === 'Fish')
                 $spice = SpiceRepository::findOneByName($this->em, 'Buttery');
             else
                 $spice = SpiceRepository::findOneByName($this->em, 'Fishy');
@@ -1764,7 +1764,7 @@ class HuntingService implements IPetActivity
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 45), PetActivityStatEnum::HUNT, false);
         }
         else
-        { 
+        {
             if($this->rng->rngNextInt(1, $skill) >= 16)
             {
                 $pet->increaseEsteem(2);
@@ -1776,7 +1776,7 @@ class HuntingService implements IPetActivity
                     'Glass',
                     'Fluff',
                     'Moon Dust',
-                    'Baking Powder'
+                    'Baking Powder',
                 ]);
 
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' searched under the couch, and encountered a dustier bunny! They carefully snuck up behind it an pounced, scattering the dust and leaving behind Fluff and ' . $item . '!')
@@ -1788,7 +1788,7 @@ class HuntingService implements IPetActivity
                 $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' took this from a vanquished dustier bunny.', $activityLog);
 
                 $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Stealth ], $activityLog);
-                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45,60), PetActivityStatEnum::HUNT, true);
+                $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
             }
             else
             {
@@ -1823,11 +1823,11 @@ class HuntingService implements IPetActivity
             'Feathers',
             'Charcoal',
             'Scales',
-            'Quintessence'
+            'Quintessence',
         ];
 
         $autumnal = SpiceRepository::findOneByName($this->em, 'Autumnal');
-        
+
         if($this->rng->rngNextInt(1, $skill) >= 18)
         {
             $pet->increaseEsteem(4);

@@ -301,7 +301,7 @@ class GatheringDistractionService
         if($location === DistractionLocationEnum::AtHome && $anyRain)
         {
             $distractions[] = [
-                'description' => 'they saw the water drip-drop one at a time through a hole in the ceiling. (Someone should patch that up!)',
+                'description' => 'they saw water drip-drop one at a time through a hole in the ceiling. (Someone should patch that up!)',
                 'skills' => [ PetSkillEnum::Nature ],
             ];
         }
