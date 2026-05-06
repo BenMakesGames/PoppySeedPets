@@ -334,14 +334,13 @@ class HuntingService implements IPetActivity
         $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, 'After looking around a bit for something interesting to hunt, ' . ActivityHelpers::PetName($pet) . ' tried their hand at fowling, and scored a few birds.')
             ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
                 PetActivityLogTagEnum::Hunting,
-                PetActivityLogTagEnum::Location_Neighborhood,
             ]))
         ;
 
         $this->inventoryService->petCollectsItem('Feathers', $pet, $pet->getName() . ' bounty after doing some fowling.', $activityLog);
         $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl, PetSkillEnum::Stealth ], $activityLog);
 
-        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, false);
+        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::HUNT, true);
 
         return $activityLog;
     }
@@ -1927,7 +1926,7 @@ class HuntingService implements IPetActivity
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered an Egg Salad Monstrosity! After a grueling (and sticky) battle, ' . ActivityHelpers::PetName($pet) . ' took a huge bite out of the monster, slaying it! (Ah~! A true Gourmand!) Finally, they dug ' . $prize->getNameWithArticle() . ' out of the lumpy corpse, and brought it home.')
                 ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Gourmand, PetActivityLogTagEnum::Location_Neighborhood ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Gourmand, PetActivityLogTagEnum::Location_Neighborhood ]))
             ;
 
             $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' collected this from the remains of an Egg Salad Monstrosity.', $activityLog);
@@ -1969,6 +1968,77 @@ class HuntingService implements IPetActivity
             $pet->increaseSafety(-3);
 
             $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 75), PetActivityStatEnum::HUNT, false);
+        }
+
+        return $activityLog;
+    }
+
+    private function huntedMiniatureNanerCrab(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        if($this->rng->rngNextInt(1, 20) === 1)
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Beach, [ PetActivityLogTagEnum::Hunting ], 'hunting at the beach');
+
+        $pet = $petWithSkills->getPet();
+
+        $skill = 10 + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getStealth()->getTotal();
+
+        $possibleLoot = [
+            'Naner',
+            'Naner',
+            'Pectin',
+            'Seaweed',
+            'Fruit Fly',
+        ];
+
+        if($pet->hasMerit(MeritEnum::GOURMAND) && $this->rng->rngNextInt(1, 4) === 1)
+        {
+            $prize = ItemRepository::findOneByName($this->em, $this->rng->rngNextFromArray($possibleLoot));
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered a Miniature Naner Crab! After stalking it for awhile, ' . ActivityHelpers::PetName($pet) . ' ate an entire claw off, slaying it! (Ah~! A true Gourmand!) Finally, they recovered ' . $prize->getNameWithArticle() . ' off of its legs, and brought it home.')
+                ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Gourmand ]))
+            ;
+
+            $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' collected this from the remains of a Miniature Naner Crab.', $activityLog);
+
+            $pet
+                ->increaseFood($this->rng->rngNextInt(4, 8))
+                ->increaseSafety(4)
+                ->increaseEsteem(3)
+            ;
+
+            $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Stealth ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+        }
+        else if($this->rng->rngNextInt(1, $skill) >= 19)
+        {
+            $loot = [
+                $this->rng->rngNextFromArray($possibleLoot),
+                $this->rng->rngNextFromArray($possibleLoot),
+            ];
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered a Miniature Naner Crab! ' . ActivityHelpers::PetName($pet) . ' set a trap and waited for the crab to trigger it, retrieving ' . ArrayFunctions::list_nice_sorted($loot) . ' from its remains!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+            ;
+
+            foreach($loot as $itemName)
+                $this->inventoryService->petCollectsItem($itemName, $pet, $pet->getName() . ' collected this from the remains of a Miniature Naner Crab.', $activityLog);
+
+            $pet->increaseSafety(2);
+            $pet->increaseEsteem(4);
+
+            $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
+        }
+        else
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered a Miniature Naner Crab. They tried to make a trap to capture it, but it misfired, wasting time...')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+            ;
+            $pet->increaseEsteem(-4);
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 75), PetActivityStatEnum::HUNT, false);
         }
 
