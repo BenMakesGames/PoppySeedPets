@@ -79,7 +79,7 @@ class GatheringDistractionService
         )
         {
             $distractions[] = [
-                'description' => 'they saw a spider making a crazy-huge web! They watched for a while' ($location === DistractionLocationEnum::AtHome ? '...' : ' before returning home.'),
+                'description' => 'they saw a spider making a crazy-huge web! They watched for a while' . ($location === DistractionLocationEnum::AtHome ? '...' : ' before returning home.'),
                 'skills' => [ PetSkillEnum::Nature, PetSkillEnum::Crafts ],
             ];
         }

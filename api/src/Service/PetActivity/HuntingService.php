@@ -1387,7 +1387,7 @@ class HuntingService implements IPetActivity
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
                 ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
             ;
-            $activityLog->addTags($useStealth ? [ PetActivityLogTagEnum::Stealth ] : [ PetActivityLogTagEnum::Fighting ]);
+            $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, $useStealth ? [ PetActivityLogTagEnum::Stealth ] : [ PetActivityLogTagEnum::Fighting ]));
 
             $this->inventoryService->petCollectsItem($item, $pet, $pet->getName() . ' got this by defeating a Possessed Turkey.', $activityLog);
             $pet->increaseSafety(3);
@@ -1404,7 +1404,7 @@ class HuntingService implements IPetActivity
             ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]))
             ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
         ;
-        $activityLog->addTags($useStealth ? [ PetActivityLogTagEnum::Stealth ] : [ PetActivityLogTagEnum::Fighting ]);
+        $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, $useStealth ? [ PetActivityLogTagEnum::Stealth ] : [ PetActivityLogTagEnum::Fighting ]));
 
         $pet->increaseEsteem(-$this->rng->rngNextInt(1, 3));
         $pet->increaseSafety(-$this->rng->rngNextInt(2, 4));
@@ -1775,7 +1775,7 @@ class HuntingService implements IPetActivity
         $pet = $petWithSkills->getPet();
         $skill = 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getPerception()->getTotal() + $petWithSkills->getStealth()->getTotal();
 
-        if($petWithSkills->getCanSeeInTheDark() <= 0)
+        if($petWithSkills->getCanSeeInTheDark()->getTotal() <= 0)
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' searched under the couch, but it was too dark too see anything under there!')
                 ->setIcon('items/ambiguous/fluff')
