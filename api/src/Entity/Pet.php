@@ -410,7 +410,7 @@ class Pet
         return -16;
     }
 
-    public function increaseFood(int $amount, ?int $max = null): self
+    public function increaseFood(int $amount, ?int $max = null, bool $secondStomach = false): self
     {
         if($amount === 0) return $this;
         if($max && $amount > 0 && $this->food >= $max) return $this;
@@ -418,7 +418,7 @@ class Pet
         $this->food = NumberFunctions::clamp(
             $this->food + $amount,
             $this->getMinFood(),                                    // minimum
-            $max ?? $this->getStomachSize() - max(0, $this->junk)   // maximum
+            $max ?? $this->getStomachSize($secondStomach) - max(0, $this->junk)   // maximum
         );
 
         return $this;
@@ -612,9 +612,9 @@ class Pet
         return $this->junk;
     }
 
-    public function increaseJunk(int $amount): self
+    public function increaseJunk(int $amount, bool $secondStomach = false): self
     {
-        $this->junk = NumberFunctions::clamp($this->junk + $amount, 0, $this->getStomachSize() - max(0, $this->food));
+        $this->junk = NumberFunctions::clamp($this->junk + $amount, 0, $this->getStomachSize($secondStomach) - max(0, $this->food));
 
         return $this;
     }

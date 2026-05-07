@@ -66,14 +66,15 @@ class EatingService
      */
     public function doEat(Pet $pet, FoodWithSpice $food, ?PetActivityLog $activityLog): bool
     {
+        $secondStomach = self::getFavoriteFlavorStrength($pet, $food) > 0;
         // pets will not eat if their stomach is already full
-        if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize(self::getFavoriteFlavorStrength($pet, $food) > 0))
+        if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize($secondStomach)) // Second stomach check
             return false;
 
         if($pet->wantsSobriety() && ($food->alcohol || $food->caffeine > 0 || $food->psychedelic > 0))
             return false;
 
-        $this->applyFoodEffects($pet, $food);
+        $this->applyFoodEffects($pet, $food, $secondStomach);
 
         // consider favorite flavor:
         $randomFlavor = $food->randomFlavor > 0 ? $this->rng->rngNextFromArray(FlavorEnum::cases()) : null;
@@ -122,7 +123,7 @@ class EatingService
         return $favoriteFlavorStrength;
     }
 
-    public function applyFoodEffects(Pet $pet, FoodWithSpice $food): void
+    public function applyFoodEffects(Pet $pet, FoodWithSpice $food, bool $secondStomachActive = false): void
     {
         $pet->increaseAlcohol($food->alcohol);
 
@@ -137,10 +138,10 @@ class EatingService
             $pet->increaseCaffeine($caffeine);
 
         $pet->increasePsychedelic($food->psychedelic);
-        $pet->increaseFood($food->food);
+        $pet->increaseFood($food->food, $secondStomachActive);
 
         if($food->junk > 0)
-            $pet->increaseJunk($food->junk);
+            $pet->increaseJunk($food->junk, $secondStomachActive);
         else if($food->junk < 0)
             $pet->increasePoison($food->junk);
 
@@ -281,7 +282,9 @@ class EatingService
 
             $itemName = $food->name;
 
-            if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize(self::getFavoriteFlavorStrength($pet, $food) > 0)) //Include second stomach if food is fav
+            $secondStomach = self::getFavoriteFlavorStrength($pet, $food) > 0;
+
+            if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize($secondStomach)) //Include second stomach if food is fav
                 continue;
 
             if($pet->wantsSobriety() && ($food->alcohol > 0 || $food->caffeine > 0 || $food->psychedelic > 0))
@@ -290,7 +293,7 @@ class EatingService
                 continue;
             }
 
-            $this->applyFoodEffects($pet, $food);
+            $this->applyFoodEffects($pet, $food, $secondStomach);
 
             // consider favorite flavor:
             $randomFlavor = $food->randomFlavor > 0 ? $this->rng->rngNextFromArray(FlavorEnum::cases()) : null;
