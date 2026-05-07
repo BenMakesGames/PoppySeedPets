@@ -138,7 +138,7 @@ class EatingService
             $pet->increaseCaffeine($caffeine);
 
         $pet->increasePsychedelic($food->psychedelic);
-        $pet->increaseFood($food->food, $secondStomachActive);
+        $pet->increaseFood($food->food, null, $secondStomachActive);
 
         if($food->junk > 0)
             $pet->increaseJunk($food->junk, $secondStomachActive);
