@@ -67,7 +67,7 @@ class EatingService
     public function doEat(Pet $pet, FoodWithSpice $food, ?PetActivityLog $activityLog): bool
     {
         // pets will not eat if their stomach is already full
-        if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize())
+        if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize(self::getFavoriteFlavorStrength($pet, $food) > 0))
             return false;
 
         if($pet->wantsSobriety() && ($food->alcohol || $food->caffeine > 0 || $food->psychedelic > 0))
@@ -281,7 +281,7 @@ class EatingService
 
             $itemName = $food->name;
 
-            if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize())
+            if($pet->getJunk() + $pet->getFood() >= $pet->getStomachSize(self::getFavoriteFlavorStrength($pet, $food) > 0)) //Include second stomach if food is fav
                 continue;
 
             if($pet->wantsSobriety() && ($food->alcohol > 0 || $food->caffeine > 0 || $food->psychedelic > 0))

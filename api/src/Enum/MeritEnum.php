@@ -103,4 +103,10 @@ final class MeritEnum
     public const string DOPPEL_GENE = 'Doppel Gene'; // always gives birth to twins
     public const string FAIRY_GODMOTHER = 'Fairy Godmother';
     public const string RUMPELSTILTSKINS_CURSE = 'Rumpelstiltskin\'s Curse'; // gold instead of wheat, and vice-versa
+
+    // through self-reflection points, only:
+    public const string OF_HEART_AND_MIND = 'Of Heart and Mind'; // gains more experience if love is at 'very loved'
+    public const string PRECIOUS_MEMORIES = 'Precious Memories'; // get some items when doing quality time
+    public const string SECOND_STOMACH = 'Second Stomach'; // much larger stomach, but only for favorite foods
+
 }

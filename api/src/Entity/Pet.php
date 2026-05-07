@@ -728,10 +728,11 @@ class Pet
 
         if($fullness >= 0.75)
         {
+            $overstuffedMessage = $fullness > 1.0 ? 'over' : '';
             if($this->getSpecies()->getFamily() === 'fish')
-                return 'stuffed to the gills';
+                return $overstuffedMessage . 'stuffed to the gills';
             else
-                return 'stuffed';
+                return $overstuffedMessage . 'stuffed';
         }
         else if($fullness >= 0.50)
             return 'full';
@@ -834,12 +835,13 @@ class Pet
             return 'none';
     }
 
-    public function getStomachSize(): int
+    public function getStomachSize(bool $countSecondStomach = false): int
     {
         return
             $this->stomachSize +
             ($this->hasMerit(MeritEnum::BLACK_HOLE_TUM) ? 6 : 0) +
-            ($this->hasMerit(MeritEnum::GOURMAND) ? 4 : 0)
+            ($this->hasMerit(MeritEnum::GOURMAND) ? 4 : 0) +
+            ($countSecondStomach && $this->hasMerit(MeritEnum::SECOND_STOMACH) ? 10 : 0)
         ;
     }
 

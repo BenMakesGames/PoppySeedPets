@@ -104,4 +104,10 @@ final class MeritInfo
         // phoenixes
         MeritEnum::ETERNAL,
     ];
+
+    public const array SELF_REFLECTION_MERITS = [
+        MeritEnum::OF_HEART_AND_MIND,
+        MeritEnum::PRECIOUS_MEMORIES,
+        MeritEnum::SECOND_STOMACH,
+    ];
 }
