@@ -18,6 +18,7 @@ use App\Entity\PetSpecies;
 use App\Entity\User;
 use App\Enum\PetSpeciesName;
 use App\Enum\UserStat;
+use App\Enum\MoonNameEnum;
 use App\Functions\CalendarFunctions;
 use App\Functions\ColorFunctions;
 use App\Functions\DateFunctions;
@@ -103,9 +104,8 @@ class AdoptionService
             ->getSingleScalarResult()
         ;
 
-        $fullMoonName = DateFunctions::getFullMoonName($this->clock->now);
-        $isBlueMoon = $fullMoonName === 'Blue';
-        $isPinkMoon = $fullMoonName === 'Pink';
+        $isBlueMoon = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::BlueMoon);
+        $isPinkMoon = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::PinkMoon);
 
         /** @var PetShelterPet[] $pets */
         $pets = [];

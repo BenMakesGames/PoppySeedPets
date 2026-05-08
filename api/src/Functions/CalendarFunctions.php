@@ -361,7 +361,7 @@ final class CalendarFunctions
         /** @var HolidayEnum[] $events */
         $events = [];
 
-        $fullMoonName = DateFunctions::getFullMoonName($dt);
+        $fullMoonName = DateFunctions::getFullMoonName($dt) ?? 'Unknown';
 
         if($fullMoonName)
             $events[] = $fullMoonName . ' Moon';

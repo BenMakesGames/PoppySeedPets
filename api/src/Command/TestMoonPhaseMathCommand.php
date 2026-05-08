@@ -43,7 +43,7 @@ class TestMoonPhaseMathCommand extends PoppySeedPetsCommand
                 for($day = 1; $day <= $daysInMonth; $day++)
                 {
                     $date = DateFunctions::createFromYearMonthDay($year, $month, $day);
-                    $fullMoonName = DateFunctions::getFullMoonName($date);
+                    $fullMoonName = DateFunctions::getFullMoonName($date) ?? 'None';
 
                     if($fullMoonName)
                     {
