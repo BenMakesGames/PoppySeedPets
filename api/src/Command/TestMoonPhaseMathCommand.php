@@ -43,13 +43,13 @@ class TestMoonPhaseMathCommand extends PoppySeedPetsCommand
                 for($day = 1; $day <= $daysInMonth; $day++)
                 {
                     $date = DateFunctions::createFromYearMonthDay($year, $month, $day);
-                    $fullMoonName = DateFunctions::getFullMoonName($date) ?? 'None';
+                    $fullMoonName = DateFunctions::getFullMoonName($date);
 
                     if($fullMoonName)
                     {
                         $exact = DateFunctions::getIsExactFullMoon($date) ? ' *' : '';
                         $moonAge = DateFunctions::getMoonAge($date);
-                        echo $date->format('Y-m-d') . ' ' . round($moonAge, 3) . ' ' . $fullMoonName . $exact . "\n";
+                        echo $date->format('Y-m-d') . ' ' . round($moonAge, 3) . ' ' . $fullMoonName->value . $exact . "\n";
                     }
                 }
             }
