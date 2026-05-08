@@ -165,12 +165,12 @@ final class DateFunctions
         return (\DateTimeImmutable::createFromFormat('Y n j', $year . ' ' . $month . ' ' . $day))->setTime(0, 0, 0);
     }
 
-    public static function isSpecificMoon(\DateTimeImmutable $dt, string $moonName): bool
+    public static function isSpecificMoon(\DateTimeImmutable $dt, MoonNameEnum $moonName): bool
     {
         return DateFunctions::getFullMoonName($dt) === $moonName;
     }
 
-    public static function getFullMoonName(\DateTimeImmutable $dt): ?string
+    public static function getFullMoonName(\DateTimeImmutable $dt): ?MoonNameEnum
     {
         if(self::moonPhase($dt) !== MoonPhaseEnum::FullMoon)
             return null;
