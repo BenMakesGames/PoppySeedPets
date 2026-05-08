@@ -13,22 +13,19 @@ declare(strict_types=1);
 
 namespace App\Enum;
 
-final class MoonNameEnum
+enum MoonNameEnum : string
 {
-    /** @use FakeEnum<string> */
-    use FakeEnum;
-
-    public const string WolfMoon = 'Wolf';
-    public const string SnowMoon = 'Snow';
-    public const string WormMoon = 'Worm';
-    public const string PinkMoon = 'Pink';
-    public const string FlowerMoon = 'Flower';
-    public const string StrawberryMoon = 'Strawberry';
-    public const string BuckMoon = 'Buck';
-    public const string SturgeonMoon = 'Sturgeon';
-    public const string CornMoon = 'Corn';
-    public const string HuntersMoon = 'Hunter\'s';
-    public const string BeaverMoon = 'Beaver';
-    public const string ColdMoon = 'Cold';
-    public const string BlueMoon = 'Blue';
+    case WolfMoon = 'Wolf';
+    case SnowMoon = 'Snow';
+    case WormMoon = 'Worm';
+    case PinkMoon = 'Pink';
+    case FlowerMoon = 'Flower';
+    case StrawberryMoon = 'Strawberry';
+    case BuckMoon = 'Buck';
+    case SturgeonMoon = 'Sturgeon';
+    case CornMoon = 'Corn';
+    case HuntersMoon = 'Hunter\'s';
+    case BeaverMoon = 'Beaver';
+    case ColdMoon = 'Cold';
+    case BlueMoon = 'Blue';
 }
