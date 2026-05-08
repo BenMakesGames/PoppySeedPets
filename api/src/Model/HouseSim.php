@@ -119,7 +119,7 @@ class HouseSim implements IHouseSim
 
         $rng->rngNextShuffle($items);
 
-        /** @var Inventory|null $itemToRemove */
+        /** @var Inventory $itemToRemove */
         $itemToRemove = array_find(
             $this->inventory,
             fn(Inventory $i) => in_array($i->getItem()->getName(), $items)
@@ -133,7 +133,7 @@ class HouseSim implements IHouseSim
         else
             $this->itemQuantitiesByItemId[$itemId]--;
 
-        if($itemToRemove->getId())
+        if($itemToRemove->hasId())
             $this->inventoryToRemoveFromDatabase[] = $itemToRemove;
 
         $this->inventory = array_filter(
@@ -168,7 +168,7 @@ class HouseSim implements IHouseSim
 
         foreach($inventoryToRemoveFromHouseSim as $itemToRemove)
         {
-            if($itemToRemove->getId())
+            if($itemToRemove->hasId())
                 $this->inventoryToRemoveFromDatabase[] = $itemToRemove;
         }
 

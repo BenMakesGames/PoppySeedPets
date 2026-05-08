@@ -21,6 +21,7 @@ export class PetGroupIconPipe implements PipeTransform {
     'astronomy',
     'gaming',
     'sportsball',
+    'gardening',
   ];
 
   transform(value: number): string {

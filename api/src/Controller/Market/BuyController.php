@@ -118,9 +118,11 @@ class BuyController
             $inventory->getSellPrice() ?? throw new \RuntimeException('InventoryForSale sell price is null')
         );
 
+        $lockCacheKey = 'Trading For Sale #' . $itemToBuy->getId();
+
         $inventory = $itemToBuy->getInventory();
 
-        $item = $cache->getItem('Trading For Sale #' . $itemToBuy->getId());
+        $item = $cache->getItem($lockCacheKey);
         $item->set(true)->expiresAfter(\DateInterval::createFromDateString('1 minute'));
         $cache->save($item);
 
@@ -161,7 +163,7 @@ class BuyController
         }
         finally
         {
-            $cache->deleteItem('Trading For Sale #' . $itemToBuy->getId());
+            $cache->deleteItem($lockCacheKey);
         }
 
         return $responseService->success($itemToBuy, [ SerializationGroupEnum::MY_INVENTORY ]);

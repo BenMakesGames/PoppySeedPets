@@ -27,7 +27,7 @@ final class Version20260418185900 extends AbstractMigration
     {
         // Gardening Club:
         $this->addSql(<<<EOSQL
-        INSERT INTO `pet_activity_log_tag` (`id`, `title`, `color`, `emoji`) VALUES (101, 'Gardening Club', '38C789', '🧤')
+        INSERT INTO `pet_activity_log_tag` (`id`, `title`, `color`, `emoji`) VALUES (104, 'Gardening Club', '38C789', '🧤')
         ON DUPLICATE KEY UPDATE `id` = `id`;
         EOSQL);
     }

@@ -3361,18 +3361,6 @@ parameters:
 			path: src/Model/HouseSim.php
 
 		-
-			message: '#^Cannot call method getId\(\) on App\\Entity\\Inventory\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Model/HouseSim.php
-
-		-
-			message: '#^Cannot call method getItem\(\) on App\\Entity\\Inventory\|null\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: src/Model/HouseSim.php
-
-		-
 			message: '#^Cannot use \+\+ on mixed\.$#'
 			identifier: postInc.type
 			count: 2
@@ -3381,12 +3369,6 @@ parameters:
 		-
 			message: '#^Cannot use \-\- on mixed\.$#'
 			identifier: postDec.type
-			count: 1
-			path: src/Model/HouseSim.php
-
-		-
-			message: '#^Property App\\Model\\HouseSim\:\:\$inventoryToRemoveFromDatabase \(array\<App\\Entity\\Inventory\>\) does not accept array\<App\\Entity\\Inventory\|null\>\.$#'
-			identifier: assign.propertyType
 			count: 1
 			path: src/Model/HouseSim.php
 
