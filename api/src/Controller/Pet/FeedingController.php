@@ -29,15 +29,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\UserAccessor;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 #[Route("/pet")]
-class PetAndFeedController
+class FeedingController
 {
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
     #[Route("/{pet}/feed", methods: ["POST"], requirements: ["pet" => "\d+"])]
     public function feed(
         Pet $pet, Request $request, ResponseService $responseService, EntityManagerInterface $em,
-        IRandom $rng, EatingService $eatingService, UserAccessor $userAccessor
+        IRandom $rng, EatingService $eatingService, UserAccessor $userAccessor,
+        NormalizerInterface $normalizer
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
@@ -63,14 +65,15 @@ class PetAndFeedController
 
         $em->flush();
 
-        $emoji = null;
+        $petData = $normalizer->normalize($pet, null, [ 'groups' => [ SerializationGroupEnum::MY_PET ] ]);
 
-        if ($result->ateFavFood === true)
-            $emoji = $pet->getRandomAffectionExpression($rng);
+        $emoji = $result->ateFavFood
+            ? $pet->getRandomAffectionExpression($rng)
+            : null;
 
         if($emoji)
-            return $responseService->success([ 'pet' => $pet, 'emoji' => $emoji ], [ SerializationGroupEnum::MY_PET ]);
-        else
-            return $responseService->success($pet, [ SerializationGroupEnum::MY_PET ]);
+            $petData['emoji'] = $emoji;
+
+        return $responseService->success($petData);
     }
 }
