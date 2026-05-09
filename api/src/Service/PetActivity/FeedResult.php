@@ -12,6 +12,8 @@ declare(strict_types=1);
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace App\Service\PetActivity;
+
 use App\Entity\PetActivityLog;
 
 class FeedResult
