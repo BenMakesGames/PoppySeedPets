@@ -72,6 +72,6 @@ class PetAndFeedController
         if($emoji)
             return $responseService->success([ 'pet' => $pet, 'emoji' => $emoji ], [ SerializationGroupEnum::MY_PET ]);
         else
-            return $responseService->success([ 'pet' => $pet ], [ SerializationGroupEnum::MY_PET ]);
+            return $responseService->success($pet, [ SerializationGroupEnum::MY_PET ]);
     }
 }
