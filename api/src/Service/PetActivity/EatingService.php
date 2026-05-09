@@ -253,8 +253,9 @@ class EatingService
 
     /**
      * @param list<Inventory> $inventory
+     * @return array{log: PetActivityLog, ateFavFood: bool}
      */
-    public function doFeed(User $feeder, Pet $pet, array $inventory): PetActivityLog
+    public function doFeed(User $feeder, Pet $pet, array $inventory): array
     {
         if(!$pet->isAtHome())
             throw new PSPInvalidOperationException('Pets that aren\'t home cannot be interacted with.');
@@ -274,6 +275,7 @@ class EatingService
         /** @var FoodWithSpice[] $favorites */ $favorites = [];
         $tooPoisonous = [];
         $ateAFortuneCookie = false;
+        $ateFavFood = false;
 
         foreach($inventory as $i)
         {
@@ -359,6 +361,7 @@ class EatingService
             {
                 $icon = 'ui/affection';
                 $message .= ' ' . $pet->getName() . ' really liked the ' . $this->rng->rngNextFromArray($favorites)->name . '!';
+                $ateFavFood = true;
             }
 
             if($isThirsty && $gotAColdDrink)
@@ -387,24 +390,24 @@ class EatingService
                 }
             }
 
-            return PetActivityLogFactory::createUnreadLog($this->em, $pet, $message)
+            return ['log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, $message)
                 ->setIcon($icon)
                 ->setChanges($petChanges->compare($pet))
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])), 'ateFavFood' => $ateFavFood]
             ;
         }
         else
         {
             if(count($tooPoisonous) > 0)
             {
-                return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but ' . $this->rng->rngNextFromArray($tooPoisonous) . ' really isn\'t appealing right now.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]))
+                return ['log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but ' . $this->rng->rngNextFromArray($tooPoisonous) . ' really isn\'t appealing right now.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])), 'ateFavFood' => false ]
                 ;
             }
             else
             {
-                return PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but they\'re too full to eat anymore.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]))
+                return ['log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but they\'re too full to eat anymore.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])), 'ateFavFood' => false ]
                 ;
             }
         }

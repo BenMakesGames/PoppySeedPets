@@ -38,7 +38,7 @@ class PetAndFeedController
     #[Route("/{pet}/feed", methods: ["POST"], requirements: ["pet" => "\d+"])]
     public function feed(
         Pet $pet, Request $request, ResponseService $responseService, EntityManagerInterface $em,
-        EatingService $eatingService, UserAccessor $userAccessor
+        IRandom $rng, EatingService $eatingService, UserAccessor $userAccessor
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
@@ -60,13 +60,18 @@ class PetAndFeedController
         if(count($items) !== count($inventory))
             throw new PSPNotFoundException('At least one of the items selected doesn\'t seem to exist?? (Reload and try again...)');
 
-        $eatingService->doFeed($user, $pet, $inventory);
+        $array = $eatingService->doFeed($user, $pet, $inventory);
 
         $em->flush();
 
-        return $responseService->success(
-            $pet,
-            [ SerializationGroupEnum::MY_PET ]
-        );
+        $emoji = null;
+
+        if ($array['ateFavFood'] === true)
+            $emoji = $pet->getRandomAffectionExpression($rng);
+
+        if($emoji)
+            return $responseService->success([ 'pet' => $pet, 'emoji' => $emoji ], [ SerializationGroupEnum::MY_PET ]);
+        else
+            return $responseService->success([ 'pet' => $pet ], [ SerializationGroupEnum::MY_PET ]);
     }
 }
