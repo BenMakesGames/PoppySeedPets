@@ -65,6 +65,7 @@ class FeedingController
 
         $em->flush();
 
+        /** @var array<array-key, mixed> $petData */
         $petData = $normalizer->normalize($pet, null, [ 'groups' => [ SerializationGroupEnum::MY_PET ] ]);
 
         $emoji = $result->ateFavFood
