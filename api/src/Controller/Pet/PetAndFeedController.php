@@ -65,7 +65,7 @@ class PetAndFeedController
 
         $emoji = null;
 
-        if ($array['ateFavFood'] === true)
+        if ($result->ateFavFood === true)
             $emoji = $pet->getRandomAffectionExpression($rng);
 
         if($emoji)
