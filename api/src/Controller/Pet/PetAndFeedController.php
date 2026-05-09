@@ -22,7 +22,6 @@ use App\Exceptions\PSPNotFoundException;
 use App\Exceptions\PSPPetNotFoundException;
 use App\Service\IRandom;
 use App\Service\PetActivity\EatingService;
-use App\Service\QualityTimeService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
