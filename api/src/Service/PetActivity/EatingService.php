@@ -274,7 +274,6 @@ class EatingService
         $foodsEaten = [];
         /** @var FoodWithSpice[] $favorites */
         $favorites = [];
-        $favorites = [];
         $tooPoisonous = [];
         $ateAFortuneCookie = false;
         $ateFavFood = false;
