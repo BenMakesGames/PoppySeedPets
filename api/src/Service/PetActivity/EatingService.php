@@ -416,9 +416,11 @@ class EatingService
             }
             else
             {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but they\'re too full to eat anymore.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]));
+
                 return [
-                    'log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but they\'re too full to eat anymore.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])),
+                    'log' => $activityLog,
                     'ateFavFood' => false,
                 ];
             }
