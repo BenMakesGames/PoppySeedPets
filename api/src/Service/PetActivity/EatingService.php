@@ -274,6 +274,7 @@ class EatingService
         $foodsEaten = [];
         /** @var FoodWithSpice[] $favorites */
         $favorites = [];
+        $favorites = [];
         $tooPoisonous = [];
         $ateAFortuneCookie = false;
         $ateFavFood = false;
@@ -396,8 +397,8 @@ class EatingService
                     ->setIcon($icon)
                     ->setChanges($petChanges->compare($pet))
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])),
-                'ateFavFood' => $ateFavFood ]
-            ;
+                'ateFavFood' => $ateFavFood,
+            ];
         }
         else
         {
@@ -406,16 +407,16 @@ class EatingService
                 return [
                     'log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but ' . $this->rng->rngNextFromArray($tooPoisonous) . ' really isn\'t appealing right now.')
                         ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])),
-                    'ateFavFood' => false ]
-                ;
+                    'ateFavFood' => false,
+                ];
             }
             else
             {
                 return [
                     'log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but they\'re too full to eat anymore.')
                         ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])),
-                    'ateFavFood' => false ]
-                ;
+                    'ateFavFood' => false,
+                ];
             }
         }
     }
