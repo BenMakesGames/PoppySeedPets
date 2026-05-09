@@ -59,7 +59,7 @@ class PetAndFeedController
         if(count($items) !== count($inventory))
             throw new PSPNotFoundException('At least one of the items selected doesn\'t seem to exist?? (Reload and try again...)');
 
-        $array = $eatingService->doFeed($user, $pet, $inventory);
+        $result = $eatingService->doFeed($user, $pet, $inventory);
 
         $em->flush();
 

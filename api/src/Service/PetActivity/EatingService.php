@@ -39,6 +39,7 @@ use App\Model\FoodWithSpice;
 use App\Model\FortuneCookie;
 use App\Model\PetChanges;
 use App\Service\CravingService;
+use App\Service\PetActivity\FeedResult;
 use App\Service\InventoryService;
 use App\Service\IRandom;
 use App\Service\PetExperienceService;
@@ -253,9 +254,8 @@ class EatingService
 
     /**
      * @param list<Inventory> $inventory
-     * @return array{log: PetActivityLog, ateFavFood: bool}
      */
-    public function doFeed(User $feeder, Pet $pet, array $inventory): array
+    public function doFeed(User $feeder, Pet $pet, array $inventory): FeedResult
     {
         if(!$pet->isAtHome())
             throw new PSPInvalidOperationException('Pets that aren\'t home cannot be interacted with.');
@@ -397,10 +397,7 @@ class EatingService
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]))
             ;
 
-            return [
-                'log' => $activityLog,
-                'ateFavFood' => $ateFavFood,
-            ];
+            return new FeedResult($activityLog, $ateFavFood);
         }
         else
         {
@@ -409,20 +406,14 @@ class EatingService
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but ' . $this->rng->rngNextFromArray($tooPoisonous) . ' really isn\'t appealing right now.')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]));
 
-                return [
-                    'log' => $activityLog,
-                    'ateFavFood' => false,
-                ];
+                return new FeedResult($activityLog, false);
             }
             else
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but they\'re too full to eat anymore.')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]));
 
-                return [
-                    'log' => $activityLog,
-                    'ateFavFood' => false,
-                ];
+                return new FeedResult($activityLog, false);
             }
         }
     }
