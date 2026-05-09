@@ -35,10 +35,13 @@ final class Version20260508234900 extends AbstractMigration
         INSERT INTO item_tool (`id`, `stealth`, `nature`, `brawl`, `arcana`, `crafts`, `grip_x`, `grip_y`, `grip_angle`, `grip_scale`, `fishing`, `gathering`, `music`, `smithing`, `science`, `grip_angle_fixed`, `focus_skill`, `provides_light`, `protection_from_heat`, `always_in_front`, `is_ranged`, `when_gather_id`, `when_gather_also_gather_id`, `climbing`, `leads_to_adventure`, `prevents_bugs`, `attracts_bugs`, `can_be_nibbled`, `increases_pooping`, `dreamcatcher`, `is_grayscaling`, `social_energy_modifier`, `sex_drive`, `when_gather_prevent_gather`, `adventure_description`, `when_gather_apply_status_effect`, `when_gather_apply_status_effect_duration`, `physics`, `electronics`, `hacking`, `umbra`, `magic_binding`, `mining`) VALUES (536, 0, 0, 0, 0, 0, 0.49, 0.71, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 482, 12, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0) ON DUPLICATE KEY UPDATE `id` = `id`;
 
         -- the item itself!
-        INSERT INTO item (`id`, `name`, `description`, `image`, `use_actions`, `tool_id`, `food_id`, `fertilizer`, `plant_id`, `hat_id`, `fuel`, `recycle_value`, `enchants_id`, `spice_id`, `treasure_id`, `is_bug`, `hollow_earth_tile_card_id`, `cannot_be_thrown_out`, `museum_points`) VALUES (1515, "Shaved Everice", "Perfect for that cold, cold crunch. _And_ feeling lingering in your stomach? Syrup not included.", "dessert/shaved-ice", NULL, 536, 543, 0, NULL, NULL, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 1) ON DUPLICATE KEY UPDATE `id` = `id`;
+        INSERT INTO item (`id`, `name`, `description`, `image`, `use_actions`, `tool_id`, `food_id`, `fertilizer`, `plant_id`, `hat_id`, `fuel`, `recycle_value`, `enchants_id`, `spice_id`, `treasure_id`, `is_bug`, `hollow_earth_tile_card_id`, `cannot_be_thrown_out`, `museum_points`) VALUES (1523, "Shaved Everice", "Perfect for that cold, cold crunch. _And_ feeling lingering in your stomach? Syrup not included.", "dessert/shaved-ice", NULL, 536, 543, 0, NULL, NULL, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 1) ON DUPLICATE KEY UPDATE `id` = `id`;
+
+        -- item group
+        INSERT IGNORE INTO item_group_item (item_group_id, item_id) VALUES (46, 1523);
         
         -- grammar
-        INSERT INTO item_grammar (`id`, `item_id`, `article`) VALUES (1516,1515,"some") ON DUPLICATE KEY UPDATE `id` = `id`;   
+        INSERT INTO item_grammar (`id`, `item_id`, `article`) VALUES (1603,1523,"some") ON DUPLICATE KEY UPDATE `id` = `id`;   
         EOSQL);
 
     }
