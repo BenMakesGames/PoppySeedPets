@@ -406,9 +406,11 @@ class EatingService
         {
             if(count($tooPoisonous) > 0)
             {
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but ' . $this->rng->rngNextFromArray($tooPoisonous) . ' really isn\'t appealing right now.')
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]));
+
                 return [
-                    'log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, '%user:' . $pet->getOwner()->getId() . '.Name% tried to feed %pet:' . $pet->getId() . '.name%, but ' . $this->rng->rngNextFromArray($tooPoisonous) . ' really isn\'t appealing right now.')
-                        ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])),
+                    'log' => $activityLog,
                     'ateFavFood' => false,
                 ];
             }
