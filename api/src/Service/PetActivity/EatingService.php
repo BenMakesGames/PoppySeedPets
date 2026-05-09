@@ -391,11 +391,14 @@ class EatingService
                 }
             }
 
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, $message)
+                ->setIcon($icon)
+                ->setChanges($petChanges->compare($pet))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ]))
+            ;
+
             return [
-                'log' => PetActivityLogFactory::createUnreadLog($this->em, $pet, $message)
-                    ->setIcon($icon)
-                    ->setChanges($petChanges->compare($pet))
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Eating' ])),
+                'log' => $activityLog,
                 'ateFavFood' => $ateFavFood,
             ];
         }
