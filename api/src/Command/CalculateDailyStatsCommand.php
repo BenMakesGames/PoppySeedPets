@@ -154,7 +154,7 @@ class CalculateDailyStatsCommand extends Command
             ->executeQuery('
                 SELECT
                     COUNT(user.id) AS total_users,
-                    SUM(user.moneys) AS total_moneys,
+                    SUM(user.moneys) AS total_moneys
                 FROM user
                 WHERE user.last_activity>="' . $firstDate . '"
             ')
@@ -167,7 +167,7 @@ class CalculateDailyStatsCommand extends Command
         return $this->em->getConnection()
             ->executeQuery('
                 SELECT
-                    COUNT(pet.id) AS total_pets,
+                    COUNT(pet.id) AS total_pets
                 FROM pet
                 WHERE pet.birth_date<="' . $firstDate . '"
             ')
@@ -180,7 +180,7 @@ class CalculateDailyStatsCommand extends Command
         return $this->em->getConnection()
             ->executeQuery('
                 SELECT
-                    COUNT(pet.id) AS total_pets,
+                    COUNT(pet.id) AS total_pets
                 FROM pet"
             ')
             ->fetchAssociative()['total_pets']
@@ -192,7 +192,7 @@ class CalculateDailyStatsCommand extends Command
         return $this->em->getConnection()
             ->executeQuery('
                 SELECT
-                    COUNT(pet.id) AS total_births,
+                    COUNT(pet.id) AS total_births
                 FROM pet
                 WHERE pet.birth_date>="' . $firstDate . '
                 AND pet.mom_id IS NOT NULL"
@@ -206,7 +206,7 @@ class CalculateDailyStatsCommand extends Command
         return $this->em->getConnection()
             ->executeQuery('
                 SELECT
-                    COUNT(pet.id) AS total_births,
+                    COUNT(pet.id) AS total_births
                 FROM pet
                 WHERE pet.mom_id IS NOT NULL"
             ')
