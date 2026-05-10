@@ -117,11 +117,16 @@ class CalculateDailyStatsCommand extends Command
             ->setPetsBorn28Day($this->getBornPets($month))
             ->setPetsBornLifetime($this->getBornPetsLifetime())
 
-            ->setTotalPets1Day($this->getTotalPets($oneDay))
-            ->setTotalPets3Day($this->getTotalPets($threeDay))
-            ->setTotalPets7Day($this->getTotalPets($week))
-            ->setTotalPets28Day($this->getTotalPets($month))
-            ->setTotalPetsLifetime($this->getTotalPetsLifetime())
+            ->setNewPets1Day($this->getNewPets($oneDay))
+            ->setNewPets3Day($this->getNewPets($threeDay))
+            ->setNewPets7Day($this->getNewPets($week))
+            ->setNewPets28Day($this->getNewPets($month))
+
+            ->setActivePets1Day($this->getActivepets($oneDay))
+            ->setActivePets3Day($this->getActivepets($threeDay))
+            ->setActivePets7Day($this->getActivepets($week))
+            ->setActivePets28Day($this->getActivepets($month))
+            ->setActivePetsLifetime($this->getActivePetsLifeTime())
         ;
 
         $this->em->persist($dailyStats);
@@ -162,39 +167,39 @@ class CalculateDailyStatsCommand extends Command
         ;
     }
 
-    public function getTotalPets(string $firstDate): int
+    public function getActivePets(string $firstDate): int
     {
-        return $this->em->getConnection()
+        return (int)$this->em->getConnection()
             ->executeQuery('
                 SELECT
-                    COUNT(pet.id) AS total_pets
+                    COUNT(pet.id) AS active_pets
                 FROM pet
-                WHERE pet.birth_date<="' . $firstDate . '"
+                WHERE pet.last_interacted>="' . $firstDate . '"
             ')
-            ->fetchAssociative()['total_pets']
+            ->fetchAssociative()['active_pets']
         ;
     }
 
-    public function getTotalPetsLifetime(): int
+    public function getActivePetsLifetime(): int
     {
-        return $this->em->getConnection()
+        return (int)$this->em->getConnection()
             ->executeQuery('
                 SELECT
-                    COUNT(pet.id) AS total_pets
-                FROM pet"
+                    COUNT(pet.id) AS active_pets
+                FROM pet
             ')
-            ->fetchAssociative()['total_pets']
+            ->fetchAssociative()['active_pets']
         ;
     }
 
     public function getBornPets(string $firstDate): int
     {
-        return $this->em->getConnection()
+        return (int)$this->em->getConnection()
             ->executeQuery('
                 SELECT
                     COUNT(pet.id) AS total_births
                 FROM pet
-                WHERE pet.birth_date>="' . $firstDate . '
+                WHERE pet.birth_date>="' . $firstDate . '"
                 AND pet.mom_id IS NOT NULL"
             ')
             ->fetchAssociative()['total_births']
@@ -203,14 +208,27 @@ class CalculateDailyStatsCommand extends Command
 
     public function getBornPetsLifetime(): int
     {
-        return $this->em->getConnection()
+        return (int)$this->em->getConnection()
             ->executeQuery('
                 SELECT
                     COUNT(pet.id) AS total_births
                 FROM pet
-                WHERE pet.mom_id IS NOT NULL"
+                WHERE pet.mom_id IS NOT NULL
             ')
             ->fetchAssociative()['total_births']
+        ;
+    }
+
+    public function getNewPets(string $firstDate): int
+    {
+        return (int)$this->em->getConnection()
+            ->executeQuery('
+                SELECT
+                    COUNT(pet.id) AS new_pets
+                FROM pet
+                WHERE pet.birth_date>="' . $firstDate . '"
+            ')
+            ->fetchAssociative()['new_pets']
         ;
     }
 

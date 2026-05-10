@@ -21,7 +21,7 @@ final class Version20260510013000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add pets born and total pets stats.';
+        return 'Adds new pets, pets born, active pets stats.';
     }
 
     public function up(Schema $schema): void
@@ -32,11 +32,16 @@ final class Version20260510013000 extends AbstractMigration
         $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_born_28day INT NULL DEFAULT NULL AFTER pets_born_7day');
         $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_born_lifetime INT NULL DEFAULT NULL AFTER pets_born_28day');
 
-        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_total_1day INT NULL DEFAULT NULL AFTER pets_born_lifetime');
-        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_total_3day INT NULL DEFAULT NULL AFTER pets_total_1day');
-        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_total_7day INT NULL DEFAULT NULL AFTER pets_total_3day');
-        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_total_28day INT NULL DEFAULT NULL AFTER pets_total_7day');
-        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_total_lifetime INT NULL DEFAULT NULL AFTER pets_total_28day');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_active_1day INT NULL DEFAULT NULL AFTER pets_born_lifetime');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_active_3day INT NULL DEFAULT NULL AFTER pets_active_1day');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_active_7day INT NULL DEFAULT NULL AFTER pets_active_3day');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_active_28day INT NULL DEFAULT NULL AFTER pets_active_7day');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN pets_active_lifetime INT NULL DEFAULT NULL AFTER pets_active_28day');
+
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN new_pets_1day INT NULL DEFAULT NULL AFTER pets_active_lifetime');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN new_pets_3day INT NULL DEFAULT NULL AFTER new_pets_1day');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN new_pets_7day INT NULL DEFAULT NULL AFTER new_pets_3day');
+        $this->addSql('ALTER TABLE daily_stats ADD COLUMN new_pets_28day INT NULL DEFAULT NULL AFTER new_pets_7day');
     }
 
     public function down(Schema $schema): void

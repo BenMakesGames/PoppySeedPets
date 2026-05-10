@@ -207,23 +207,39 @@ class DailyStats
 
     #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['globalStats'])]
-    private ?int $totalPets1Day = null;
+    private ?int $activePets1Day = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['globalStats'])]
-    private ?int $totalPets3Day = null;
+    private ?int $activePets3Day = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['globalStats'])]
-    private ?int $totalPets7Day = null;
+    private ?int $activePets7Day = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['globalStats'])]
-    private ?int $totalPets28Day = null;
+    private ?int $activePets28Day = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['globalStats'])]
-    private ?int $totalPetsLifetime = null;
+    private ?int $activePetsLifetime = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['globalStats'])]
+    private ?int $newPets1Day = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['globalStats'])]
+    private ?int $newPets3Day = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['globalStats'])]
+    private ?int $newPets7Day = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['globalStats'])]
+    private ?int $newPets28Day = null;
 
     public function getId(): int
     {
@@ -822,70 +838,126 @@ class DailyStats
     /**
      * @return int|null
      */
-    public function getTotalPets1Day(): ?int
+    public function getactivePets1Day(): ?int
     {
-        return $this->totalPets1Day;
+        return $this->activePets1Day;
     }
 
-    public function setTotalPets1Day(?int $totalPets1Day): self
+    public function setactivePets1Day(?int $activePets1Day): self
     {
-        $this->totalPets1Day = $totalPets1Day;
+        $this->activePets1Day = $activePets1Day;
         return $this;
     }
 
     /**
      * @return int|null
      */
-    public function getTotalPets3Day(): ?int
+    public function getactivePets3Day(): ?int
     {
-        return $this->totalPets3Day;
+        return $this->activePets3Day;
     }
 
-    public function setTotalPets3Day(?int $totalPets3Day): self
+    public function setactivePets3Day(?int $activePets3Day): self
     {
-        $this->totalPets3Day = $totalPets3Day;
+        $this->activePets3Day = $activePets3Day;
         return $this;
     }
 
     /**
      * @return int|null
      */
-    public function getTotalPets7Day(): ?int
+    public function getactivePets7Day(): ?int
     {
-        return $this->totalPets7Day;
+        return $this->activePets7Day;
     }
 
-    public function setTotalPets7Day(?int $totalPets7Day): self
+    public function setactivePets7Day(?int $activePets7Day): self
     {
-        $this->totalPets7Day = $totalPets7Day;
+        $this->activePets7Day = $activePets7Day;
         return $this;
     }
 
     /**
      * @return int|null
      */
-    public function getTotalPets28Day(): ?int
+    public function getactivePets28Day(): ?int
     {
-        return $this->totalPets28Day;
+        return $this->activePets28Day;
     }
 
-    public function setTotalPets28Day(?int $totalPets28Day): self
+    public function setactivePets28Day(?int $activePets28Day): self
     {
-        $this->totalPets28Day = $totalPets28Day;
+        $this->activePets28Day = $activePets28Day;
         return $this;
     }
 
     /**
      * @return int|null
      */
-    public function getTotalPetsLifetime(): ?int
+    public function getactivePetsLifetime(): ?int
     {
-        return $this->totalPetsLifetime;
+        return $this->activePetsLifetime;
     }
 
-    public function setTotalPetsLifetime(?int $totalPetsLifetime): self
+    public function setactivePetsLifetime(?int $activePetsLifetime): self
     {
-        $this->totalPetsLifetime = $totalPetsLifetime;
+        $this->activePetsLifetime = $activePetsLifetime;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getnewPets1Day(): ?int
+    {
+        return $this->newPets1Day;
+    }
+
+    public function setnewPets1Day(?int $newPets1Day): self
+    {
+        $this->newPets1Day = $newPets1Day;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getnewPets3Day(): ?int
+    {
+        return $this->newPets3Day;
+    }
+
+    public function setnewPets3Day(?int $newPets3Day): self
+    {
+        $this->newPets3Day = $newPets3Day;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getnewPets7Day(): ?int
+    {
+        return $this->newPets7Day;
+    }
+
+    public function setnewPets7Day(?int $newPets7Day): self
+    {
+        $this->newPets7Day = $newPets7Day;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getnewPets28Day(): ?int
+    {
+        return $this->newPets28Day;
+    }
+
+    public function setnewPets28Day(?int $newPets28Day): self
+    {
+        $this->newPets28Day = $newPets28Day;
         return $this;
     }
 }
