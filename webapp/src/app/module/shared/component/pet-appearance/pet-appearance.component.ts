@@ -7,8 +7,17 @@
  *
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
  */
-import { Component, computed, input, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
-import {Subscription} from "rxjs";
+import {
+  Component,
+  computed,
+  effect, ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  signal, SimpleChanges, viewChild
+} from '@angular/core';
+import { fromEvent, Subscription } from "rxjs";
 import {ThemeService} from "../../service/theme.service";
 import { LUNCHBOXES } from "../../../../model/lunchboxes.model";
 import { ToolItemGripSerializationGroup } from "../../../../model/public-profile/tool-item-grip.serialization-group";
@@ -36,8 +45,9 @@ export class PetAppearanceComponent implements OnChanges, OnInit, OnDestroy {
   @Input() showTool = true;
   @Input() showHat = true;
   @Input() size = '1in';
-  emote = input<string|null>();
-  emoteFontAwesomeClass = computed(() => this.emote() === null ? null : EmoteFontAwesomeClasses[this.emote()]);
+  emote = signal<{ letter: string }|null>(null);
+  isAnimatingEmote = signal(false);
+  emoteFontAwesomeClass = computed(() => this.emote() === null ? null : EmoteFontAwesomeClasses[this.emote().letter]);
   @Input() disableAura = false;
   @Input() disableMoonbound = false;
   @Input() disableSpiritCompanion = false;
@@ -45,93 +55,6 @@ export class PetAppearanceComponent implements OnChanges, OnInit, OnDestroy {
   @Input() showLunchbox: boolean|null = null;
   @Input() overrideLunchboxIndex: number|null = null;
   @Input('flipped') forceFlip: boolean|null = null;
-
-  private static WEREFORM_SPECIES = [
-    {
-      name: 'Werecreature',
-      image: 'lycanthrope/1',
-      handX: 0.47,
-      handY: 0.765,
-      handAngle: 75,
-      flipX: false,
-      handBehind: false,
-      availableFromPetShelter: false,
-      hatX: 0.565,
-      hatY: 0.35,
-      hatAngle: -11,
-      family: 'lycanthrope'
-    },
-    {
-      name: 'Werecreature',
-      image: 'lycanthrope/2',
-      handX: 0.795,
-      handY: 0.67,
-      handAngle: 31,
-      flipX: false,
-      handBehind: false,
-      availableFromPetShelter: false,
-      hatX: 0.52,
-      hatY: 0.485,
-      hatAngle: 5,
-      family: 'lycanthrope'
-    },
-    {
-      name: 'Werecreature',
-      image: 'lycanthrope/3',
-      handX: 0.6,
-      handY: 0.54,
-      handAngle: 128,
-      flipX: false,
-      handBehind: false,
-      availableFromPetShelter: false,
-      hatX: 0.5,
-      hatY: 0.2,
-      hatAngle: 5,
-      family: 'lycanthrope'
-    },
-    {
-      name: 'Werecreature',
-      image: 'lycanthrope/4',
-      handX: 0.45,
-      handY: 0.625,
-      handAngle: -31,
-      flipX: false,
-      handBehind: true,
-      availableFromPetShelter: false,
-      hatX: 0.77,
-      hatY: 0.365,
-      hatAngle: 0,
-      family: 'lycanthrope'
-    },
-    {
-      name: 'Werecreature',
-      image: 'lycanthrope/5',
-      handX: 0.5,
-      handY: 0.53,
-      handAngle: 143,
-      flipX: false,
-      handBehind: false,
-      availableFromPetShelter: false,
-      hatX: 0.485,
-      hatY: 0.325,
-      hatAngle: 0,
-      family: 'lycanthrope'
-    },
-    {
-      name: 'Werecreature',
-      image: 'lycanthrope/6',
-      handX: 0.59,
-      handY: 0.76,
-      handAngle: 29,
-      flipX: false,
-      handBehind: false,
-      availableFromPetShelter: false,
-      hatX: 0,
-      hatY: 1,
-      hatAngle: 0,
-      family: 'lycanthrope'
-    }
-  ];
 
   lunchboxImage;
   animationDelay = Math.random() * -12;
@@ -156,9 +79,25 @@ export class PetAppearanceComponent implements OnChanges, OnInit, OnDestroy {
   spiritCompanionAnimations: string;
   spiritCompanionAnimationsSubscription: Subscription;
 
+  private emojiContainer = viewChild<ElementRef<HTMLElement>>('emojiContainer');
+
   auras = [];
 
-  constructor(private themeService: ThemeService) { }
+  constructor(private themeService: ThemeService) {
+    effect(() => {
+      this.isAnimatingEmote.set(this.emote() !== null);
+    });
+    
+    effect(onCleanup => {
+      const node = this.emojiContainer()?.nativeElement;
+      if (!node) return;
+
+      const sub = fromEvent(node, 'animationend')
+        .subscribe(() => this.isAnimatingEmote.set(false));
+
+      onCleanup(() => sub.unsubscribe());
+    });
+  }
 
   ngOnInit(): void {
     this.spiritCompanionAnimationsSubscription = this.themeService.spiritCompanionAnimations.subscribe({
@@ -172,11 +111,19 @@ export class PetAppearanceComponent implements OnChanges, OnInit, OnDestroy {
     this.spiritCompanionAnimationsSubscription.unsubscribe();
   }
 
-  ngOnChanges()
+  ngOnChanges(changes: SimpleChanges)
   {
+    if(changes.pet)
+    {
+      this.emote.set(this.pet.emoji
+        ? { letter: this.pet.emoji }
+        : null
+      );
+    }
+
     this.petSpecies = this.pet.statuses && this.pet.statuses.some(s => s === 'Wereform')
       ? {
-        ...PetAppearanceComponent.WEREFORM_SPECIES[this.pet.wereform],
+        ...WEREFORM_SPECIES[this.pet.wereform],
         pregnancyStyle: this.pet.species.pregnancyStyle,
         eggImage: this.pet.species.eggImage
       }
@@ -353,3 +300,90 @@ export function getToolAppearance(tool: PetTool): ToolAppearance
 
   return { ...DEFAULT_ITEM_POSITION, image: tool.item.image };
 }
+
+const WEREFORM_SPECIES = [
+  {
+    name: 'Werecreature',
+    image: 'lycanthrope/1',
+    handX: 0.47,
+    handY: 0.765,
+    handAngle: 75,
+    flipX: false,
+    handBehind: false,
+    availableFromPetShelter: false,
+    hatX: 0.565,
+    hatY: 0.35,
+    hatAngle: -11,
+    family: 'lycanthrope'
+  },
+  {
+    name: 'Werecreature',
+    image: 'lycanthrope/2',
+    handX: 0.795,
+    handY: 0.67,
+    handAngle: 31,
+    flipX: false,
+    handBehind: false,
+    availableFromPetShelter: false,
+    hatX: 0.52,
+    hatY: 0.485,
+    hatAngle: 5,
+    family: 'lycanthrope'
+  },
+  {
+    name: 'Werecreature',
+    image: 'lycanthrope/3',
+    handX: 0.6,
+    handY: 0.54,
+    handAngle: 128,
+    flipX: false,
+    handBehind: false,
+    availableFromPetShelter: false,
+    hatX: 0.5,
+    hatY: 0.2,
+    hatAngle: 5,
+    family: 'lycanthrope'
+  },
+  {
+    name: 'Werecreature',
+    image: 'lycanthrope/4',
+    handX: 0.45,
+    handY: 0.625,
+    handAngle: -31,
+    flipX: false,
+    handBehind: true,
+    availableFromPetShelter: false,
+    hatX: 0.77,
+    hatY: 0.365,
+    hatAngle: 0,
+    family: 'lycanthrope'
+  },
+  {
+    name: 'Werecreature',
+    image: 'lycanthrope/5',
+    handX: 0.5,
+    handY: 0.53,
+    handAngle: 143,
+    flipX: false,
+    handBehind: false,
+    availableFromPetShelter: false,
+    hatX: 0.485,
+    hatY: 0.325,
+    hatAngle: 0,
+    family: 'lycanthrope'
+  },
+  {
+    name: 'Werecreature',
+    image: 'lycanthrope/6',
+    handX: 0.59,
+    handY: 0.76,
+    handAngle: 29,
+    flipX: false,
+    handBehind: false,
+    availableFromPetShelter: false,
+    hatX: 0,
+    hatY: 1,
+    hatAngle: 0,
+    family: 'lycanthrope'
+  }
+];

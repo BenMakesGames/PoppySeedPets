@@ -310,7 +310,6 @@ class GardeningClubService
                 $message = ActivityHelpers::PetName($member) . ' did some weeding with ' . $group->getName() . '. They managed to find ' . $item->getNameWithArticle() . ' while weeding!' . $luckyMessage;
 
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $member, $message)
-                    ->setIcon(self::ActivityIcon)
                     ->addInterestingness($lucky ? PetActivityLogInterestingness::ActivityUsingMerit : PetActivityLogInterestingness::HoHum)
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Group_Hangout, PetActivityLogTagEnum::Gardening_Club ]))
                 ;
@@ -340,12 +339,12 @@ class GardeningClubService
                 $message = ActivityHelpers::PetName($member) . ' did some weeding with ' . $group->getName() . '.';
 
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $member, $message)
-                    ->setIcon(self::ActivityIcon)
                     ->addInterestingness(PetActivityLogInterestingness::HoHum)
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Group_Hangout, PetActivityLogTagEnum::Gardening_Club ]))
                 ;
             }
 
+            $activityLog->setIcon(self::ActivityIcon);
             $activityLogsPerPet[$member->getId()] = $activityLog;
         }
 
@@ -379,6 +378,7 @@ class GardeningClubService
             $message = ActivityHelpers::PetName($member) . ' created compost with ' . $group->getName() . '.';
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $member, $message)
+                ->addInterestingness(PetActivityLogInterestingness::HoHum)
                 ->setIcon(self::ActivityIcon)
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Group_Hangout, PetActivityLogTagEnum::Gardening_Club ]))
             ;
@@ -397,7 +397,8 @@ class GardeningClubService
                 else if($this->rng->rngNextInt(1, 25) == 1)
                     $double = true;
 
-                $activityLog->addInterestingness($lucky ? PetActivityLogInterestingness::ActivityUsingMerit : PetActivityLogInterestingness::HoHum);
+                if($lucky)
+                    $activityLog->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit);
 
                 $fertilizer = 'Small Bag of Fertilizer';
 
