@@ -187,11 +187,11 @@ class DailyStats
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['globalStats'])]
-    private int $petsBorn1Day = null;
+    private int $petsBorn1Day = 0;
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['globalStats'])]
-    private int $petsBorn3Day = null;
+    private int $petsBorn3Day = 0;
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['globalStats'])]
@@ -847,7 +847,7 @@ class DailyStats
         return $this->activePets7Day;
     }
 
-    public function setactivePets7Day(?int $activePets7Day): self
+    public function setactivePets7Day(int $activePets7Day): self
     {
         $this->activePets7Day = $activePets7Day;
         return $this;
