@@ -1,6 +1,6 @@
 <img src="docs/psp.svg" style="width:100%" alt="Poppy Seed Pets" />
 
-This is the Poppy Seed Pets API (server code). It is available under the [GPL 3.0 license](COPYING).
+This is the source code for Poppy Seed Pets. It is available under the [GPL 3.0 license](COPYING).
 
 More info about this project can be found in the `docs/` directory:
 
