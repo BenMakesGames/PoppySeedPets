@@ -169,7 +169,7 @@ class CalculateDailyStatsCommand extends Command
                 SELECT
                     COUNT(pet.id) AS total_pets,
                 FROM pet
-                WHERE pet.birth_date>="' . $firstDate . '"
+                WHERE pet.birth_date<="' . $firstDate . '"
             ')
             ->fetchAssociative()['total_pets']
         ;
