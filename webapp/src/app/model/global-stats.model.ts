@@ -63,9 +63,9 @@ export interface GlobalStatsMetric {
 export const GLOBAL_STATS_METRICS: GlobalStatsMetric[] = [
   { label: 'New Players', value: 'newPlayers' },
   { label: 'Active Players', value: 'numberOfPlayers' },
-  { label: 'New Pets', value: 'totalPets' },
+  { label: 'New Pets', value: 'newPets' },
   { label: 'Pets Birthed', value: 'petsBorn' },
-  { label: 'Active Pets', value: 'petsActive' },
+  { label: 'Active Pets', value: 'activePets' },
   { label: 'Total Moneys', value: 'totalMoneys' },
   { label: 'Have Trader', value: 'unlockedTrader' },
   { label: 'Have Fireplace', value: 'unlockedFireplace' },
