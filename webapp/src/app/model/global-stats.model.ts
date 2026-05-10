@@ -41,6 +41,14 @@ export interface GlobalStatsTimeSeriesModel {
   unlockedPortal3Day: number;
   unlockedPortal7Day: number;
   unlockedPortal28Day: number;
+  petsBorn1Day: number;
+  petsBorn3Day: number;
+  petsBorn7Day: number;
+  petsBorn28Day: number;
+  totalPets1Day: number;
+  totalPets3Day: number;
+  totalPets7Day: number;
+  totalPets28Day: number;
 }
 
 export interface GlobalStatsMetric {
@@ -56,7 +64,9 @@ export const GLOBAL_STATS_METRICS: GlobalStatsMetric[] = [
   { label: 'Have Fireplace', value: 'unlockedFireplace' },
   { label: 'Have Greenhouse', value: 'unlockedGreenhouse' },
   { label: 'Have Beehive', value: 'unlockedBeehive' },
-  { label: 'Have Hollow Earth', value: 'unlockedPortal' }
+  { label: 'Have Hollow Earth', value: 'unlockedPortal' },
+  { label: 'Total Pets', value: 'totalPets' },
+  { label: 'Pets Born', value: 'petsBorn' }
 ];
 
 export const GLOBAL_STATS_PERIODS: { label: string; value: string }[] = [

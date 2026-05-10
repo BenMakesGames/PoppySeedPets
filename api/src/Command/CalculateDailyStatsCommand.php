@@ -110,6 +110,18 @@ class CalculateDailyStatsCommand extends Command
             ->setUnlockedPortal7Day($this->getUnlocked(UnlockableFeatureEnum::HollowEarth, $week))
             ->setUnlockedPortal28Day($this->getUnlocked(UnlockableFeatureEnum::HollowEarth, $month))
             ->setUnlockedPortalLifetime($this->getLifetimeUnlocked(UnlockableFeatureEnum::HollowEarth))
+
+            ->setPetsBorn1Day($this->getBornPets($oneDay))
+            ->setPetsBorn3Day($this->getBornPets($threeDay))
+            ->setPetsBorn7Day($this->getBornPets($week))
+            ->setPetsBorn28Day($this->getBornPets($month))
+            ->setPetsBornLifetime($this->getBornPetsLifetime())
+
+            ->setTotalPets1Day($this->getTotalPets($oneDay))
+            ->setTotalPets3Day($this->getTotalPets($threeDay))
+            ->setTotalPets7Day($this->getTotalPets($week))
+            ->setTotalPets28Day($this->getTotalPets($month))
+            ->setTotalPetsLifetime($this->getTotalPetsLifetime())
         ;
 
         $this->em->persist($dailyStats);
@@ -142,11 +154,65 @@ class CalculateDailyStatsCommand extends Command
             ->executeQuery('
                 SELECT
                     COUNT(user.id) AS total_users,
-                    SUM(user.moneys) AS total_moneys
+                    SUM(user.moneys) AS total_moneys,
                 FROM user
                 WHERE user.last_activity>="' . $firstDate . '"
             ')
             ->fetchAssociative()
+        ;
+    }
+
+    public function getTotalPets(string $firstDate): int
+    {
+        return $this->em->getConnection()
+            ->executeQuery('
+                SELECT
+                    COUNT(pet.id) AS total_pets,
+                FROM pet
+                WHERE pet.birth_date>="' . $firstDate . '"
+            ')
+            ->fetchAssociative()['total_pets']
+        ;
+    }
+
+    public function getTotalPetsLifetime(): int
+    {
+        return $this->em->getConnection()
+            ->executeQuery('
+                SELECT
+                    COUNT(pet.id) AS total_pets,
+                FROM pet"
+            ')
+            ->fetchAssociative()['total_pets']
+        ;
+    }
+
+    public function getBornPets(string $firstDate): int
+    {
+        return $this->em->getConnection()
+            ->executeQuery('
+                SELECT
+                    COUNT(pet.id) AS total_births,
+                FROM pet
+                WHERE pet.birth_date>="' . $firstDate . '
+                AND DATE(pet.birth_date)="' . $firstDate . '
+                AND pet.mom_id IS NOT NULL"
+            ')
+            ->fetchAssociative()['total_births']
+        ;
+    }
+
+    public function getBornPetsLifetime(): int
+    {
+        return $this->em->getConnection()
+            ->executeQuery('
+                SELECT
+                    COUNT(pet.id) AS total_births,
+                FROM pet
+                WHERE DATE(pet.birth_date)="' . $firstDate . '
+                AND pet.mom_id IS NOT NULL"
+            ')
+            ->fetchAssociative()['total_births']
         ;
     }
 
