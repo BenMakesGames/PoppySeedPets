@@ -195,7 +195,6 @@ class CalculateDailyStatsCommand extends Command
                     COUNT(pet.id) AS total_births,
                 FROM pet
                 WHERE pet.birth_date>="' . $firstDate . '
-                AND DATE(pet.birth_date)="' . $firstDate . '
                 AND pet.mom_id IS NOT NULL"
             ')
             ->fetchAssociative()['total_births']
