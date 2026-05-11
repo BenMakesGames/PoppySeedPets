@@ -22,7 +22,11 @@ import * as qs from 'qs/dist/qs.js';
 })
 export class ApiService {
 
-  private rootUrl = environment.apiEndpoint;
+  // Path prefixes served by the C# API. Anything else goes to the PHP API.
+  // As endpoints migrate from PHP to C#, add their prefixes here.
+  private readonly csharpPathPrefixes = [
+    '/globalStats',
+  ];
 
   constructor(
     private http: HttpClient, private userData: UserDataService, private messages: MessagesService
@@ -30,14 +34,21 @@ export class ApiService {
   {
   }
 
+  private resolveBase(path: string): string
+  {
+    const isCSharp = this.csharpPathPrefixes.some(p => path === p || path.startsWith(p + '/'));
+    return isCSharp ? environment.csharpApiEndpoint : environment.apiEndpoint;
+  }
+
   get<T>(path: string, data: any = null): Observable<ApiResponseModel<T>>
   {
+    const url = this.resolveBase(path) + path + (data ? '?' + qs.stringify(data) : '');
     let options = this.options();
 
-    return this.http.get<ApiResponseModel<T>>(this.rootUrl + path + (data ? '?' + qs.stringify(data) : ''), <object>options)
+    return this.http.get<ApiResponseModel<T>>(url, <object>options)
       .pipe(
         catchError(r => this.commonErrorHandler<T>(r, () => {
-          return this.http.get<ApiResponseModel<T>>(this.rootUrl + path + (data ? '?' + qs.stringify(data) : ''), <object>options);
+          return this.http.get<ApiResponseModel<T>>(url, <object>options);
         })),
         map(r => this.commonDataHandler<T>(r)),
       )
@@ -46,10 +57,11 @@ export class ApiService {
 
   post<T>(path: string, data: any = {}): Observable<ApiResponseModel<T>>
   {
-    return this.http.post<ApiResponseModel<T>>(this.rootUrl + path, data, this.options())
+    const url = this.resolveBase(path) + path;
+    return this.http.post<ApiResponseModel<T>>(url, data, this.options())
       .pipe(
         catchError(r => this.commonErrorHandler<T>(r, () => {
-          return this.http.post<ApiResponseModel<T>>(this.rootUrl + path, data, this.options());
+          return this.http.post<ApiResponseModel<T>>(url, data, this.options());
         })),
         map(r => this.commonDataHandler<T>(r)),
       )
@@ -58,10 +70,11 @@ export class ApiService {
 
   put<T>(path: string, data: any = {}): Observable<ApiResponseModel<T>>
   {
-    return this.http.put<ApiResponseModel<T>>(this.rootUrl + path, data, this.options())
+    const url = this.resolveBase(path) + path;
+    return this.http.put<ApiResponseModel<T>>(url, data, this.options())
       .pipe(
         catchError(r => this.commonErrorHandler<T>(r, () => {
-          return this.http.put<ApiResponseModel<T>>(this.rootUrl + path, data, this.options());
+          return this.http.put<ApiResponseModel<T>>(url, data, this.options());
         })),
         map(r => this.commonDataHandler<T>(r)),
       )
@@ -70,10 +83,11 @@ export class ApiService {
 
   patch<T>(path: string, data: any = {}): Observable<ApiResponseModel<T>>
   {
-    return this.http.patch<ApiResponseModel<T>>(this.rootUrl + path, data, this.options())
+    const url = this.resolveBase(path) + path;
+    return this.http.patch<ApiResponseModel<T>>(url, data, this.options())
       .pipe(
         catchError(r => this.commonErrorHandler<T>(r, () => {
-          return this.http.patch<ApiResponseModel<T>>(this.rootUrl + path, data, this.options());
+          return this.http.patch<ApiResponseModel<T>>(url, data, this.options());
         })),
         map(r => this.commonDataHandler<T>(r)),
       )
@@ -82,10 +96,11 @@ export class ApiService {
 
   del<T>(path: string): Observable<ApiResponseModel<T>>
   {
-    return this.http.delete<ApiResponseModel<T>>(this.rootUrl + path, this.options())
+    const url = this.resolveBase(path) + path;
+    return this.http.delete<ApiResponseModel<T>>(url, this.options())
       .pipe(
         catchError(r => this.commonErrorHandler<T>(r, () => {
-          return this.http.delete<ApiResponseModel<T>>(this.rootUrl + path, this.options());
+          return this.http.delete<ApiResponseModel<T>>(url, this.options());
         })),
         map(r => this.commonDataHandler<T>(r)),
       )

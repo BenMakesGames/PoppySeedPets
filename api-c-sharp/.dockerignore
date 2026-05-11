@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/out/
+**/.vs/
+**/.idea/
+**/.vscode/
+**/*.user
+**/*.suo
+**/.git/
+**/.gitignore
+**/.gitattributes
+**/Dockerfile*
+**/.dockerignore
+**/appsettings.Development.json
+**/*.md
+**/TestResults/

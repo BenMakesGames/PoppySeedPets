@@ -1,0 +1,7 @@
+bin/
+obj/
+*.user
+
+# Deploy secrets — never commit. Use env.production.example.json as a template.
+deploy/env.*.json
+!deploy/env.*.example.json
