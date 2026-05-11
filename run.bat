@@ -11,7 +11,7 @@ REM Start the Symfony API server in a new window
 start "PoppySeedPets API" cmd /k "cd /d %~dp0api && symfony serve"
 
 REM Start the C# API server in a new window
-start "PoppySeedPets C# API" cmd /k "cd /d %~dp0api-c-sharp\PoppySeedPets.Api && dotnet run --launch-profile https"
+start "PoppySeedPets C# API" cmd /k "cd /d %~dp0api-c-sharp\PoppySeedPets.Api && dotnet run"
 
 REM Start the Angular SPA dev server in a new window
 start "PoppySeedPets SPA" cmd /k "cd /d %~dp0webapp && ng serve"

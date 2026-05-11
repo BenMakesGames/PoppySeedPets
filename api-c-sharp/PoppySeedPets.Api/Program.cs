@@ -6,6 +6,7 @@ const string CorsPolicyName = "PspCors";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddExceptionHandler<PspExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
