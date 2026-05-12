@@ -117,6 +117,19 @@ class Xoshiro implements IRandom
         return $newColor;
     }
 
+    public function rngNextColor(): string
+    {
+        $newColor = '';
+
+        for($i = 0; $i < 3; $i++)
+        {
+            $newColor .= str_pad(dechex($this->rng->getInt(0, 255)), 2, '0', STR_PAD_LEFT);
+        }
+
+        return $newColor;
+
+    }
+
     function rngSkillRoll(int $bonus): int
     {
         return $this->rngNextInt(1, 20 + $bonus);

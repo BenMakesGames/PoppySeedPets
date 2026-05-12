@@ -177,16 +177,24 @@ class AdoptionService
                 }
                 else
                 {
-                    $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
-                        ->andWhere('p.birthDate<:today')
-                        ->setParameter('today', $nowString)
-                        ->setMaxResults(1)
-                        ->setFirstResult($rng->rngNextInt(0, $petCount - 1))
-                        ->getQuery()
-                        ->getSingleResult();
+                    if($petCount == 0)
+                    {
+                        $colorA = $rng->rngNextColor();
+                        $colorB = $rng->rngNextColor();
+                    }
+                    else
+                    {
+                        $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
+                            ->andWhere('p.birthDate<:today')
+                            ->setParameter('today', $nowString)
+                            ->setMaxResults(1)
+                            ->setFirstResult($rng->rngNextInt(0, $petCount - 1))
+                            ->getQuery()
+                            ->getSingleResult();
 
-                    $colorA = $rng->rngNextTweakedColor($basePet->getColorA());
-                    $colorB = $rng->rngNextTweakedColor($basePet->getColorB());
+                        $colorA = $rng->rngNextTweakedColor($basePet->getColorA());
+                        $colorB = $rng->rngNextTweakedColor($basePet->getColorB());
+                    }
                 }
             }
 

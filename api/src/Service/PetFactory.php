@@ -101,18 +101,26 @@ class PetFactory
             ->getSingleScalarResult()
         ;
 
-        /** @var Pet $basePet */
-        $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
-            ->andWhere('p.birthDate<:today')
-            ->setParameter('today', $now)
-            ->setMaxResults(1)
-            ->setFirstResult($this->rng->rngNextInt(0, $petCount - 1))
-            ->getQuery()
-            ->getSingleResult()
-        ;
+        if($petCount == 0)
+        {
+            $colorA = $this->rng->rngNextColor();
+            $colorB = $this->rng->rngNextColor();
+        }
+        else
+        {
+            /** @var Pet $basePet */
+            $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
+                ->andWhere('p.birthDate<:today')
+                ->setParameter('today', $now)
+                ->setMaxResults(1)
+                ->setFirstResult($this->rng->rngNextInt(0, $petCount - 1))
+                ->getQuery()
+                ->getSingleResult()
+            ;
 
-        $colorA = $this->rng->rngNextTweakedColor($basePet->getColorA());
-        $colorB = $this->rng->rngNextTweakedColor($basePet->getColorB());
+            $colorA = $this->rng->rngNextTweakedColor($basePet->getColorA());
+            $colorB = $this->rng->rngNextTweakedColor($basePet->getColorB());
+        }
 
         $isSagaJelling = $petSpecies->getName() === 'Sága Jelling';
 
