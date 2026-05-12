@@ -95,7 +95,7 @@ class AdoptionService
             ;
         }
 
-        $petCount = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
+        $petCount = (int)$this->em->getRepository(Pet::class)->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->andWhere('p.birthDate<:today')
             ->setParameter('today', $nowString)
