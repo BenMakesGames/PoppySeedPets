@@ -5,3 +5,6 @@
 proprietary-assets/
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Per-dev docker-compose port overrides (see .env.example)
+/.env
