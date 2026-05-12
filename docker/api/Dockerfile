@@ -23,6 +23,9 @@ RUN docker-php-ext-install -j$(nproc) \
 RUN pecl install redis \
     && docker-php-ext-enable redis
 
+# Dev-tuned PHP settings (opcache + realpath_cache) — see php-dev.ini for rationale
+COPY docker/api/php-dev.ini /usr/local/etc/php/conf.d/zz-psp-dev.ini
+
 # Composer 2 from the official composer image
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 

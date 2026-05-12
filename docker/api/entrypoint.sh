@@ -14,6 +14,9 @@ composer install --no-interaction --no-progress --prefer-dist
 echo "==> Running database migrations"
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
+echo "==> Warming Symfony cache (eliminates cold-cache penalty on first request)"
+php bin/console cache:warmup
+
 echo "==> Starting nginx (background)"
 nginx
 
