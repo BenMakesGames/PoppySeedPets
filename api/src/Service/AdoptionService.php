@@ -21,6 +21,7 @@ use App\Enum\UserStat;
 use App\Functions\CalendarFunctions;
 use App\Functions\ColorFunctions;
 use App\Functions\DateFunctions;
+use App\Functions\PetColorFunctions;
 use App\Functions\PetSpeciesRepository;
 use App\Functions\RandomFunctions;
 use App\Model\ChineseCalendarInfo;
@@ -161,8 +162,9 @@ class AdoptionService
             }
             else if($petCount === 0 || $i === $numPets - 1)
             {
-                $colorA = PetFactory::getRandomColor($rng);
-                $colorB = PetFactory::getRandomColor($rng);
+                $petColors = PetColorFunctions::generateRandomPetColors($rng);
+                $colorA = $petColors->colorA;
+                $colorB = $petColors->colorB;
             }
             else
             {

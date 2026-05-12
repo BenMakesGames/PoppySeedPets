@@ -681,7 +681,7 @@ class ProgrammingService implements IPetActivity
 
         $newPet = $this->petFactory->createPet(
             $captor->getOwner(), $impName, $infinityImp,
-            $petColors[0], $petColors[1],
+            $petColors->colorA, $petColors->colorB,
             $this->rng->rngNextFromArray(FlavorEnum::cases()),
             MeritRepository::findOneByName($this->em, $startingMerit)
         );
