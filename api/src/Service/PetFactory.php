@@ -21,6 +21,7 @@ use App\Entity\PetSpecies;
 use App\Entity\User;
 use App\Enum\FlavorEnum;
 use App\Enum\MeritEnum;
+use App\Functions\ColorFunctions;
 use App\Functions\MeritRepository;
 use App\Model\PetShelterPet;
 use Doctrine\ORM\EntityManagerInterface;
@@ -89,6 +90,16 @@ class PetFactory
         return $pet;
     }
 
+    public static function getRandomColor(IRandom $rng): string
+    {
+        // RANDOM!
+        $h1 = $rng->rngNextInt(0, 1000) / 1000.0;
+        $s1 = $rng->rngNextInt($rng->rngNextInt(0, 500), 1000) / 1000.0;
+        $l1 = $rng->rngNextInt($rng->rngNextInt(0, 500), $rng->rngNextInt(750, 1000)) / 1000.0;
+
+        return ColorFunctions::HSL2Hex($h1, $s1, $l1);
+    }
+
     public function createRandomPetOfSpecies(User $owner, PetSpecies $petSpecies): Pet
     {
         $now = new \DateTimeImmutable();
@@ -103,8 +114,8 @@ class PetFactory
 
         if($petCount == 0)
         {
-            $colorA = $this->rng->rngNextColor();
-            $colorB = $this->rng->rngNextColor();
+            $colorA = self::getRandomColor($this->rng);
+            $colorB = self::getRandomColor($this->rng);
         }
         else
         {

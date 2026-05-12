@@ -78,10 +78,4 @@ interface IRandom
      * @phpstan-impure
      */
     function rngSkillRoll(int $bonus): int;
-
-    /**
-     * @return string A new color in hex format, WITHOUT # prefix
-     * @phpstan-impure
-     */
-    function rngNextColor(): string;
 }
