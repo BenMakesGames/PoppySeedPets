@@ -12,7 +12,7 @@
     "@types/chai": "^5.0.1",
     "chai": "^5.1.2",
     "puppeteer": "^23.11.1",
-    "uuid": "^11.0.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "mocha": "^11.7.5"
