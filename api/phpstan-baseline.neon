@@ -3535,12 +3535,6 @@ parameters:
 			path: src/Serializer/UserNormalizer.php
 
 		-
-			message: '#^Binary operation "\-" between bool\|float\|int\|string\|null and 1 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/AdoptionService.php
-
-		-
 			message: '#^Cannot call method getColorA\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -3562,12 +3556,6 @@ parameters:
 			message: '#^Parameter \#1 \$color of method App\\Service\\Xoshiro\:\:rngNextTweakedColor\(\) expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 2
-			path: src/Service/AdoptionService.php
-
-		-
-			message: '#^Parameter \#2 \$inclusiveMax of method App\\Service\\Xoshiro\:\:rngNextInt\(\) expects int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Service/AdoptionService.php
 
 		-

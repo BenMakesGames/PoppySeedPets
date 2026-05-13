@@ -50,7 +50,7 @@ class BookstoreService
         ],
         [
             'askingFor' => [ 'Upside-down Shiny Pail' ],
-            'dialog' => 'Next on my list is an Upside-down Shiny Pail. You can find the right side-up kind in the Hollow Earth. (If you haven\'t unlocked the Hollow Earth, try rolling some dice!)',
+            'dialog' => 'Next on my list is an Upside-down Shiny Pail. You can find the right side-up kind in the Hollow Earth. (If you haven\'t unlocked the Hollow Earth, try checking your Library for something to help you!) (If you haven\'t unlocked your Library, give Star Kindred a read!)',
         ],
         [
             'askingFor' => [ 'Single', 'Musical Scales' ],

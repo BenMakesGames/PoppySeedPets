@@ -22,6 +22,7 @@ use App\Enum\MoonNameEnum;
 use App\Functions\CalendarFunctions;
 use App\Functions\ColorFunctions;
 use App\Functions\DateFunctions;
+use App\Functions\PetColorFunctions;
 use App\Functions\PetSpeciesRepository;
 use App\Functions\RandomFunctions;
 use App\Model\ChineseCalendarInfo;
@@ -96,7 +97,7 @@ class AdoptionService
             ;
         }
 
-        $petCount = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
+        $petCount = (int)$this->em->getRepository(Pet::class)->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->andWhere('p.birthDate<:today')
             ->setParameter('today', $nowString)
@@ -131,63 +132,52 @@ class AdoptionService
 
                 $name = $rng->rngNextFromArray($seasonalNames);
             }
-            else if($i === $numPets - 1 && !$isBlueMoon && !$isPinkMoon)
+            else if($isBlueMoon)
             {
-                // RANDOM!
-                $h1 = $rng->rngNextInt(0, 1000) / 1000.0;
-                $s1 = $rng->rngNextInt($rng->rngNextInt(0, 500), 1000) / 1000.0;
-                $l1 = $rng->rngNextInt($rng->rngNextInt(0, 500), $rng->rngNextInt(750, 1000)) / 1000.0;
+                $blueA = $rng->rngNextInt(127, 255);
+                $otherA = $rng->rngNextInt(0, $blueA - 16);
 
-                $h2 = $rng->rngNextInt(0, 1000) / 1000.0;
-                $s2 = $rng->rngNextInt($rng->rngNextInt(0, 500), 1000) / 1000.0;
-                $l2 = $rng->rngNextInt($rng->rngNextInt(0, 500), $rng->rngNextInt(750, 1000)) / 1000.0;
+                $blueB = $rng->rngNextInt(127, 255);
+                $otherB = $rng->rngNextInt(0, $blueB - 16);
 
-                $colorA = ColorFunctions::HSL2Hex($h1, $s1, $l1);
-                $colorB = ColorFunctions::HSL2Hex($h2, $s2, $l2);
+                $colorA = ColorFunctions::RGB2Hex($otherA, $otherA, $blueA);
+                $colorB = ColorFunctions::RGB2Hex($otherB, $otherB, $blueB);
+
+                $colorA = $rng->rngNextTweakedColor($colorA);
+                $colorB = $rng->rngNextTweakedColor($colorB);
+            }
+            else if($isPinkMoon)
+            {
+                $redA = $rng->rngNextInt(224, 255);
+                $otherA = $rng->rngNextInt(128, $redA - 32);
+
+                $redB = $rng->rngNextInt(224, 255);
+                $otherB = $rng->rngNextInt(128, $redB - 32);
+
+                $colorA = ColorFunctions::RGB2Hex($redA, $otherA, $otherA);
+                $colorB = ColorFunctions::RGB2Hex($redB, $otherB, $otherB);
+
+                $colorA = $rng->rngNextTweakedColor($colorA);
+                $colorB = $rng->rngNextTweakedColor($colorB);
+            }
+            else if($petCount === 0 || $i === $numPets - 1)
+            {
+                $petColors = PetColorFunctions::generateRandomPetColors($rng);
+                $colorA = $petColors->colorA;
+                $colorB = $petColors->colorB;
             }
             else
             {
-                if($isBlueMoon)
-                {
-                    $blueA = $rng->rngNextInt(127, 255);
-                    $otherA = $rng->rngNextInt(0, $blueA - 16);
+                $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
+                    ->andWhere('p.birthDate<:today')
+                    ->setParameter('today', $nowString)
+                    ->setMaxResults(1)
+                    ->setFirstResult($rng->rngNextInt(0, $petCount - 1))
+                    ->getQuery()
+                    ->getSingleResult();
 
-                    $blueB = $rng->rngNextInt(127, 255);
-                    $otherB = $rng->rngNextInt(0, $blueB - 16);
-
-                    $colorA = ColorFunctions::RGB2Hex($otherA, $otherA, $blueA);
-                    $colorB = ColorFunctions::RGB2Hex($otherB, $otherB, $blueB);
-
-                    $colorA = $rng->rngNextTweakedColor($colorA);
-                    $colorB = $rng->rngNextTweakedColor($colorB);
-                }
-                else if($isPinkMoon)
-                {
-                    $redA = $rng->rngNextInt(224, 255);
-                    $otherA = $rng->rngNextInt(128, $redA - 32);
-
-                    $redB = $rng->rngNextInt(224, 255);
-                    $otherB = $rng->rngNextInt(128, $redB - 32);
-
-                    $colorA = ColorFunctions::RGB2Hex($redA, $otherA, $otherA);
-                    $colorB = ColorFunctions::RGB2Hex($redB, $otherB, $otherB);
-
-                    $colorA = $rng->rngNextTweakedColor($colorA);
-                    $colorB = $rng->rngNextTweakedColor($colorB);
-                }
-                else
-                {
-                    $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
-                        ->andWhere('p.birthDate<:today')
-                        ->setParameter('today', $nowString)
-                        ->setMaxResults(1)
-                        ->setFirstResult($rng->rngNextInt(0, $petCount - 1))
-                        ->getQuery()
-                        ->getSingleResult();
-
-                    $colorA = $rng->rngNextTweakedColor($basePet->getColorA());
-                    $colorB = $rng->rngNextTweakedColor($basePet->getColorB());
-                }
+                $colorA = $rng->rngNextTweakedColor($basePet->getColorA());
+                $colorB = $rng->rngNextTweakedColor($basePet->getColorB());
             }
 
             $pet = new PetShelterPet();

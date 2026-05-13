@@ -34,6 +34,7 @@ class IndexController
                 'erinmclaughlin',
                 'GrimmestSnarl',
                 'nibkind',
+                'Vermidia',
             ],
             'artists' => [
                 'Aileen MacKay',
