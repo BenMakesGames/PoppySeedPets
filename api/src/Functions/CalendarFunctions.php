@@ -364,7 +364,7 @@ final class CalendarFunctions
         $fullMoonName = DateFunctions::getFullMoonName($dt);
 
         if($fullMoonName)
-            $events[] = $fullMoonName . ' Moon';
+            $events[] = $fullMoonName->value . ' Moon';
 
         if(self::isStockingStuffingSeason($dt))
             $events[] = HolidayEnum::StockingStuffingSeason;

@@ -11,14 +11,14 @@ declare(strict_types=1);
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Enum;
+namespace App\Functions;
 
-enum DistractionLocationEnum: string
+class PetColors
 {
-    case Woods = 'woods';
-    case Underground = 'underground';
-    case Beach = 'beach';
-    case Volcano = 'volcano';
-    case InTown = 'inTown';
-    case AtHome = 'home';
+    public function __construct(
+        public string $colorA,
+        public string $colorB
+    )
+    {
+    }
 }

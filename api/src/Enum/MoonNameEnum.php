@@ -13,12 +13,19 @@ declare(strict_types=1);
 
 namespace App\Enum;
 
-enum DistractionLocationEnum: string
+enum MoonNameEnum : string
 {
-    case Woods = 'woods';
-    case Underground = 'underground';
-    case Beach = 'beach';
-    case Volcano = 'volcano';
-    case InTown = 'inTown';
-    case AtHome = 'home';
+    case WolfMoon = 'Wolf';
+    case SnowMoon = 'Snow';
+    case WormMoon = 'Worm';
+    case PinkMoon = 'Pink';
+    case FlowerMoon = 'Flower';
+    case StrawberryMoon = 'Strawberry';
+    case BuckMoon = 'Buck';
+    case SturgeonMoon = 'Sturgeon';
+    case CornMoon = 'Corn';
+    case HuntersMoon = 'Hunter\'s';
+    case BeaverMoon = 'Beaver';
+    case ColdMoon = 'Cold';
+    case BlueMoon = 'Blue';
 }

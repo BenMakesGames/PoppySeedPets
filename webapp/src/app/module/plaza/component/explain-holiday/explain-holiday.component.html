@@ -212,6 +212,12 @@
   <p>For sure, though, spirits and werecreatures are known to be more active during all full moons, so watch out for that! If one of your pets gets bitten by a werecreature, it may become a werecreature, itself!</p>
   <p>It sounds dramatic, but it's really not the worst thing. There is a cure for it, though. If you're interested, I think there's a book which contains the recipe...</p>
 }
+@else if(holiday === 'Beaver Moon')
+{
+  <p>Nothing particular goes down on a {{ holiday }}... there are more beavers though. Lots more beavers.</p>
+  <p>For sure, though, spirits and werecreatures are known to be more active during all full moons, so watch out for that! If one of your pets gets bitten by a werecreature, it may become a werecreature, itself!</p>
+  <p>It sounds dramatic, but it's really not the worst thing. There is a cure for it, though. If you're interested, I think there's a book which contains the recipe...</p>
+}
 @else if(holiday === 'The Leonids Meteor Shower')
 {
   <markdown>
@@ -297,7 +303,7 @@
   <p>Check everywhere!</p>
 }
 
-@if([ 'Snow Moon', 'Strawberry Moon', 'Buck Moon', 'Sturgeon Moon', 'Hunter\'s Moon', 'Beaver Moon', 'Cold Moon' ].indexOf(holiday) >= 0)
+@if([ 'Snow Moon', 'Strawberry Moon', 'Buck Moon', 'Sturgeon Moon', 'Hunter\'s Moon', 'Cold Moon' ].indexOf(holiday) >= 0)
 {
   <p>Nothing particular goes down on a {{ holiday }}, though spirits and werecreatures are known to be more active during all full moons, so watch out for that! If one of your pets gets bitten by a werecreature, it may become a werecreature, itself!</p>
   <p>It sounds dramatic, but it's really not the worst thing. There is a cure for it, though. If you're interested, I think there's a book which contains the recipe...</p>
