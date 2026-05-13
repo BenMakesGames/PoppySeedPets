@@ -35,11 +35,11 @@
     [style.transform]="'translate(0, calc(' + size + ' * ' + ((pet.scale - 100) / -200) + ')) ' + (flipped ? 'scaleX(-1)' : '') + (upsideDown ? 'scaleY(-1)' : '')"
   >
     <div [class.is-dancing]="isDancing" [style.animation-delay.s]="animationDelay" style="height:100%">
-      @if(emote())
+      @if(isAnimatingEmote())
       {
-        <div class="emote"><app-emoji-or-fa [icon]="emoteFontAwesomeClass()" /></div>
+        <div class="emote" #emojiContainer><app-emoji-or-fa [icon]="emoteFontAwesomeClass()" /></div>
       }
-      <div class="movement" [class.hopping]="emote()">
+      <div class="movement" [class.hopping]="isAnimatingEmote()">
         @if(pet.colorA && pet.colorB)
         {
           <app-image [style.transform]="'scale(' + (pet.scale / 100) + ')'" class="pet" [width]="size" [height]="size" [colors]="petColors" [path]="'pets/' + petSpecies.image" [alt]="petSpecies.name" />
