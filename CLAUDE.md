@@ -39,4 +39,4 @@ Poppy Seed Pets is a browser-based pet adoption and activity simulation game (po
 
 ## Database
 
-- No seed data in repo — game data (recipes, items, NPCs) must be sourced separately
+- Game data (recipes, items, NPCs) ships as `db/seed/*.sql`, auto-imported into MySQL on first `docker compose up`
