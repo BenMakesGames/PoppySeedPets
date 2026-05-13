@@ -28,7 +28,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\UserAccessor;
-use App\Enum\MoonNameEnum;
 
 #[Route("/item/scroll")]
 class ResourcesController

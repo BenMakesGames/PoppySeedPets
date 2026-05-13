@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace App\Controller\Item;
 
 use App\Entity\Inventory;
-use App\Exceptions\PSPInvalidOperationException;
-use App\Enum\MoonNameEnum;
 use App\Functions\DateFunctions;
 use App\Service\Clock;
 use App\Service\InventoryService;
