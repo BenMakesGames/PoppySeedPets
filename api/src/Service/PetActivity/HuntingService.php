@@ -352,8 +352,8 @@ class HuntingService implements IPetActivity
 
         $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
 
-        $defeated = $isRanged ? 'shot down' : 'pounced on';
-        $chased = $isRanged ? 'shot at' : 'chased';
+        $defeated = $isRanged ? ' shot down' : ' pounced on';
+        $chased = $isRanged ? ' shot at' : ' chased';
 
         if(!$isRanged)
             $pet->increaseFood(-1);
@@ -423,8 +423,8 @@ class HuntingService implements IPetActivity
 
         $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
 
-        $defeated = $isRanged ? 'shot down' : 'pounced on';
-        $chased = $isRanged ? 'shot at' : 'chased';
+        $defeated = $isRanged ? ' shot down' : ' pounced on';
+        $chased = $isRanged ? ' shot at' : ' chased';
 
         if(!$isRanged)
             $pet->increaseFood(-1);
