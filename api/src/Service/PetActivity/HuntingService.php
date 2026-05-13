@@ -106,142 +106,15 @@ class HuntingService implements IPetActivity
 
     public function run(ComputedPetSkills $petWithSkills): PetActivityLog
     {
-        $pet = $petWithSkills->getPet();
-        $doStealthHunt = $this->stealthBetterThanBrawl($petWithSkills);
-        $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
-        $maxSkill = 10
-            + (!$doStealthHunt ? $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal() :
-                $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
-            - $pet->getAlcohol()
-            - $pet->getPsychedelic();
-
-        $maxSkill = NumberFunctions::clamp($maxSkill, 1, 22);
-
-        $useThanksgivingPrey = CalendarFunctions::isThanksgivingMonsters($this->clock->now) && $this->rng->rngNextBool();
-        $usePassoverPrey = CalendarFunctions::isEaster($this->clock->now);
-        $beaverTakeover = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::BeaverMoon);
-
-        $roll = $this->rng->rngNextInt(1, $maxSkill);
-
         if(DateFunctions::moonPhase($this->clock->now) === MoonPhaseEnum::FullMoon && $this->rng->rngNextInt(1, 100) === 1)
             $activityLog = $this->werecreatureEncounterService->encounterWerecreature($petWithSkills, 'hunting', [ PetActivityLogTagEnum::Hunting ]);
-        else if($beaverTakeover && $this->rng->rngNextInt(1, 4) === 1)
+        else if(DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::BeaverMoon) && $this->rng->rngNextInt(1, 4) === 1)
             $activityLog = $this->huntedBeaver($petWithSkills);
         else
-        {
-            switch($roll)
-            {
-                case 1:
-                case 2:
-                    $activityLog = $this->failedToHunt($petWithSkills);
-                    break;
-                case 3:
-                    if($isRanged && $this->rng->rngNextInt(1, 2) === 1)
-                        $activityLog = $this->huntedBirds($petWithSkills);
-                     else
-                        $activityLog = $this->huntedSnail($petWithSkills);
-                    break;
-                case 4:
-                    $activityLog = $this->huntedDustBunny($petWithSkills);
-                    break;
-                case 5:
-                    $activityLog = $this->huntedPlasticBag($petWithSkills);
-                    break;
-                case 6:
-                    if($doStealthHunt)
-                        $activityLog = $this->huntedSandCastle($petWithSkills);
-                    else
-                        $activityLog = $this->huntedLargeToad($petWithSkills);
-                    break;
-                case 7:
-                case 8:
-                    if($this->canRescueAnotherHouseFairy($pet->getOwner()) && !$pet->hasStatusEffect(StatusEffectEnum::BittenByAVampire))
-                        $activityLog = $this->rescueHouseFairy($pet);
-                    else if($useThanksgivingPrey)
-                        $activityLog = $this->huntedTurkey($petWithSkills);
-                    else if($usePassoverPrey)
-                        $activityLog = $this->noGoats($pet);
-                    else if($doStealthHunt)
-                        $activityLog = $this->huntedCapricornus($petWithSkills);
-                    else
-                        $activityLog = $this->huntedGoat($petWithSkills);
-                    break;
-                case 9:
-                    $activityLog = $this->huntedDoughGolem($petWithSkills);
-                    break;
-                case 10:
-                    if($useThanksgivingPrey)
-                        $activityLog = $this->huntedTurkey($petWithSkills);
-                    else if($doStealthHunt)
-                        $activityLog = $this->huntedSandCastle($petWithSkills);
-                    else
-                        $activityLog = $this->huntedLargeToad($petWithSkills);
-                    break;
-                case 11:
-                    $activityLog = $this->huntedScarecrow($petWithSkills);
-                    break;
-                case 12:
-                    if($doStealthHunt)
-                        $activityLog = $this->huntedLeafMeister($petWithSkills);
-                    else
-                        $activityLog = $this->huntedOnionBoy($petWithSkills);
-                    break;
-                case 13:
-                    if($doStealthHunt)
-                        $activityLog = $this->huntedGiantSpider($petWithSkills);
-                    else
-                        $activityLog = $this->huntedBeaver($petWithSkills);
-                    break;
-                case 14:
-                case 15:
-                    $activityLog = $this->huntedThievingMagpie($petWithSkills);
-                    break;
-                case 16:
-                case 17:
-                    if($useThanksgivingPrey)
-                        $activityLog = $this->huntedPossessedTurkey($petWithSkills);
-                    else
-                        $activityLog = $this->huntedGhosts($petWithSkills);
-                    break;
-                case 18:
-                case 19:
-                    if($useThanksgivingPrey)
-                        $activityLog = $this->huntedPossessedTurkey($petWithSkills);
-                    else if($pet->hasStatusEffect(StatusEffectEnum::BittenByAVampire))
-                        if($usePassoverPrey)
-                            $activityLog = $this->noGoats($pet);
-                        else
-                            $activityLog = $this->huntedSatyr($petWithSkills);
-                    else
-                        $activityLog = $this->huntedPaperGolem($petWithSkills);
-                    break;
-                case 20:
-                    $activityLog = $this->huntedPaperGolem($petWithSkills);
-                    break;
-                case 21:
-                    if($useThanksgivingPrey)
-                        if($doStealthHunt)
-                            $activityLog = $this->huntTurkeyDragonEggs($petWithSkills);
-                        else
-                            $activityLog = $this->huntTurkeyDragon->hunt($petWithSkills);
-                    else
-                        if($doStealthHunt)
-                            $activityLog = $this->huntedGreaterDustBunny($petWithSkills);
-                        else
-                            $activityLog = $this->huntedLeshyDemon($petWithSkills);
-                    break;
-                case 22:
-                default:
-                    if($doStealthHunt)
-                        $activityLog = $this->huntedMiniatureNanerCrab($petWithSkills);
-                    else
-                        $activityLog = $this->huntedEggSaladMonstrosity($petWithSkills);
-                    break;
-            }
-        }
+            $activityLog = $this->doNormalHuntActivity($petWithSkills);
 
-        if(AdventureMath::petAttractsBug($this->rng, $pet, 100))
-            $this->inventoryService->petAttractsRandomBug($pet);
+        if(AdventureMath::petAttractsBug($this->rng, $petWithSkills->getPet(), 100))
+            $this->inventoryService->petAttractsRandomBug($petWithSkills->getPet());
 
         return $activityLog;
     }
@@ -2051,5 +1924,122 @@ class HuntingService implements IPetActivity
         $brawl = $this->rng->rngNextInt(1, 10) + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal();
 
         return $stealth > $brawl;
+    }
+
+    public function doNormalHuntActivity(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+
+        $doStealthHunt = $this->stealthBetterThanBrawl($petWithSkills);
+        $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
+
+        $maxSkill = 10
+            + (!$doStealthHunt ? $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal() :
+                $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal())
+            - $pet->getAlcohol()
+            - $pet->getPsychedelic();
+
+        $usePassoverPrey = CalendarFunctions::isEaster($this->clock->now);
+        $useThanksgivingPrey = CalendarFunctions::isThanksgivingMonsters($this->clock->now) && $this->rng->rngNextBool();
+
+        $maxSkill = NumberFunctions::clamp($maxSkill, 1, 22);
+        $roll = $this->rng->rngNextInt(1, $maxSkill);
+
+        switch($roll)
+        {
+            case 1:
+            case 2:
+                return $this->failedToHunt($petWithSkills);
+            case 3:
+                if($isRanged && $this->rng->rngNextInt(1, 2) === 1)
+                    return $this->huntedBirds($petWithSkills);
+                else
+                    return $this->huntedSnail($petWithSkills);
+            case 4:
+                return $this->huntedDustBunny($petWithSkills);
+            case 5:
+                return $this->huntedPlasticBag($petWithSkills);
+            case 6:
+                if($doStealthHunt)
+                    return $this->huntedSandCastle($petWithSkills);
+                else
+                    return $this->huntedLargeToad($petWithSkills);
+            case 7:
+            case 8:
+                if($this->canRescueAnotherHouseFairy($pet->getOwner()) && !$pet->hasStatusEffect(StatusEffectEnum::BittenByAVampire))
+                    return $this->rescueHouseFairy($pet);
+                else if($useThanksgivingPrey)
+                    return $this->huntedTurkey($petWithSkills);
+                else if($usePassoverPrey)
+                    return $this->noGoats($pet);
+                else if($doStealthHunt)
+                    return $this->huntedCapricornus($petWithSkills);
+                else
+                    return $this->huntedGoat($petWithSkills);
+            case 9:
+                return $this->huntedDoughGolem($petWithSkills);
+            case 10:
+                if($useThanksgivingPrey)
+                    return $this->huntedTurkey($petWithSkills);
+                else if($doStealthHunt)
+                    return $this->huntedSandCastle($petWithSkills);
+                else
+                    return $this->huntedLargeToad($petWithSkills);
+            case 11:
+                return $this->huntedScarecrow($petWithSkills);
+            case 12:
+                if($doStealthHunt)
+                    return $this->huntedLeafMeister($petWithSkills);
+                else
+                    return $this->huntedOnionBoy($petWithSkills);
+            case 13:
+                if($doStealthHunt)
+                    return $this->huntedGiantSpider($petWithSkills);
+                else
+                    return $this->huntedBeaver($petWithSkills);
+            case 14:
+            case 15:
+                return $this->huntedThievingMagpie($petWithSkills);
+            case 16:
+            case 17:
+                if($useThanksgivingPrey)
+                    return $this->huntedPossessedTurkey($petWithSkills);
+                else
+                    return $this->huntedGhosts($petWithSkills);
+            case 18:
+            case 19:
+                if($useThanksgivingPrey)
+                    return $this->huntedPossessedTurkey($petWithSkills);
+                else if($pet->hasStatusEffect(StatusEffectEnum::BittenByAVampire))
+                    if($usePassoverPrey)
+                        return $this->noGoats($pet);
+                    else
+                        return $this->huntedSatyr($petWithSkills);
+                else
+                    return $this->huntedPaperGolem($petWithSkills);
+            case 20:
+                return $this->huntedPaperGolem($petWithSkills);
+            case 21:
+                if($useThanksgivingPrey)
+                {
+                    if($doStealthHunt)
+                        return $this->huntTurkeyDragonEggs($petWithSkills);
+                    else
+                        return $this->huntTurkeyDragon->hunt($petWithSkills);
+                }
+                else
+                {
+                    if($doStealthHunt)
+                        return $this->huntedGreaterDustBunny($petWithSkills);
+                    else
+                        return $this->huntedLeshyDemon($petWithSkills);
+                }
+            case 22:
+            default:
+                if($doStealthHunt)
+                    return $this->huntedMiniatureNanerCrab($petWithSkills);
+                else
+                    return $this->huntedEggSaladMonstrosity($petWithSkills);
+        }
     }
 }
