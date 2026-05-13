@@ -572,7 +572,7 @@ class HuntingService implements IPetActivity
     {
         $pet = $petWithSkills->getPet();
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat Flour';
+        $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat Flour';
 
         $possibleLoot = [
             $wheatOrCorn, 'Oil', 'Butter', 'Yeast', 'Sugar',
@@ -883,7 +883,7 @@ class HuntingService implements IPetActivity
         $brawlRoll = $this->rng->rngNextInt(1, 10 + $petWithSkills->getStrength()->getTotal() + $petWithSkills->getBrawl()->getTotal());
         $stealthSkill = $this->rng->rngNextInt(1, 10 + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getStealth()->getTotal());
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat';
 
         $pet->increaseFood(-1);
 

@@ -18,7 +18,6 @@ use App\Enum\PetActivityLogInterestingness;
 use App\Enum\PetActivityLogTagEnum;
 use App\Enum\PetActivityStatEnum;
 use App\Enum\PetSkillEnum;
-use App\Enum\MoonNameEnum;
 use App\Functions\ActivityHelpers;
 use App\Functions\AdventureMath;
 use App\Functions\ArrayFunctions;
@@ -74,7 +73,7 @@ class Caerbannog
     {
         $pet = $petWithSkills->getPet();
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isCornMoon($this->clock->now) ? 'Corn' : 'Wheat';
 
         $possibleLoot = [ 'Carrot', 'Crooked Stick', $wheatOrCorn, $wheatOrCorn, 'Dandelion', 'Coriander Flower', 'Mint', 'Fluff' ];
 

@@ -210,7 +210,7 @@ class InventoryService
         {
             if($item->getName() === 'Gold Bar' || $item->getName() === 'Gold Ore')
             {
-                if(DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::CornMoon))
+                if(DateFunctions::isCornMoon($this->clock->now))
                 {
                     $activityLog
                         ->appendEntry('The ' . $item->getName() . ' was transformed into... Corn??? (That\'s not how the curse is supposed to work!)')
