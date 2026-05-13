@@ -165,6 +165,11 @@ final class DateFunctions
         return (\DateTimeImmutable::createFromFormat('Y n j', $year . ' ' . $month . ' ' . $day))->setTime(0, 0, 0);
     }
 
+    public static function isCornMoon(\DateTimeImmutable $dt): bool
+    {
+        return self::isSpecificMoon($dt, MoonNameEnum::CornMoon);
+    }
+
     public static function isSpecificMoon(\DateTimeImmutable $dt, MoonNameEnum $moonName): bool
     {
         return DateFunctions::getFullMoonName($dt) === $moonName;

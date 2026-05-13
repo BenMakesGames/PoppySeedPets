@@ -45,8 +45,8 @@ class OpenBakersBoxController
         ItemControllerHelpers::validateInventory($user, $inventory, 'box/bakers/#/open');
         ItemControllerHelpers::validateLocationSpace($inventory, $em);
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
-        $wheatFlourOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat Flour';
+        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
+        $wheatFlourOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat Flour';
 
         /**
          * @var Inventory[] $newInventory

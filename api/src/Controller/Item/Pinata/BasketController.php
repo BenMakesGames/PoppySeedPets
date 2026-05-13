@@ -130,7 +130,7 @@ class BasketController
         $location = $inventory->getLocation();
         $lockedToOwner = $inventory->getLockedToOwner();
 
-        $weirdItem = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? null : $rng->rngNextFromArray([ 'Wheat Flour', 'Flour Tortilla' ]);
+        $weirdItem = DateFunctions::isCornMoon($clock->now) ? null : $rng->rngNextFromArray([ 'Wheat Flour', 'Flour Tortilla' ]);
 
         $possibleFlowers = [
             'Rice Flower',

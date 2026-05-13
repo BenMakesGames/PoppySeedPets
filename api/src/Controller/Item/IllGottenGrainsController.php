@@ -48,7 +48,7 @@ class IllGottenGrainsController
 
         ItemControllerHelpers::validateInventory($user, $inventory, 'illGottenGrains/#/rummage');
 
-        if(DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon))
+        if(DateFunctions::isCornMoon($clock->now))
             return $responseService->itemActionSuccess('It seems the magic of the Corn Moon is preventing this morally-questionable item from being used!');
 
         $location = $inventory->getLocation();

@@ -43,7 +43,7 @@ class OpenPaperBagController
 
         ItemControllerHelpers::validateInventory($user, $inventory, 'box/paperBag/#/open');
 
-        $wheatFlourOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat Flour';
+        $wheatFlourOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat Flour';
 
         $item = ItemRepository::findOneByName($em, $rng->rngNextFromArray([
             'Apricot', 'Baking Soda', 'Beans', 'Blackberry Lassi', 'Blueberries', 'Butter', 'Canned Food', 'Celery',

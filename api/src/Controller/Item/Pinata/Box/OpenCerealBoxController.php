@@ -52,7 +52,7 @@ class OpenCerealBoxController
 
         $message = $user->getName() . ' got this from a Cereal Box.';
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
 
         $newInventory[] = $inventoryService->receiveItem('Corn', $user, $user, $message, $location, $inventory->getLockedToOwner());
         $newInventory[] = $inventoryService->receiveItem($wheatOrCorn, $user, $user, $message, $location, $inventory->getLockedToOwner());

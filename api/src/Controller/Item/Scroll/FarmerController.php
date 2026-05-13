@@ -47,7 +47,7 @@ class FarmerController
         ItemControllerHelpers::validateInventory($user, $inventory, 'scroll/farmers/#/invoke');
         ItemControllerHelpers::validateLocationSpace($inventory, $em);
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
 
         $em->remove($inventory);
 

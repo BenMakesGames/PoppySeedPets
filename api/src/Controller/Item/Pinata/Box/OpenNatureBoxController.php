@@ -44,7 +44,7 @@ class OpenNatureBoxController
         ItemControllerHelpers::validateInventory($user, $inventory, 'box/nature/#/open');
         ItemControllerHelpers::validateLocationSpace($inventory, $em);
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
 
         /** @var Inventory[] $newInventory */
         $newInventory = [];

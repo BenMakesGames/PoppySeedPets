@@ -98,7 +98,7 @@ class ResourcesController
             'Scroll of Resources' => 3
         ][$inventory->getItem()->getName()];
 
-        $wheatOrCorn = DateFunctions::isSpecificMoon($clock->now, MoonNameEnum::CornMoon) ? 'Corn' : 'Wheat';
+        $wheatOrCorn = DateFunctions::isCornMoon($clock->now) ? 'Corn' : 'Wheat';
 
         $possibleItems = [
             'Smallish Pumpkin', 'Tomato', 'Ginger', 'Hot Potato', 'Toad Legs', 'Spicy Peps', 'Naner', 'Sweet Beet',
