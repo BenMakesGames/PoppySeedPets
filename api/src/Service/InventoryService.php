@@ -27,6 +27,7 @@ use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\StatusEffectEnum;
 use App\Enum\UnlockableFeatureEnum;
+use App\Enum\MoonNameEnum;
 use App\Exceptions\PSPNotFoundException;
 use App\Functions\ArrayFunctions;
 use App\Functions\DateFunctions;
@@ -499,7 +500,7 @@ class InventoryService
         if($i->getItem()->getName() === 'Cellular Peptide Cake')
             return $i->setSpice(SpiceRepository::findOneByName($this->em, 'with Mint Frosting'));
 
-        if($i->getItem()->getName() === 'Worms' && DateFunctions::getFullMoonName($this->clock->now) === 'Worm')
+        if($i->getItem()->getName() === 'Worms' && DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::WormMoon))
             return $i->setSpice(SpiceRepository::findOneByName($this->em, 'with Butts'));
 
         return $i;

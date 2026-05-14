@@ -112,8 +112,8 @@ class Fireplace
 
         $stockingColors = PetColorFunctions::generateRandomPetColors($rng);
 
-        $this->stockingColorA = $stockingColors[0];
-        $this->stockingColorB = $stockingColors[1];
+        $this->stockingColorA = $stockingColors->colorA;
+        $this->stockingColorB = $stockingColors->colorB;
     }
 
     public function getId(): int

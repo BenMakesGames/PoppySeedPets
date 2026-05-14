@@ -45,7 +45,7 @@ class WildHedgeMazeService
     public function exploreHedgeMaze(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'exploring the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Gathering ], 'exploring the woods');
 
         $pet = $petWithSkills->getPet();
 
