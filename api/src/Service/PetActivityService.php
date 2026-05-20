@@ -697,6 +697,7 @@ class PetActivityService
             ->setIcon('icons/activity-logs/lunchbox')
             ->setChanges($petChanges->compare($pet))
             ->addInterestingness($itemsLeftInLunchbox === 0 ? PetActivityLogInterestingness::LunchboxEmpty : 1)
+            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Eating ]))
         ;
 
         PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::EmptiedTheirLunchbox, $lunchboxLog);
