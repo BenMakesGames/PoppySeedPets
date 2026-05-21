@@ -17,6 +17,7 @@ use App\Entity\Pet;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends TypeaheadService<Pet>
@@ -24,7 +25,7 @@ use Doctrine\ORM\QueryBuilder;
 class PetTypeaheadService extends TypeaheadService
 {
     private ?User $user = null;
-    private ?int $speciesId = null;
+    private ?Ulid $speciesId = null;
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -36,7 +37,7 @@ class PetTypeaheadService extends TypeaheadService
         $this->user = $user;
     }
 
-    public function setSpeciesId(int $speciesId): void
+    public function setSpeciesId(Ulid $speciesId): void
     {
         $this->speciesId = $speciesId;
     }

@@ -72,3 +72,25 @@ Stale group strings don't break serialization (they just never match), but they'
 ### Pet entity: one-to-one inverse side
 
 `Pet` is the inverse side of several 1:1 relations (e.g., `mappedBy: 'pet'`). The FK column therefore lives on the *other* table, not on `pet`. When writing a "drop feature X" migration, verify this by grepping historical migrations for the column name before adding ALTER TABLE pet DROP COLUMN statements that will fail.
+
+### INT → ULID PK conversions
+
+When migrating an entity's PK from auto-increment INT to `BINARY(16)` ULID (precedent: `Version20260302120000` for `item_treasure`, single FK; `Version20260516094631` for `pet_species`, three FKs), follow these patterns:
+
+- **`Ulid` is generated PHP-side via `new Ulid()`** in the migration's `postUp()`. MySQL has no native ULID generator (`UUID()` is RFC4122 v1, structurally different).
+- **`up()` does DDL prep** (drop FKs/indexes, add `new_id` / `new_<fk>_id` shadow columns as `BINARY(16) NULL`). **`postUp()` does row-by-row UUID assignment + FK rewiring + final rename + re-add constraints.** **`down()` throws `RuntimeException`** — integer IDs are gone forever.
+- **Re-use the original constraint and index names** (look them up via `SHOW CREATE TABLE` or grep the seed SQL) so phpstan baselines and future migrations don't see drift.
+- **Verify there are no NULL FK rows in `postUp()` before renaming shadow columns to NOT NULL** (`SELECT COUNT(*) FROM <table> WHERE <fk_col> IS NULL`). The source columns are typically NOT NULL today, but verify rather than silently inserting a NULL.
+- **Doctrine infers BINARY(16) on the FK side automatically** from `ManyToOne(targetEntity: ...)`'s PK type. No `JoinColumn(type: ...)` change is needed on the dependent entities unless someone hand-wrote one (grep `JoinColumn.*<rel_name>` to confirm).
+- **`PDO::FETCH_FUNC` callback parameters in raw-SQL controllers (`SimpleDb::mapResults`)** receive the binary column as a 16-byte PHP string. Convert with `Ulid::fromBinary($raw)->toBase32()` for JSON responses. Don't wrap in `HEX(...)` SQL-side — the round-trip is dead weight.
+- **The default Symfony `UidNormalizer` serializes `Ulid` → base32 string** (e.g. `01HXAB...`, 26 chars) with no extra config.
+
+### ULID input parsing and PhpStan
+
+When a controller, filter, or service accepts a ULID string from user input, PhpStan will reject `Ulid::fromString($value)` if `$value` is `mixed`, `string|float|int|bool|null` (the default return of `$request->request->get`), or anything wider than `string`. Three idioms:
+
+- **Controllers**: use `$request->request->getString('key', '')` (or `getString` on query) — returns `string`, narrowed.
+- **Filter services / anywhere with `mixed $value`**: guard with `if(!is_string($value)) throw new PSPFormValidationException(...);` before `Ulid::fromString`.
+- **Raw-SQL `mapResults` closures**: type-hint each parameter explicitly (`fn(int $id, string $name, ...) => [...]`); PDO `FETCH_FUNC` returns string columns as strings and integer columns as ints/strings depending on driver flags, but explicit hints make phpstan happy and document the schema.
+
+Wrap `Ulid::fromString()` in `try { } catch(\InvalidArgumentException $e) { throw new PSPFormValidationException(...); }` for malformed input.
