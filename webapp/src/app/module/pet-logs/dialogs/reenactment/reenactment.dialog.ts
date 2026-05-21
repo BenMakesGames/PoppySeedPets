@@ -71,6 +71,11 @@ export class ReenactmentDialog implements OnInit
       petPosition: { x: 10, y: 10, scale: 20 },
       interestingness: 0,
     },*/
+    'Location: Beach': {
+      image: 'beach',
+      petPosition: { x: 10, y: 10, scale: 4 },
+      interestingness: 0,
+    },
     'Location: At Home': {
       image: 'living-room',
       petPosition: { x: 46, y: 89, scale: 24 },
