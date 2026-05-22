@@ -475,12 +475,6 @@ parameters:
 			path: src/Command/UpdateHollowEarthTileEventCommand.php
 
 		-
-			message: '#^Cannot access an offset on int\|list\<string\>\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Command/UpdateHollowEarthTileEventCommand.php
-
-		-
 			message: '#^Method App\\Command\\UpdateHollowEarthTileEventCommand\:\:createBasicEvent\(\) has parameter \$event with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3397,12 +3391,6 @@ parameters:
 			path: src/Model/TraderOffer.php
 
 		-
-			message: '#^Parameter \#1 \$min \(0\) of function random_int expects lower number than parameter \#2 \$max \(int\<\-1, max\>\)\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Security/CryptographicFunctions.php
-
-		-
 			message: '#^Parameter \#1 \$string of function substr expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 2
@@ -5027,18 +5015,6 @@ parameters:
 			identifier: booleanAnd.rightAlwaysTrue
 			count: 1
 			path: src/Service/PetActivity/TreasureMapService.php
-
-		-
-			message: '#^Cannot call method getItem\(\) on App\\Entity\\Inventory\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Service/PetActivity/UmbraService.php
-
-		-
-			message: '#^Cannot call method getName\(\) on App\\Entity\\SpiritCompanion\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Service/PetActivity/UmbraService.php
 
 		-
 			message: '#^Binary operation "\+" between 2 and mixed results in an error\.$#'
