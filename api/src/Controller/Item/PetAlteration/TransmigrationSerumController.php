@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Ulid;
 use App\Service\UserAccessor;
 
 #[Route("/item/transmigrationSerum")]
@@ -48,12 +49,21 @@ class TransmigrationSerumController
         if(!$pet || $pet->getOwner()->getId() !== $user->getId())
             throw new PSPPetNotFoundException();
 
-        $speciesId = $request->request->getInt('species', 0);
+        $speciesIdRaw = $request->request->getString('species', '');
 
-        if($speciesId === 0)
+        if($speciesIdRaw === '')
             throw new PSPInvalidOperationException('A species to transmigrate to was not selected.');
 
-        if($speciesId === $pet->getSpecies()->getId())
+        try
+        {
+            $speciesId = Ulid::fromString($speciesIdRaw);
+        }
+        catch(\InvalidArgumentException $e)
+        {
+            throw new PSPFormValidationException('The selected species doesn\'t exist?? Try reloading and trying again.');
+        }
+
+        if($speciesId->equals($pet->getSpecies()->getId()))
             throw new PSPInvalidOperationException('That\'s ' . $pet->getName() . '\'s current species! No sense in wasting the serum!');
 
         $newSpecies = $em->getRepository(PetSpecies::class)->find($speciesId);

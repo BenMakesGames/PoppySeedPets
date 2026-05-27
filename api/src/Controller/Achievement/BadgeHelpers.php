@@ -18,6 +18,7 @@ use App\Entity\UserBadge;
 use App\Entity\UserStats;
 use App\Entity\UserUnlockedFeature;
 use App\Enum\BadgeEnum;
+use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
 use App\Functions\InMemoryCache;
 use App\Functions\ItemRepository;
@@ -919,17 +920,17 @@ final class BadgeHelpers
                 break;
 
             case BadgeEnum::BASEMENT_SIZE_2000:
-                $progress = [ 'target' => 2000, 'current' => $user->getBasementSize() ];
+                $progress = [ 'target' => 2000, 'current' => $user->hasUnlockedFeature(UnlockableFeatureEnum::Basement) ? $user->getBasementSize() : 0 ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Worker Bee'), 2);
                 break;
 
             case BadgeEnum::BASEMENT_SIZE_5000:
-                $progress = [ 'target' => 5000, 'current' => $user->getBasementSize() ];
+                $progress = [ 'target' => 5000, 'current' => $user->hasUnlockedFeature(UnlockableFeatureEnum::Basement) ? $user->getBasementSize() : 0 ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Worker Bee'), 5);
                 break;
 
             case BadgeEnum::BASEMENT_SIZE_10000:
-                $progress = [ 'target' => 10000, 'current' => $user->getBasementSize() ];
+                $progress = [ 'target' => 10000, 'current' => $user->hasUnlockedFeature(UnlockableFeatureEnum::Basement) ? $user->getBasementSize() : 0 ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Shiny Baabble'), 1);
                 break;
 

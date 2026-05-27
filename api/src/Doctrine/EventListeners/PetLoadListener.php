@@ -44,7 +44,7 @@ class PetLoadListener
         $speciesId = $petSpeciesProxy->getId();
         $query = $this->entityManager->createQuery('SELECT s FROM App\Entity\PetSpecies s WHERE s.id = :id');
         $query->setParameter('id', $speciesId);
-        $query->enableResultCache(24 * 60 * 60, CacheHelpers::getCacheItemName('PetLoadListener_GetPetSpeciesById_' . $speciesId));
+        $query->enableResultCache(24 * 60 * 60, CacheHelpers::getCacheItemName('PetLoadListener_GetPetSpeciesById_' . $speciesId->toBase32()));
 
         // Execute query and get the result
         $petSpecies = $query->getOneOrNullResult();

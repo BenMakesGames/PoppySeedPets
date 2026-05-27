@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace App\Controller\Pet;
 
 use App\Enum\SerializationGroupEnum;
+use App\Exceptions\PSPFormValidationException;
 use App\Service\ResponseService;
 use App\Service\Typeahead\PetTypeaheadService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Ulid;
 use App\Service\UserAccessor;
 
 #[Route("/pet")]
@@ -37,7 +39,16 @@ class TypeaheadController
         $petTypeaheadService->setUser($user);
 
         if($request->query->has('speciesId'))
-            $petTypeaheadService->setSpeciesId($request->query->getInt('speciesId'));
+        {
+            try
+            {
+                $petTypeaheadService->setSpeciesId(Ulid::fromString($request->query->getString('speciesId')));
+            }
+            catch(\InvalidArgumentException $e)
+            {
+                throw new PSPFormValidationException('Invalid species ID.');
+            }
+        }
 
         $suggestions = $petTypeaheadService->search('name', $request->query->getString('search'));
 

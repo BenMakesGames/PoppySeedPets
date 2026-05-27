@@ -9,7 +9,7 @@
  */
 export interface PetSpeciesEncyclopediaSerializationGroup
 {
-  id: number;
+  id: string;
   name: string;
   image: string;
   family: string;
