@@ -68,7 +68,8 @@ class GreenhouseService
                 ]);
 
                 $this->inventoryService->receiveItem($scroll, $user, $user, 'Left behind by a huge owl that visited ' . $user->getName() . '\'s Bird Bath.', LocationEnum::Home);
-                $message = 'As you approach the owl, it tilts its head at you. You freeze, and stare at each other for a few seconds before the owl flies off, dropping some kind of scroll as it goes!';
+                $this->inventoryService->receiveItem('Hoot Dog', $user, $user, 'Left behind by a huge owl that visited ' . $user->getName() . '\'s Bird Bath.', LocationEnum::Home);
+                $message = 'As you approach the owl, it tilts its head at you. You freeze, and stare at each other for a few seconds before the owl flies off, dropping some kind of scroll (and a sandwich?) as it goes!';
                 $activityLogMessage = 'You approached an owl in your birdbath! It flew off, leaving behind a ' . $scroll . '!';
                 break;
 
