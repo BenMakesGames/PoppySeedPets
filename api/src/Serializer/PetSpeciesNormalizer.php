@@ -16,6 +16,7 @@ namespace App\Serializer;
 use App\Entity\Pet;
 use App\Entity\PetSpecies;
 use App\Enum\SerializationGroupEnum;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -51,7 +52,7 @@ class PetSpeciesNormalizer implements NormalizerInterface
         return (int)$em->getRepository(Pet::class)->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->andWhere('p.species=:species')
-            ->setParameter('species', $petSpecies)
+            ->setParameter('species', $petSpecies->getId()->toBinary(), ParameterType::BINARY)
             ->getQuery()
             ->getSingleScalarResult()
         ;
