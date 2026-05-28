@@ -20,13 +20,13 @@ use App\Entity\PetSpecies;
 use App\Exceptions\PSPFormValidationException;
 use App\Exceptions\PSPInvalidOperationException;
 use App\Exceptions\PSPPetNotFoundException;
+use App\Functions\ULID;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Uid\Ulid;
 use App\Service\UserAccessor;
 
 #[Route("/item/transmigrationSerum")]
@@ -54,7 +54,7 @@ class TransmigrationSerumController
         if($speciesIdRaw === '')
             throw new PSPInvalidOperationException('A species to transmigrate to was not selected.');
 
-        $speciesId = Ulid::fromString($speciesIdRaw);
+        $speciesId = ULID::fromUserInput($speciesIdRaw, 'species');
 
         if($speciesId->equals($pet->getSpecies()->getId()))
             throw new PSPInvalidOperationException('That\'s ' . $pet->getName() . '\'s current species! No sense in wasting the serum!');

@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace App\Controller\Pet;
 
 use App\Enum\SerializationGroupEnum;
+use App\Functions\ULID;
 use App\Service\ResponseService;
 use App\Service\Typeahead\PetTypeaheadService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Uid\Ulid;
 use App\Service\UserAccessor;
 
 #[Route("/pet")]
@@ -39,7 +39,7 @@ class TypeaheadController
 
         if($request->query->has('speciesId'))
         {
-            $petTypeaheadService->setSpeciesId(Ulid::fromString($request->query->getString('speciesId')));
+            $petTypeaheadService->setSpeciesId(ULID::fromUserInput($request->query->getString('speciesId'), 'speciesId'));
         }
 
         $suggestions = $petTypeaheadService->search('name', $request->query->getString('search'));
