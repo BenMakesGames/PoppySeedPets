@@ -17,7 +17,6 @@ use App\Exceptions\PSPFormValidationException;
 use App\Functions\StringFunctions;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\Uid\Ulid;
 
 /**
  * @template T
@@ -43,54 +42,26 @@ abstract class TypeaheadService
         if($search === '')
             throw new PSPFormValidationException('Search text is missing...');
 
+        $escaped = StringFunctions::escapeMySqlWildcardCharacters($search);
+
+        // One ranked query returns every substring match, sorting prefix matches (LIKE 'search%')
+        // ahead of substring-only matches. A single query can't return a row twice, so there's no
+        // merge or de-duplication to do — and nothing binds an id array, so it stays agnostic to
+        // whether the entity's id is an int or a (binary) Ulid.
         $qb = $this->repository->createQueryBuilder('e')
-            ->andWhere('e.' . $fieldToSearch . ' LIKE :searchLike')
-            ->setParameter('searchLike', StringFunctions::escapeMySqlWildcardCharacters($search) . '%')
+            ->addSelect('(CASE WHEN e.' . $fieldToSearch . ' LIKE :prefixLike THEN 0 ELSE 1 END) AS HIDDEN prefixRank')
+            ->andWhere('e.' . $fieldToSearch . ' LIKE :substringLike')
+            ->setParameter('prefixLike', $escaped . '%')
+            ->setParameter('substringLike', '%' . $escaped . '%')
+            ->orderBy('prefixRank', 'ASC')
+            ->addOrderBy('e.' . $fieldToSearch, 'ASC')
             ->setMaxResults($maxResults)
-            ->orderBy('e.' . $fieldToSearch, 'ASC')
         ;
 
         $qb = $this->addQueryBuilderConditions($qb);
 
         /** @var T[] $entities */
         $entities = $qb->getQuery()->execute();
-
-        if(count($entities) < $maxResults)
-        {
-            $qb = $this->repository->createQueryBuilder('e')
-                ->andWhere('e.' . $fieldToSearch . ' LIKE :searchLike')
-                ->setParameter('searchLike', '%' . StringFunctions::escapeMySqlWildcardCharacters($search) . '%')
-                ->orderBy('e.' . $fieldToSearch, 'ASC')
-                ->setMaxResults($maxResults)
-            ;
-
-            $qb = $this->addQueryBuilderConditions($qb);
-
-            // Merge prefix matches (first, so they keep priority) with substring matches, then
-            // de-duplicate by entity id. A string-cast key works for both int and Ulid ids
-            // (the substring pass cannot reliably exclude Ulid ids via NOT IN, so we dedup here).
-            $merged = array_merge($entities, $qb->getQuery()->execute());
-
-            $seen = [];
-            $entities = [];
-            foreach($merged as $entity)
-            {
-                $id = $entity->getId();
-
-                if(!is_int($id) && !$id instanceof Ulid)
-                    throw new \LogicException('Typeahead entity id must be an int or Ulid.');
-
-                $key = (string)$id;
-
-                if(isset($seen[$key]))
-                    continue;
-
-                $seen[$key] = true;
-                $entities[] = $entity;
-            }
-
-            $entities = array_slice($entities, 0, $maxResults);
-        }
 
         return $entities;
     }

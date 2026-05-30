@@ -5425,18 +5425,6 @@ parameters:
 			path: src/Service/TraderService.php
 
 		-
-			message: '#^Cannot call method getId\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Service/Typeahead/TypeaheadService.php
-
-		-
-			message: '#^Parameter \#2 \.\.\.\$arrays of function array_merge expects array, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/Typeahead/TypeaheadService.php
-
-		-
 			message: '#^Type mixed in generic type Doctrine\\ORM\\EntityRepository\<mixed\> in PHPDoc type for property App\\Service\\Typeahead\\TypeaheadService\:\:\$repository is not subtype of template type T of object of class Doctrine\\ORM\\EntityRepository\.$#'
 			identifier: generics.notSubtype
 			count: 1
