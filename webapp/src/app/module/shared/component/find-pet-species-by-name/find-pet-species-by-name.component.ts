@@ -20,7 +20,7 @@ import {
 } from '@angular/core';
 import {fromEvent, Observable, Subscription} from "rxjs";
 import {ApiService} from "../../service/api.service";
-import {concat, debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
 import {ApiResponseModel} from "../../../../model/api-response.model";
 import { LoadingThrobberComponent } from "../loading-throbber/loading-throbber.component";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
@@ -61,7 +61,6 @@ export class FindPetSpeciesByNameComponent implements OnInit, OnChanges {
         filter((e: KeyboardEvent) => e.keyCode !== 13),
         map((e: any) => e.target.value),
         debounceTime(400),
-        concat(),
         distinctUntilChanged(),
         filter(q => q.length > 0),
         switchMap(q => this.suggest(q))

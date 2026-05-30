@@ -17,6 +17,7 @@ use App\Exceptions\PSPFormValidationException;
 use App\Functions\StringFunctions;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @template T
@@ -56,30 +57,39 @@ abstract class TypeaheadService
 
         if(count($entities) < $maxResults)
         {
-            $ids = array_map(fn($e) => $e->getId(), $entities);
-
             $qb = $this->repository->createQueryBuilder('e')
                 ->andWhere('e.' . $fieldToSearch . ' LIKE :searchLike')
                 ->setParameter('searchLike', '%' . StringFunctions::escapeMySqlWildcardCharacters($search) . '%')
                 ->orderBy('e.' . $fieldToSearch, 'ASC')
+                ->setMaxResults($maxResults)
             ;
-
-            if(count($entities) > 0)
-            {
-                $qb
-                    ->andWhere('e.id NOT IN (:ids)')
-                    ->setParameter('ids', $ids)
-                    ->setMaxResults($maxResults - count($entities))
-                ;
-            }
-            else
-            {
-                $qb->setMaxResults($maxResults);
-            }
 
             $qb = $this->addQueryBuilderConditions($qb);
 
-            $entities = array_merge($entities, $qb->getQuery()->execute());
+            // Merge prefix matches (first, so they keep priority) with substring matches, then
+            // de-duplicate by entity id. A string-cast key works for both int and Ulid ids
+            // (the substring pass cannot reliably exclude Ulid ids via NOT IN, so we dedup here).
+            $merged = array_merge($entities, $qb->getQuery()->execute());
+
+            $seen = [];
+            $entities = [];
+            foreach($merged as $entity)
+            {
+                $id = $entity->getId();
+
+                if(!is_int($id) && !$id instanceof Ulid)
+                    throw new \LogicException('Typeahead entity id must be an int or Ulid.');
+
+                $key = (string)$id;
+
+                if(isset($seen[$key]))
+                    continue;
+
+                $seen[$key] = true;
+                $entities[] = $entity;
+            }
+
+            $entities = array_slice($entities, 0, $maxResults);
         }
 
         return $entities;

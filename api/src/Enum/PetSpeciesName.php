@@ -34,6 +34,7 @@ enum PetSpeciesName: string
     case Phoenix = 'Phoenix';
     case RainbowDolphin = 'Rainbow Dolphin';
     case SagaJelling = 'Sága Jelling';
+    case SentientBeetle = 'Sentient Beetle';
     case Sentinel = 'Sentinel';
     case Sneqo = 'Sneqo';
     case StarMonkey = 'Star Monkey';
