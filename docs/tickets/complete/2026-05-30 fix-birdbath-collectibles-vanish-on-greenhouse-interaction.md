@@ -61,3 +61,21 @@ Confirm `GET /greenhouse` still returns the same JSON keys it did before (the tw
 - [ ] Click "Clean"; confirm the collectibles disappear and stay gone after a subsequent unrelated interaction.
 - [ ] Reload the page in both states (with and without collectibles) and confirm the view matches the pre-reload state.
 - [ ] Regression: in a greenhouse *without* a bird bath, confirm no errors and the Add-ons section renders as before.
+
+## Learnings
+
+### Architectural decisions
+- **Open Decision 1 (key presence)** — resolved to the default: `hasBubblegum`/`hasOil` are now *always* emitted as booleans, defaulting to `false` when there is no bird bath. This makes the response contract uniform across every greenhouse endpoint and avoids the original "key missing → `undefined` overwrites `true`" stale-view bug.
+- **Open Decision 2 (helper placement)** — resolved to the default: a private `hasItemInBirdBath(User, string): bool` helper on `GreenhouseService`, mirroring the controller helper it replaced, using the service's already-injected `EntityManagerInterface`.
+
+### Problems encountered
+- **Stale PHPStan baseline entries.** `getGreenhouseResponseData()` already had a baselined `return.type` mismatch (`greenhouse: Greenhouse` vs `Greenhouse|null`). Adding the two keys changed the inferred "but returns …" shape, so the baseline pattern stopped matching and PHPStan failed with `ignore.unmatched`. Fix: update that baseline message to include `, hasBubblegum\: bool, hasOil\: bool` before the closing brace.
+- Removing the controller's `$data['hasBubblegum']` offset access also orphaned a second baseline entry (`offsetAccess.nonOffsetAccessible` on `GetGreenhouseController`). That entry had to be deleted, not edited — the error no longer occurs at all.
+- **Lesson:** when you change a method's return-array shape or delete code, grep `phpstan-baseline.neon` for the symbol/offset and reconcile stale entries; an unmatched ignore is itself a (non-ignorable) error.
+
+### Interesting tidbits
+- The two booleans are plain scalars passed *into* `$normalizer->normalize(...)` rather than tacked on afterward. The Symfony serializer passes scalars through untouched regardless of serialization groups, so no group annotation is needed — the GET endpoint's JSON shape is unchanged.
+- `getGreenhouseResponseData()` is the single shared builder behind all six greenhouse endpoints (GET, harvest, fertilize, feed composter, plant seed, assign helper). Centralizing the flags there fixes every mutating endpoint at once.
+
+### Related areas affected
+- None beyond the greenhouse response. No frontend change was needed; `greenhouse.component.ts` already gates the whole bird bath block on `greenhouse.hasBirdBath`, so the always-`false` keys are harmless.

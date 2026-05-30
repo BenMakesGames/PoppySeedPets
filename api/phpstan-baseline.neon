@@ -1117,12 +1117,6 @@ parameters:
 			path: src/Controller/Fireplace/LookInStockingController.php
 
 		-
-			message: '#^Cannot access offset ''hasBubblegum'' on array\|ArrayObject\|bool\|float\|int\|string\|null\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Controller/Greenhouse/GetGreenhouseController.php
-
-		-
 			message: '#^Cannot call method getHelper\(\) on App\\Entity\\Greenhouse\|null\.$#'
 			identifier: method.nonObject
 			count: 2
@@ -4105,7 +4099,7 @@ parameters:
 			path: src/Service/GreenhouseService.php
 
 		-
-			message: '#^Method App\\Service\\GreenhouseService\:\:getGreenhouseResponseData\(\) should return array\{greenhouse\: App\\Entity\\Greenhouse, weeds\: string\|null, plants\: array\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\} but returns array\{greenhouse\: App\\Entity\\Greenhouse\|null, weeds\: string\|null, plants\: list\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\|ArrayObject\|bool\|float\|int\|string\|null\}\.$#'
+			message: '#^Method App\\Service\\GreenhouseService\:\:getGreenhouseResponseData\(\) should return array\{greenhouse\: App\\Entity\\Greenhouse, weeds\: string\|null, plants\: array\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\} but returns array\{greenhouse\: App\\Entity\\Greenhouse\|null, weeds\: string\|null, plants\: list\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\|ArrayObject\|bool\|float\|int\|string\|null, hasBubblegum\: bool, hasOil\: bool\}\.$#'
 			identifier: return.type
 			count: 1
 			path: src/Service/GreenhouseService.php

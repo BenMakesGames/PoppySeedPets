@@ -30,6 +30,7 @@ use App\Enum\SerializationGroupEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
 use App\Functions\ArrayFunctions;
+use App\Functions\ItemRepository;
 use App\Functions\MeritRepository;
 use App\Functions\PetRepository;
 use App\Functions\PetSpeciesRepository;
@@ -217,12 +218,25 @@ class GreenhouseService
     {
         $fertilizers = $this->findFertilizers($user);
 
+        $hasBirdBath = $user->getGreenhouse()?->getHasBirdBath() ?? false;
+
         return [
             'greenhouse' => $user->getGreenhouse(),
             'weeds' => $this->getWeedText($user),
             'plants' => $this->em->getRepository(GreenhousePlant::class)->findBy([ 'owner' => $user->getId() ]),
             'fertilizer' => $this->normalizer->normalize($fertilizers, null, [ 'groups' => [ SerializationGroupEnum::GREENHOUSE_FERTILIZER ] ]),
+            'hasBubblegum' => $hasBirdBath && $this->hasItemInBirdBath($user, 'Bubblegum'),
+            'hasOil' => $hasBirdBath && $this->hasItemInBirdBath($user, 'Oil'),
         ];
+    }
+
+    private function hasItemInBirdBath(User $user, string $itemName): bool
+    {
+        return $this->em->getRepository(Inventory::class)->count([
+            'owner' => $user->getId(),
+            'location' => LocationEnum::BirdBath,
+            'item' => ItemRepository::getIdByName($this->em, $itemName)
+        ]) > 0;
     }
 
     /**

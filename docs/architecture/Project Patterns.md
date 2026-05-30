@@ -57,6 +57,9 @@ PhpStan runs with a baseline (`api/phpstan-baseline.neon`). When you delete a fi
 
 - Deleting a file: every `path: src/...` entry for the deleted file must be removed. Unused baseline entries are fatal.
 - Reducing error occurrences: if the `count:` on a remaining entry is now too high (e.g., you deleted a method containing one of three `(int)$mixed` casts), decrement `count:` accordingly. PhpStan reports an "expected N times, occurred M times" error.
+- Changing a shaped-array return type: baseline messages for `return.type` errors embed the *full inferred array shape* (e.g. `but returns array{greenhouse: ..., fertilizer: ...}`). Adding/removing a key to the returned array changes that shape, so the baselined pattern no longer matches and phpstan fails with `ignore.unmatched`. Update the message to mirror the new shape (escaping `:` `{` `}` `|` `<` `>` as the existing entries do). When in doubt, run phpstan once, copy the new "but returns …" text from the reported error, and re-escape it.
+
+When in doubt after any refactor that touches code, grep `phpstan-baseline.neon` for the affected symbol/offset and reconcile every match — an unmatched ignore is itself a non-ignorable error.
 
 ### Serialization group strings live as literals
 
