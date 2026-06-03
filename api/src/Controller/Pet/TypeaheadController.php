@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Controller\Pet;
 
 use App\Enum\SerializationGroupEnum;
+use App\Functions\ULID;
 use App\Service\ResponseService;
 use App\Service\Typeahead\PetTypeaheadService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,7 +38,9 @@ class TypeaheadController
         $petTypeaheadService->setUser($user);
 
         if($request->query->has('speciesId'))
-            $petTypeaheadService->setSpeciesId($request->query->getInt('speciesId'));
+        {
+            $petTypeaheadService->setSpeciesId(ULID::fromUserInput($request->query->getString('speciesId'), 'speciesId'));
+        }
 
         $suggestions = $petTypeaheadService->search('name', $request->query->getString('search'));
 

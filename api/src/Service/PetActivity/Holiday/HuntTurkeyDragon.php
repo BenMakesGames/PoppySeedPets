@@ -18,6 +18,8 @@ use App\Enum\PetActivityStatEnum;
 use App\Enum\PetBadgeEnum;
 use App\Enum\PetSkillEnum;
 use App\Enum\StatusEffectEnum;
+use App\Enum\PetActivityLogTagEnum;
+use App\Enum\PetActivityLogInterestingness;
 use App\Functions\PetActivityLogFactory;
 use App\Functions\PetActivityLogTagHelpers;
 use App\Functions\PetBadgeHelpers;
@@ -26,6 +28,7 @@ use App\Service\InventoryService;
 use App\Service\IRandom;
 use App\Service\PetExperienceService;
 use Doctrine\ORM\EntityManagerInterface;
+
 
 class HuntTurkeyDragon
 {
@@ -118,7 +121,8 @@ class HuntTurkeyDragon
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, false);
         }
 
-        $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fighting', 'Special Event', 'Thanksgiving' ]));
+        $activityLog->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent);
+        $activityLog->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Fighting, PetActivityLogTagEnum::Special_Event, PetActivityLogTagEnum::Thanksgiving ]));
 
         if($gobbleGobble !== null)
             $pet->removeStatusEffect($gobbleGobble);

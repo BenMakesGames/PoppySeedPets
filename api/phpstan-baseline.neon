@@ -475,12 +475,6 @@ parameters:
 			path: src/Command/UpdateHollowEarthTileEventCommand.php
 
 		-
-			message: '#^Cannot access an offset on int\|list\<string\>\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Command/UpdateHollowEarthTileEventCommand.php
-
-		-
 			message: '#^Method App\\Command\\UpdateHollowEarthTileEventCommand\:\:createBasicEvent\(\) has parameter \$event with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1123,12 +1117,6 @@ parameters:
 			path: src/Controller/Fireplace/LookInStockingController.php
 
 		-
-			message: '#^Cannot access offset ''hasBubblegum'' on array\|ArrayObject\|bool\|float\|int\|string\|null\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Controller/Greenhouse/GetGreenhouseController.php
-
-		-
 			message: '#^Cannot call method getHelper\(\) on App\\Entity\\Greenhouse\|null\.$#'
 			identifier: method.nonObject
 			count: 2
@@ -1511,12 +1499,6 @@ parameters:
 			identifier: identical.alwaysTrue
 			count: 1
 			path: src/Controller/Inventory/MoveController.php
-
-		-
-			message: '#^Parameter \#3 \$species of method App\\Service\\PetFactory\:\:createPet\(\) expects App\\Entity\\PetSpecies, App\\Entity\\PetSpecies\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/Item/BugController.php
 
 		-
 			message: '#^Cannot call method increaseMaxWaterPlants\(\) on App\\Entity\\Greenhouse\|null\.$#'
@@ -3397,12 +3379,6 @@ parameters:
 			path: src/Model/TraderOffer.php
 
 		-
-			message: '#^Parameter \#1 \$min \(0\) of function random_int expects lower number than parameter \#2 \$max \(int\<\-1, max\>\)\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Security/CryptographicFunctions.php
-
-		-
 			message: '#^Parameter \#1 \$string of function substr expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 2
@@ -3535,12 +3511,6 @@ parameters:
 			path: src/Serializer/UserNormalizer.php
 
 		-
-			message: '#^Binary operation "\-" between bool\|float\|int\|string\|null and 1 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Service/AdoptionService.php
-
-		-
 			message: '#^Cannot call method getColorA\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -3562,12 +3532,6 @@ parameters:
 			message: '#^Parameter \#1 \$color of method App\\Service\\Xoshiro\:\:rngNextTweakedColor\(\) expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 2
-			path: src/Service/AdoptionService.php
-
-		-
-			message: '#^Parameter \#2 \$inclusiveMax of method App\\Service\\Xoshiro\:\:rngNextInt\(\) expects int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Service/AdoptionService.php
 
 		-
@@ -4129,7 +4093,7 @@ parameters:
 			path: src/Service/GreenhouseService.php
 
 		-
-			message: '#^Method App\\Service\\GreenhouseService\:\:getGreenhouseResponseData\(\) should return array\{greenhouse\: App\\Entity\\Greenhouse, weeds\: string\|null, plants\: array\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\} but returns array\{greenhouse\: App\\Entity\\Greenhouse\|null, weeds\: string\|null, plants\: list\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\|ArrayObject\|bool\|float\|int\|string\|null\}\.$#'
+			message: '#^Method App\\Service\\GreenhouseService\:\:getGreenhouseResponseData\(\) should return array\{greenhouse\: App\\Entity\\Greenhouse, weeds\: string\|null, plants\: array\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\} but returns array\{greenhouse\: App\\Entity\\Greenhouse\|null, weeds\: string\|null, plants\: list\<App\\Entity\\GreenhousePlant\>, fertilizer\: array\|ArrayObject\|bool\|float\|int\|string\|null, hasBubblegum\: bool, hasOil\: bool\}\.$#'
 			identifier: return.type
 			count: 1
 			path: src/Service/GreenhouseService.php
@@ -5041,18 +5005,6 @@ parameters:
 			path: src/Service/PetActivity/TreasureMapService.php
 
 		-
-			message: '#^Cannot call method getItem\(\) on App\\Entity\\Inventory\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Service/PetActivity/UmbraService.php
-
-		-
-			message: '#^Cannot call method getName\(\) on App\\Entity\\SpiritCompanion\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Service/PetActivity/UmbraService.php
-
-		-
 			message: '#^Binary operation "\+" between 2 and mixed results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
@@ -5471,18 +5423,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: src/Service/TraderService.php
-
-		-
-			message: '#^Cannot call method getId\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Service/Typeahead/TypeaheadService.php
-
-		-
-			message: '#^Parameter \#2 \.\.\.\$arrays of function array_merge expects array, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/Typeahead/TypeaheadService.php
 
 		-
 			message: '#^Type mixed in generic type Doctrine\\ORM\\EntityRepository\<mixed\> in PHPDoc type for property App\\Service\\Typeahead\\TypeaheadService\:\:\$repository is not subtype of template type T of object of class Doctrine\\ORM\\EntityRepository\.$#'

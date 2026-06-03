@@ -93,7 +93,7 @@ class SummoningSomethingFriendlyController
                     {
                         $species = $rng->rngNextFromArray($em->getRepository(PetSpecies::class)->findAll());
 
-                        if($species->getName() !== 'Sentinel' && $species->getId() != $pet->getSpecies()->getId())
+                        if($species->getName() !== 'Sentinel' && !$species->getId()->equals($pet->getSpecies()->getId()))
                         {
                             PetActivityLogFactory::createUnreadLog(
                                 $em,

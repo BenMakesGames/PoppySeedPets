@@ -13,8 +13,24 @@ declare(strict_types=1);
 
 namespace App\Functions;
 
+use App\Exceptions\PSPFormValidationException;
+use Symfony\Component\Uid\Ulid as SymfonyUlid;
+
 final class ULID
 {
+    /**
+     * Validates that a request-supplied string is a ULID, returning the parsed Ulid or throwing a
+     * client-facing PSPFormValidationException (422) that names the offending field. Use this instead of
+     * Symfony\Component\Uid\Ulid::fromString() on user input, which throws a raw \InvalidArgumentException (500).
+     */
+    public static function fromUserInput(string $value, string $fieldLabel): SymfonyUlid
+    {
+        if(!SymfonyUlid::isValid($value))
+            throw new PSPFormValidationException('"' . $fieldLabel . '" is not a valid ID.');
+
+        return SymfonyUlid::fromString($value);
+    }
+
     public static function generateUUID(?int $timeInMs = null): string
     {
         $uuidHex = self::generateHex($timeInMs);

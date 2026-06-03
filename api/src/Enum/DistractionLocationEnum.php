@@ -20,4 +20,5 @@ enum DistractionLocationEnum: string
     case Beach = 'beach';
     case Volcano = 'volcano';
     case InTown = 'inTown';
+    case AtHome = 'home';
 }

@@ -1,3 +1,104 @@
+# Local development with Docker (recommended)
+
+This is the supported path for contributors. You only need [Docker Desktop](https://www.docker.com/products/docker-desktop/) on your machine — Docker provides PHP 8.4, Node 20, Composer, MySQL 8.0, and Redis 7 in containers.
+
+## What you need to drop in by hand
+
+Only one thing isn't bundled with the repo:
+
+* `proprietary-assets/` at the repo root — pet images, fonts, icons. The app builds without it, but images will be missing.
+
+(Game data — items, recipes, NPCs — lives in `db/seed/*.sql` and is auto-imported into MySQL the first time the `db` container starts. If you want to add additional seed files, drop them in `db/seed/` and `docker compose down -v && docker compose up` to re-seed.)
+
+## Running
+
+```
+docker compose up
+```
+
+* API: `https://localhost:8000` (TLS via the checked-in `dev.pem` / `dev.key`)
+* Web app: `https://localhost:4200`
+* MySQL: `localhost:3306` (root / `b0ar!!` / `poppyseedpets`) — published for GUI clients
+* Redis: internal only
+
+## Port conflicts
+
+If you already have something on port 3306 (a native MySQL/MariaDB install) or 4200 (another dev server), copy `.env.example` to `.env` at the repo root and override the relevant port. The `.env` file is gitignored, so each dev manages their own. The API port (8000) is currently not overridable — see the comment in `.env.example`.
+
+First boot installs Composer and npm packages (a few minutes). Subsequent boots take ~15 s. The crunz scheduler (one tick per minute — `app:increase-time`, park events, etc.) runs inside the `api` container as a background loop; you'll see its output in `docker compose logs api`.
+
+## What happens on every `docker compose up`
+
+The `api` container's entrypoint:
+
+1. `composer install` (no-op when dependencies haven't changed)
+2. `php bin/console doctrine:migrations:migrate` (runs any new migrations since the last `git pull`)
+3. Starts php-fpm, nginx, and the crunz loop
+
+If you change `composer.json` or `package.json`, see the next section.
+
+## Adding or updating dependencies
+
+Both containers use lockfile-strict installs on boot — `npm ci` for the webapp, `composer install` for the api. Neither will silently mutate `package-lock.json` or `composer.lock`. To change dependencies intentionally, run the package-manager commands **inside the relevant container**. This guarantees the resulting lockfile is generated against the exact same Node/npm/PHP/Composer versions every other dev (and CI, and prod) uses — no more "works on my machine" lockfile churn.
+
+### Angular (webapp)
+
+```
+# Add a runtime dependency
+docker compose exec webapp npm install <package>
+
+# Add a dev-only dependency
+docker compose exec webapp npm install --save-dev <package>
+
+# Update one package to a specific version
+docker compose exec webapp npm install <package>@<version>
+
+# Remove a dependency
+docker compose exec webapp npm uninstall <package>
+```
+
+Then `docker compose restart webapp` and commit `webapp/package.json` + `webapp/package-lock.json` together.
+
+### Symfony (api)
+
+```
+# Add a runtime dependency
+docker compose exec api composer require <package>
+
+# Add a dev-only dependency
+docker compose exec api composer require --dev <package>
+
+# Update one package
+docker compose exec api composer update <package>
+
+# Remove a dependency
+docker compose exec api composer remove <package>
+```
+
+Then `docker compose restart api` and commit `api/composer.json` + `api/composer.lock` together.
+
+### Don't run these natively
+
+If you run `npm install` or `composer require` on your host machine, the lockfile will be generated against whatever Node/PHP/npm/Composer versions you happen to have, which probably differs from the container. That causes spurious lockfile diffs that look like "real" changes in PRs. Always go through the container.
+
+## Resetting / wiping
+
+* Restart with the same data: `docker compose restart`
+* Wipe DB and re-seed from `db/seed/`: `docker compose down -v` then `docker compose up`
+
+## Resetting accounts for local login
+
+```sql
+/* change all user email addresses to <id>@poppyseedpets.com */
+UPDATE user SET email=CONCAT(id, '@poppyseedpets.com') WHERE email NOT LIKE '%@poppyseedpets.com';
+```
+
+---
+
+# Native install (advanced / production)
+
+The Docker setup above is what we support for local dev. The instructions below are what you'd use for a real production install, or if you want to run things directly on your host (in which case: you're on your own for keeping the various pieces in sync).
+
 # API (server)
 
 ## Install & Configure

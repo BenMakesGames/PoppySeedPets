@@ -42,45 +42,26 @@ abstract class TypeaheadService
         if($search === '')
             throw new PSPFormValidationException('Search text is missing...');
 
+        $escaped = StringFunctions::escapeMySqlWildcardCharacters($search);
+
+        // One ranked query returns every substring match, sorting prefix matches (LIKE 'search%')
+        // ahead of substring-only matches. A single query can't return a row twice, so there's no
+        // merge or de-duplication to do — and nothing binds an id array, so it stays agnostic to
+        // whether the entity's id is an int or a (binary) Ulid.
         $qb = $this->repository->createQueryBuilder('e')
-            ->andWhere('e.' . $fieldToSearch . ' LIKE :searchLike')
-            ->setParameter('searchLike', StringFunctions::escapeMySqlWildcardCharacters($search) . '%')
+            ->addSelect('(CASE WHEN e.' . $fieldToSearch . ' LIKE :prefixLike THEN 0 ELSE 1 END) AS HIDDEN prefixRank')
+            ->andWhere('e.' . $fieldToSearch . ' LIKE :substringLike')
+            ->setParameter('prefixLike', $escaped . '%')
+            ->setParameter('substringLike', '%' . $escaped . '%')
+            ->orderBy('prefixRank', 'ASC')
+            ->addOrderBy('e.' . $fieldToSearch, 'ASC')
             ->setMaxResults($maxResults)
-            ->orderBy('e.' . $fieldToSearch, 'ASC')
         ;
 
         $qb = $this->addQueryBuilderConditions($qb);
 
         /** @var T[] $entities */
         $entities = $qb->getQuery()->execute();
-
-        if(count($entities) < $maxResults)
-        {
-            $ids = array_map(fn($e) => $e->getId(), $entities);
-
-            $qb = $this->repository->createQueryBuilder('e')
-                ->andWhere('e.' . $fieldToSearch . ' LIKE :searchLike')
-                ->setParameter('searchLike', '%' . StringFunctions::escapeMySqlWildcardCharacters($search) . '%')
-                ->orderBy('e.' . $fieldToSearch, 'ASC')
-            ;
-
-            if(count($entities) > 0)
-            {
-                $qb
-                    ->andWhere('e.id NOT IN (:ids)')
-                    ->setParameter('ids', $ids)
-                    ->setMaxResults($maxResults - count($entities))
-                ;
-            }
-            else
-            {
-                $qb->setMaxResults($maxResults);
-            }
-
-            $qb = $this->addQueryBuilderConditions($qb);
-
-            $entities = array_merge($entities, $qb->getQuery()->execute());
-        }
 
         return $entities;
     }

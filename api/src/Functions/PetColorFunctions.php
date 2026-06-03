@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Functions;
 
 use App\Entity\Pet;
+use App\Functions\PetColors;
 use App\Service\IRandom;
 
 final class PetColorFunctions
@@ -85,15 +86,12 @@ final class PetColorFunctions
         $colors = PetColorFunctions::generateRandomPetColors($rng, $maxSaturation);
 
         $pet
-            ->setColorA($colors[0])
-            ->setColorB($colors[1])
+            ->setColorA($colors->colorA)
+            ->setColorB($colors->colorB)
         ;
     }
 
-    /**
-     * @return string[]
-     */
-    public static function generateRandomPetColors(IRandom $rng, float $maxSaturation = 1): array
+    public static function generateRandomPetColors(IRandom $rng, float $maxSaturation = 1): PetColors
     {
         $h = $rng->rngNextInt(0, 1000) / 1000.0;
         $s = PetColorFunctions::randomSaturation($rng) * $maxSaturation;
@@ -147,10 +145,10 @@ final class PetColorFunctions
             $l2 = PetColorFunctions::randomSaturation($rng);
         }
 
-        return [
-            ColorFunctions::HSL2Hex($h, $s, $l),
-            ColorFunctions::HSL2Hex($h2, $s2, $l2)
-        ];
+        return new PetColors(
+            colorA: ColorFunctions::HSL2Hex($h, $s, $l),
+            colorB: ColorFunctions::HSL2Hex($h2, $s2, $l2)
+        );
     }
 
     public static function adjustHue(string $hexColor, float $amount): string

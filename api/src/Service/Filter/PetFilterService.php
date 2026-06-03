@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace App\Service\Filter;
 
 use App\Entity\Pet;
+use App\Exceptions\PSPFormValidationException;
 use App\Functions\StringFunctions;
+use App\Functions\ULID;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -88,9 +91,14 @@ class PetFilterService implements FilterServiceInterface
 
     public function filterSpecies(QueryBuilder $qb, mixed $value): void
     {
+        if(!is_string($value))
+            throw new PSPFormValidationException('Invalid species ID.');
+
+        $speciesId = ULID::fromUserInput($value, 'species');
+
         $qb
             ->andWhere('p.species=:speciesId')
-            ->setParameter('speciesId', $value)
+            ->setParameter('speciesId', $speciesId->toBinary(), ParameterType::BINARY)
         ;
     }
 

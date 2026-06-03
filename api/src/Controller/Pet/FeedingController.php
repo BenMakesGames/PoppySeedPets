@@ -22,7 +22,6 @@ use App\Exceptions\PSPNotFoundException;
 use App\Exceptions\PSPPetNotFoundException;
 use App\Service\IRandom;
 use App\Service\PetActivity\EatingService;
-use App\Service\QualityTimeService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,15 +29,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\UserAccessor;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 #[Route("/pet")]
-class PetAndFeedController
+class FeedingController
 {
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
     #[Route("/{pet}/feed", methods: ["POST"], requirements: ["pet" => "\d+"])]
     public function feed(
         Pet $pet, Request $request, ResponseService $responseService, EntityManagerInterface $em,
-        EatingService $eatingService, UserAccessor $userAccessor
+        IRandom $rng, EatingService $eatingService, UserAccessor $userAccessor,
+        NormalizerInterface $normalizer
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
@@ -60,13 +61,20 @@ class PetAndFeedController
         if(count($items) !== count($inventory))
             throw new PSPNotFoundException('At least one of the items selected doesn\'t seem to exist?? (Reload and try again...)');
 
-        $eatingService->doFeed($user, $pet, $inventory);
+        $result = $eatingService->doFeed($user, $pet, $inventory);
 
         $em->flush();
 
-        return $responseService->success(
-            $pet,
-            [ SerializationGroupEnum::MY_PET ]
-        );
+        /** @var array<array-key, mixed> $petData */
+        $petData = $normalizer->normalize($pet, null, [ 'groups' => [ SerializationGroupEnum::MY_PET ] ]);
+
+        $emoji = $result->ateFavFood
+            ? $pet->getRandomAffectionExpression($rng)
+            : null;
+
+        if($emoji)
+            $petData['emoji'] = $emoji;
+
+        return $responseService->success($petData);
     }
 }

@@ -70,7 +70,7 @@ class BeeLarvaController
 
         $newPet = $petFactory->createPet(
             $user, $beeName, $giantBeeSpecies,
-            $petColors[0], $petColors[1],
+            $petColors->colorA, $petColors->colorB,
             $rng->rngNextFromArray(FlavorEnum::cases()),
             MeritRepository::getRandomStartingMerit($em, $rng)
         );
