@@ -73,7 +73,7 @@ export class ReenactmentDialog implements OnInit
     },*/
     'Location: Beach': {
       image: 'beach',
-      petPosition: { x: 10, y: 10, scale: 4 },
+      petPosition: { x: 46, y: 89, scale: 24 },
       interestingness: 0,
     },
     'Location: At Home': {
