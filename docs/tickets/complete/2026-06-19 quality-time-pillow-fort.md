@@ -81,3 +81,20 @@ In `getRandomQualityTimeDescription`, append `$this->buildAPillowFort($user, $pe
 - [ ] Manual (no fireplace): with a test account that has no fireplace, trigger pillow fort and confirm **no** fireplace sentence appears.
 - [ ] Manual: confirm no hunger top-up occurs after a pillow-fort event (`foodBased: false`) — pet `food` stat unchanged before/after, while other stats (`safety`, `love`, `esteem`, affection) increment per the existing `doQualityTime` logic.
 - [ ] Regression: confirm the other quality-time events still fire across multiple rolls (rotate Quality Time several times; spot-check the activity log entries).
+
+## Learnings
+
+### Architectural decisions
+- **Method placement**: placed `buildAPillowFort` directly after `bakeCookies`, before `practiceTricks` — alphabetical-ish neighbor per Open Decision 2. Matches the "near `bakeCookies`" default; reads naturally in source order.
+- **Array slot in `$possibleMessages`**: inserted between `bakeCookies` and `playCharades` rather than at the tail. Each entry is invoked unconditionally so position doesn't affect probability — placement is purely readability.
+- **Open Decision 1 (title rephrasing)**: kept the default `"established themselves as $title of the Fort and demanded snacks as tribute."` — no surprises during wording review. Reads as narrator assigning the title; sidesteps the "pets speak human language" constraint cleanly.
+- **Fireplace appendix wording**: used the design-doc parenthetical verbatim: `"They built it right in front of the fireplace. (Not a fire hazard at all!)"`. Reads independently of which flavor line rolled, per the Constraints note.
+- **Fireplace check shape**: truthy-check `$user->getFireplace()` then `getHeat() > 0` — mirrors `playHideAndSeek`'s cold-branch shape with the inequality flipped. No `hasUnlockedFeature(Fireplace)` call needed; owning the entity implies the feature.
+
+### Interesting tidbits
+- `Fireplace::getHeat()` returns an `int`; `getHeatDescription()` keys off `<= 0` for the "cold" branch, so `> 0` is the canonical "warm" predicate. Consistent with `playHideAndSeek` and `CookingService`.
+- The `sing-together` sibling ticket is not yet in `complete/`, so `singTogether` isn't in the `$possibleMessages` literal — no conflict either way; both tickets append independently.
+
+### Rejected alternatives
+- **Embedding the rng title pick mid-string**: rejected per Constraints & Gotchas (`rngNextFromArray` call inside a heredoc/interpolation is harder to read). Picked the title up-front into `$title` and interpolated, matching `playHideAndSeek`'s `$randomPet` pattern.
+- **Weaving the fireplace mention into the opening sentence**: rejected per Constraints — the appendix must read independently of the rolled flavor line. The `\n\n` style mirrors `playHideAndSeek`.

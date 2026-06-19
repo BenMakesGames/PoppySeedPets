@@ -126,6 +126,7 @@ class QualityTimeService
             $this->readAStory($user, $pets),
             $this->practiceTricks($user, $pets),
             $this->bakeCookies($user, $pets),
+            $this->buildAPillowFort($user, $pets),
             $this->playCharades($user, $pets),
             $this->stretchTogether($user, $pets),
         ];
@@ -376,6 +377,38 @@ class QualityTimeService
             $message .= " Everyone enjoyed them warm from the oven.";
 
         return new QualityTimeResult($message, foodBased: true);
+    }
+
+    /**
+     * @param Pet[] $pets
+     */
+    private function buildAPillowFort(User $user, array $pets): QualityTimeResult
+    {
+        $petNamesList = array_map(fn(Pet $pet) => ActivityHelpers::PetName($pet), $pets);
+        $everyonesNames = ArrayFunctions::list_nice([
+            ActivityHelpers::UserName($user, true),
+            ...$petNamesList
+        ]);
+
+        $message = "$everyonesNames built an enormous pillow fort in the living room.";
+
+        $randomPet = $this->rng->rngNextFromArray($petNamesList);
+        $title = $this->rng->rngNextFromArray(['Castellan', 'Seneschal', 'Margrave']);
+
+        $fortLines = [
+            "$randomPet established themselves as $title of the Fort and demanded snacks as tribute.",
+            "$randomPet kept \"improving\" the entrance until no one could get in.",
+            "$randomPet fell asleep the moment the roof was finished.",
+            "$randomPet stood guard at the gate against imaginary intruders.",
+            "$randomPet added a \"window\" so they could keep an eye on the kitchen.",
+        ];
+
+        $message .= ' ' . $this->rng->rngNextFromArray($fortLines);
+
+        if($user->getFireplace() && $user->getFireplace()->getHeat() > 0)
+            $message .= "\n\nThey built it right in front of the fireplace. (Not a fire hazard at all!)";
+
+        return new QualityTimeResult($message, foodBased: false);
     }
 
     /**
