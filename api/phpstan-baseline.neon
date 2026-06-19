@@ -553,30 +553,6 @@ parameters:
 			path: src/Command/UpdateHollowEarthTileEventCommand.php
 
 		-
-			message: '#^Parameter \#1 \$value of function count expects array\|Countable, int\|list\<string\> given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Command/UpdateHollowEarthTileEventCommand.php
-
-		-
-			message: '#^Parameter \#2 \$array of function implode expects array, int\|list\<string\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Command/UpdateHollowEarthTileEventCommand.php
-
-		-
-			message: '#^Parameter \#2 \$haystack of function array_search expects array, int\|list\<string\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Command/UpdateHollowEarthTileEventCommand.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: offsetAccess.invalidOffset
-			count: 1
-			path: src/Command/UpdateHollowEarthTileEventCommand.php
-
-		-
 			message: '#^Binary operation "\." between ''Creating Aura\: "'' and mixed results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
