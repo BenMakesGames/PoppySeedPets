@@ -43,6 +43,19 @@ Core game loop documented in detail at `api/src/Service/PetActivity/CLAUDE.md`. 
 ### Lazy-Loaded Services
 `PetActivity/` and `Holidays/` service trees are configured as lazy in `config/services.yaml`.
 
+### Tagged-iterable registries
+
+For "family of variant strategies" subsystems (`PetActivity/`, `QualityTime/`), the registry pattern is:
+
+- Interface in the subdir with `#[AutoconfigureTag('app.fooBar')]` (Symfony attribute, no XML).
+- Consumer constructor takes `#[AutowireIterator('app.fooBar')] private readonly iterable $things`.
+- Adding a new variant = drop a class implementing the interface into the subdir. No `services.yaml` edit, no central registration list. The catch-all `App\: resource: '../src/'` + `autoconfigure: true` does the tagging.
+
+Two gotchas:
+
+- **Don't add `lazy: true` to a registry whose consumer iterates and calls a method on every item per tick.** `lazy: true` returns proxies; the deferral never pays off if you always touch every item, and you eat proxy-class load + per-call indirection. `#[AutowireIterator]` already gives `RewindableGenerator` laziness — requests that never iterate never construct anything. (Applied to `QualityTime/`. `PetActivity/`'s existing `lazy: true` is grandfathered but arguably the same anti-pattern — `pickActivity` iterates all and calls `groupDesire` each tick.)
+- **Keep variant constructors trivial.** No DB queries, no service-tree walks, no eager static init. The picker materializes every variant per tick to ask "are you available?" — at 16 variants free, at 100 only if `__construct` and `isAvailable` are cheap. Expensive lookups belong inside the chosen variant's per-tick work method, not the gate.
+
 ### Testability Abstractions
 - Use `Clock` service instead of `new \DateTime()` / `new \DateTimeImmutable()`
 - Use `IRandom` service instead of `rand()` / `random_int()`

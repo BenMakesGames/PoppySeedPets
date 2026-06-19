@@ -131,3 +131,32 @@ Run `composer run php-cs-fixer-dry-run` and `php vendor/bin/phpstan --configurat
 - [ ] Manual (`playHideAndSeek` branching regression): with a test account that has a cold fireplace, the chimney-hiding line should be eligible. With a basement unlocked, the basement line should be eligible. With a `robot/mega-cooking` cooking buddy, that line should be eligible. With none, only the baseline "exceptional seeker" line should appear.
 - [ ] Manual (`buildAPillowFort` fireplace appendix): with a warm fireplace, the `\n\n`-separated fireplace sentence should still append. With cold or no fireplace, it should not.
 - [ ] Manual (`playCharades` field-guide expansion): on an account with the `Cosmic Goat` / `Huge Toad` / `Nang Tani` / `Infinity Imp` / `Drizzly Bear` field-guide entries, the corresponding objects should be eligible to mime. On an account without them, they should not.
+
+## Learnings
+
+### Architectural decisions
+- **Open Decision 1 (rng odds)**: Took default (a). `CarveGourdsEvent::isAvailable` and `DecorateTheHouseForStockingStuffingSeasonEvent::isAvailable` bake the `1-in-7` / `1-in-6` rng coin into the predicate. Exact odds preserved; weighted-picker (b) deferred until a second weighted event shows up.
+- **Open Decision 2 (naming)**: `XxxEvent` suffix used for all 16 classes.
+- **Open Decision 3 (`QualityTimeResult` location)**: Extracted to own file `App\Service\QualityTime\QualityTimeResult`. It's the return type of every event class — keeping it as a tail-class inside `QualityTimeService.php` would be cruft.
+- **Open Decision 4 (picker location)**: Picker stayed as a 5-line private method `QualityTimeService::pickQualityTimeEvent`. No separate `QualityTimeEventPicker` class — only one caller, orchestrator already holds `IRandom`.
+- **Open Decision 5 (`playTag` visibility)**: Old `public function playTag` had no external callers; visibility was accidental. Migrated to `PlayTagEvent::generate` (public per interface) — moot.
+- **services.yaml left untouched.** `App\: resource: '../src/'` catch-all plus `autoconfigure: true` plus the interface's `#[AutoconfigureTag]` is enough to tag every implementation. No `App\Service\QualityTime\:` block added — would only have been parity-cosmetics. Verified via `php bin/console debug:container --tag=app.qualityTimeEvent` (all 16 classes listed).
+- **No `lazy: true`.** Picker calls `isAvailable` on every tagged event each tick, so a per-class lazy proxy would never pay off. `#[AutowireIterator]` already gives us the laziness that matters: requests that never call `doQualityTime` never iterate.
+
+### Picker iteration
+`array_filter([...$this->qualityTimeEvents], ...)` materializes the `RewindableGenerator` into a list, then filters. `Xoshiro::rngNextFromArray` uses `array_slice($array, $offset, 1)[0]`, which is index-agnostic — preserved `array_filter` keys don't trip it.
+
+### Constructor-dependency audit (final)
+- `IRandom` only: `BuildAPillowFortEvent`, `PlayCharadesEvent`, `PlayHideAndSeekEvent`, `PlayTagEvent`, `PracticeTricksEvent`, `ReadAStoryEvent`, `SingTogetherEvent`, `StretchTogetherEvent`.
+- Zero deps: `BakeCookiesEvent` (no rng — message is deterministic given pets).
+- `IRandom` + `Clock`: all four weather-gated (`GoFishingEvent`, `ExploreTidePoolsEvent`, `StargazeEvent`, `GoOnAWalkEvent`), `CarveGourdsEvent`, `DecorateTheHouseForStockingStuffingSeasonEvent`.
+- `Clock` only: `MakeApricotPiesEvent` (deterministic message body — no rng inside).
+
+`QualityTimeService` constructor dropped to: `PetExperienceService`, `CravingService`, `EntityManagerInterface`, `UserStatsService`, `IRandom`, and the tagged `iterable`. `Clock` removed (the orchestrator never read it — only the old picker did).
+
+### Related areas
+- `PetActivityService` arguably has the same `lazy: true` over-config — its `pickActivity` also iterates and calls `groupDesire` on every impl. Out of scope here; flagged in original ticket constraints.
+
+### Rejected
+- Adding `App\Service\QualityTime\:` resource block "for parity" — pure ceremony when auto-discovery already covers it.
+- Pre-computing `WeatherSky` once in the picker and threading it through `isAvailable`. Per ticket constraints, `WeatherService::getSky` is cheap; keeping each event self-contained means future events can add their own calendar/weather predicates without picker changes.
