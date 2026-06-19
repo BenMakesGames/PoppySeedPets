@@ -129,6 +129,7 @@ class QualityTimeService
             $this->buildAPillowFort($user, $pets),
             $this->playCharades($user, $pets),
             $this->stretchTogether($user, $pets),
+            $this->singTogether($user, $pets),
         ];
 
         if($sky !== WeatherSky::Stormy)
@@ -539,6 +540,32 @@ class QualityTimeService
             ActivityHelpers::PetName($leader) . " led $everyoneElse in some stretching exercises together.",
             foodBased: false
         );
+    }
+
+    /**
+     * @param Pet[] $pets
+     */
+    private function singTogether(User $user, array $pets): QualityTimeResult
+    {
+        $petNamesList = array_map(fn(Pet $pet) => ActivityHelpers::PetName($pet), $pets);
+        $petNames = ArrayFunctions::list_nice($petNamesList);
+
+        $message = ActivityHelpers::UserName($user, true) . " sang songs while $petNames joined in.";
+
+        $randomPet = $this->rng->rngNextFromArray($petNamesList);
+
+        $singing = [
+            "$randomPet hummed along to every tune.",
+            "$randomPet harmonized beautifully (mostly).",
+            "$randomPet chimed in with such gusto that they drowned everyone else out.",
+            "$randomPet kept the beat by bobbing along enthusiastically.",
+            "$randomPet hit a note so high the windows hummed.",
+            "$randomPet trilled a little melody all their own.",
+        ];
+
+        $message .= ' ' . $this->rng->rngNextFromArray($singing);
+
+        return new QualityTimeResult($message, foodBased: false);
     }
 
     /**

@@ -60,3 +60,11 @@ In `getRandomQualityTimeDescription`, append `$this->singTogether($user, $pets)`
 - [ ] Manual: trigger Quality Time from the home page multiple times against a test account with 1 pet at home and again with 3+ pets at home; confirm the new event appears in rotation and the message reads naturally in both single-pet and multi-pet branches.
 - [ ] Manual: confirm no hunger top-up occurs after a sing-together event (since `foodBased: false`) — pet `food` stat unchanged before/after, while other stats (`safety`, `love`, `esteem`, affection) increment per the existing `doQualityTime` logic.
 - [ ] Regression: confirm the other 13 events still fire (rotate Quality Time several times; spot-check the activity log entries).
+
+## Learnings
+
+- **Open Decision 1 resolved per default**: intro phrasing follows the design-doc "[User] sang songs while [pets] joined in." (user leads, pets join), not the `readAStory` "everyone curled up" group-frame. Reads more naturally with the per-pet flavor line that follows.
+- **Open Decision 2 resolved per default**: registered next to `stretchTogether` at the end of the always-available block in `getRandomQualityTimeDescription`.
+- **Open Decision 3 resolved per default**: used the six design-doc lines verbatim — no polishing needed; all interpolate cleanly with `$randomPet` at the start.
+- **Method placement**: dropped the new private method between `stretchTogether` and `goOnAWalk` in the file — matches the locality the ticket suggested.
+- **Manual verification deferred to user**: lint + phpstan are clean; the in-game rotation, hunger-unchanged, and other-events-still-fire spot-checks require running the app and a populated test account, which I can't do here.
