@@ -162,11 +162,11 @@ Foraging-flavored; a featured pet finds something neat.
 
 - "poked a sea anemone and got gently booped back"
 - "counted eleven different kinds of snail (allegedly)"
-- "found a starfish and refused to stop talking about it for the rest of the day"
+- "valiantly shooed off a particularly suspicious-looking seagull that had been eyeing the group"
 - "stared down a crab in an epic, dignified standoff"
 
 - `foodBased: false`
-- **Gating:** non-`Stormy`.
+- **Gating:** `Clear` or `Cloudy` only.
 
 ## 9. Evening bonfire on the beach
 

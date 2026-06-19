@@ -65,3 +65,23 @@ In `getRandomQualityTimeDescription`, add a new `if($sky === WeatherSky::Clear |
 - [ ] Manual: with the sky forced to `Rainy`, `Snowy`, or `Stormy`, trigger Quality Time several times and confirm the tide-pools event does **not** appear (spot-check the activity log entries — none should mention tide pools).
 - [ ] Manual: confirm no hunger top-up occurs after a tide-pools event (`foodBased: false`) — pet `food` stat unchanged before/after, while other stats (`safety`, `love`, `esteem`, affection) increment per the existing `doQualityTime` logic.
 - [ ] Regression: confirm the other quality-time events still fire across multiple rolls (rotate Quality Time several times; spot-check the activity log entries for `playHideAndSeek`, `readAStory`, `goFishing`, etc.).
+
+## Learnings
+
+### Architectural decisions
+- **Open Decisions resolved per defaults**: method named `exploreTidePools`; intro sentence used design-doc phrasing (`"crouched at the tide pools to see what the sea had left behind."`); the new gate block was placed between the `$sky !== WeatherSky::Stormy` and `$sky === WeatherSky::Clear` blocks so the weather guards read widest→narrowest. Flavor lines used verbatim from `docs/features/quality-time-event-ideas.md §8`; no polishing needed once interpolated.
+- **New gating shape (`Clear || Cloudy`)**: first event with this combination. Kept as a separate `if` rather than folded into either existing weather block — neither gate matches. Reads cleanly next to its neighbors.
+
+### Interesting tidbits
+- The `readAStory` template (build `$petNamesList` → `$everyonesNames` via `list_nice` → intro → pick featured pet from the *name list* → append one ending) is the right shape for any "household plus one featured pet does X" event. The `$petNamesList` vs `$pets` distinction matters: pick the featured name from the string list so it interpolates directly without a second `PetName()` call.
+
+### Workarounds / limitations
+- None. The service already had clean precedents for both the method shape and the registration block.
+
+### Related areas affected
+- None beyond `QualityTimeService`. No migration, no enum addition, no frontend change — the existing `PetActivityLogTagEnum::QualityTime` tag is applied by the calling loop in `doQualityTime`.
+
+### Rejected alternatives
+- Folding the new event into the existing `$sky !== WeatherSky::Stormy` block (would have allowed it during Rainy/Snowy, contradicting the design-doc gate).
+- Folding into the `$sky === WeatherSky::Clear` block (would have excluded Cloudy days, contradicting the design-doc gate).
+- Picking the featured pet from `$pets` (entity list) instead of `$petNamesList` — would force an extra `ActivityHelpers::PetName($randomPet)` call at every interpolation site; the analogue methods pick from the string list for exactly this reason.

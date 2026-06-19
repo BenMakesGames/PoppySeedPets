@@ -135,6 +135,11 @@ class QualityTimeService
             $possibleMessages[] = $this->goFishing($user, $pets);
         }
 
+        if($sky === WeatherSky::Clear || $sky === WeatherSky::Cloudy)
+        {
+            $possibleMessages[] = $this->exploreTidePools($user, $pets);
+        }
+
         if($sky === WeatherSky::Clear)
         {
             $possibleMessages[] = $this->stargaze($user, $pets);
@@ -527,6 +532,33 @@ class QualityTimeService
         ];
 
         $message .= ' ' . $this->rng->rngNextFromArray($endings);
+
+        return new QualityTimeResult($message, foodBased: false);
+    }
+
+    /**
+     * @param Pet[] $pets
+     */
+    private function exploreTidePools(User $user, array $pets): QualityTimeResult
+    {
+        $petNamesList = array_map(fn(Pet $pet) => ActivityHelpers::PetName($pet), $pets);
+        $everyonesNames = ArrayFunctions::list_nice([
+            ActivityHelpers::UserName($user, true),
+            ...$petNamesList
+        ]);
+
+        $message = "$everyonesNames crouched at the tide pools to see what the sea had left behind.";
+
+        $randomPet = $this->rng->rngNextFromArray($petNamesList);
+
+        $tidePoolMoments = [
+            "$randomPet poked a sea anemone and got gently booped back.",
+            "$randomPet counted eleven different kinds of snail (allegedly).",
+            "$randomPet valiantly shooed off a particularly suspicious-looking seagull that had been eyeing the group.",
+            "$randomPet stared down a crab in an epic, dignified standoff.",
+        ];
+
+        $message .= ' ' . $this->rng->rngNextFromArray($tidePoolMoments);
 
         return new QualityTimeResult($message, foodBased: false);
     }
