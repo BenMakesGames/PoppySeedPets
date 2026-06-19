@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 ## Project Overview
 
 Poppy Seed Pets is a browser-based pet adoption and activity simulation game (poppyseedpets.com). Monorepo with two independent apps:
@@ -20,6 +18,13 @@ Poppy Seed Pets is a browser-based pet adoption and activity simulation game (po
 
 * [docs/architecture/Departures from Symfony Standard.md](docs/architecture/Departures from Symfony Standard.md)
 * [docs/architecture/Project Patterns.md](docs/architecture/Project Patterns.md)
+
+We value:
+
+* Null safety, data integrity, & exhaustiveness through defensive programming
+* Creating ergonomic APIs with pits of success
+* The principle of least surprise
+* YAGNI & KISS
 
 ## Feature References
 
