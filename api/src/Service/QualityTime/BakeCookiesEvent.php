@@ -31,21 +31,13 @@ class BakeCookiesEvent implements QualityTimeEvent
 
         $cookingBuddy = $user->getCookingBuddy();
 
-        if($cookingBuddy)
-        {
-            $petNames = ArrayFunctions::list_nice([
-                $cookingBuddy->getName(),
-                ...$petNamesList
-            ]);
+        $names = $cookingBuddy
+            ? [$cookingBuddy->getName(), ...$petNamesList]
+            : $petNamesList;
 
-            $message = ActivityHelpers::UserName($user, true) . " baked cookies with $petNames.";
-        }
-        else
-        {
-            $petNames = ArrayFunctions::list_nice($petNamesList);
+        $petNames = ArrayFunctions::list_nice($names);
 
-            $message = ActivityHelpers::UserName($user, true) . " baked cookies with $petNames.";
-        }
+        $message = ActivityHelpers::UserName($user, true) . " baked cookies with $petNames.";
 
         if(count($petNamesList) === 1)
             $message .= " You both enjoyed them warm from the oven.";

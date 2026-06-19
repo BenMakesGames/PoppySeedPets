@@ -48,7 +48,7 @@ class CarveGourdsEvent implements QualityTimeEvent
         if($user->getCookingBuddy())
             $message .= ' ' . ActivityHelpers::UserName($user, true) . ' and ' . $user->getCookingBuddy()->getName() . ' roasted the seeds for ' . $forWho . ' to eat!';
         else
-            $message .= ' ' . ActivityHelpers::UserName($user, true) . ' roasted the seeds to for ' . $forWho . ' eat!';
+            $message .= ' ' . ActivityHelpers::UserName($user, true) . ' roasted the seeds for ' . $forWho . ' to eat!';
 
         return new QualityTimeResult($message, foodBased: true);
     }

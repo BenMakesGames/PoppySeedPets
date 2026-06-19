@@ -51,11 +51,14 @@ class PlayHideAndSeekEvent implements QualityTimeEvent
 
         if($user->getFireplace() && $user->getFireplace()->getHeat() === 0)
             $possibleHidingDescriptions[] = "$randomPet hid themselves inside the fireplace chimney!";
-        else if($user->hasUnlockedFeature(UnlockableFeatureEnum::Basement))
+
+        if($user->hasUnlockedFeature(UnlockableFeatureEnum::Basement))
             $possibleHidingDescriptions[] = "It took forever for anyone to find $randomPet, who had hid themselves behind some boxes in the basement.";
-        else if($user->hasUnlockedFeature(UnlockableFeatureEnum::DragonDen))
+
+        if($user->hasUnlockedFeature(UnlockableFeatureEnum::DragonDen))
             $possibleHidingDescriptions[] = "$randomPet buried themselves in some gold coins at the foot of your dragon and hid there successfully for some time!";
-        else if($user->getCookingBuddy()?->getAppearance() === 'robot/mega-cooking')
+
+        if($user->getCookingBuddy()?->getAppearance() === 'robot/mega-cooking')
         {
             if(count($petNamesList) === 1)
                 $possibleHidingDescriptions[] = "It didn't occur to you to check behind your giant Cooking Buddy for forever, which is exactly where $randomPet was hiding!";
