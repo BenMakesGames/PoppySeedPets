@@ -147,32 +147,35 @@ class UpdateHollowEarthTileEventCommand extends PoppySeedPetsCommand
         if($exp === 0)
             return;
 
-        $event['exp'] = [
-            'amount' => $exp,
-            'stats' => [],
-        ];
+        /** @var list<string> $stats */
+        $stats = [];
 
         $allSkills = PetSkillEnum::getValues();
 
         while(true)
         {
             // if you have no skills selected, you must select one
-            $skillList = count($event['exp']['stats']) > 0 ? array_merge($allSkills, [ 'NULL' ]) : $allSkills;
+            $skillList = count($stats) > 0 ? array_merge($allSkills, [ 'NULL' ]) : $allSkills;
 
-            $this->output->writeln('Skills trained: ' . implode(', ', $event['exp']['stats']));
+            $this->output->writeln('Skills trained: ' . implode(', ', $stats));
 
             $stat = $this->askChoice('Toggle skill to train', $skillList, null);
 
-            if($stat == 'NULL' && count($event['exp']['stats']) > 0)
+            if($stat == 'NULL' && count($stats) > 0)
                 break;
 
-            $skillIndex = array_search($stat, $event['exp']['stats']);
+            $skillIndex = array_search($stat, $stats, true);
 
             if($skillIndex !== false)
-                unset($event['exp']['stats'][$skillIndex]);
+                $stats = array_values(array_filter($stats, fn($s) => $s !== $stat));
             else
-                $event['exp']['stats'][] = $stat;
+                $stats[] = $stat;
         }
+
+        $event['exp'] = [
+            'amount' => $exp,
+            'stats' => $stats,
+        ];
     }
 
     private function createPetChallengeEvent(array &$event): void
