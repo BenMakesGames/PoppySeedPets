@@ -660,6 +660,7 @@ final class RecipeRepository
             new Recipe('Scroll of Resources', '906:1,1130:1', '907:1', 0),
             new Recipe('Scythe', '42:1,89:1', '139:1', 300),
             new Recipe('Shakshouka', '14:1,133:1,248:1', '249:2', 0),
+            new Recipe('Shaved Everice', '67:1,482:1', '1525:1', 0),
             new Recipe('Short Glass of Greenade', '12:1,95:1', '347:2', 0),
             new Recipe('Shortbread Cookies', '12:1,16:1,65:1', '458:2', 0),
             new Recipe('Shoyu Tamago', '14:1,324:1', '1242:1', 0),
