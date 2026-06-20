@@ -19,17 +19,19 @@ export class WeatherService {
   weather = new BehaviorSubject<WeatherDataModel[]|null>(null);
 
   #weatherAjax = Subscription.EMPTY;
-  #lastUpdated: Date|null = null;
+  #lastUpdated: string|null = null;
 
   constructor(private readonly apiService: ApiService) {
-    // every 1 second, check if it's a new day; if so, update the weather
+    // every 1 second, check if it's a new (UTC) day; if so, update the weather
     timer(0, 1000).subscribe({
       next: () => {
         if(this.#weatherAjax.closed)
         {
-          if(this.weather.getValue() === null || this.#lastUpdated === null || new Date().getUTCDay() > this.#lastUpdated.getUTCDay())
+          const today = new Date().toISOString().substring(0, 10);
+
+          if(this.weather.getValue() === null || this.#lastUpdated === null || this.#lastUpdated !== today)
           {
-            this.#lastUpdated = new Date();
+            this.#lastUpdated = today;
             this.updateWeather();
           }
         }
