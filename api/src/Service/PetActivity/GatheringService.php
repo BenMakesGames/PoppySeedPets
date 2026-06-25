@@ -651,7 +651,7 @@ class GatheringService implements IPetActivity
 
                 $pet->increaseEsteem($this->rng->rngNextInt(1, 2));
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went to a Sandy Beach, but while looking around, was attacked by a Giant Seagull. ' . $pet->getName() . ' defeated the Giant Seagull, and took its ' . ArrayFunctions::list_nice_sorted($loot) . '.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', 'Fighting', PetActivityLogTagEnum::Location_Beach ]))
                 ;
                 $didWhat = 'defeated a Giant Seagull at the Beach, and got this';
 
@@ -664,7 +664,7 @@ class GatheringService implements IPetActivity
             {
                 $pet->increaseEsteem(-$this->rng->rngNextInt(1, 2));
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went to a Sandy Beach, but was attacked and routed by a Giant Seagull.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', 'Fighting', PetActivityLogTagEnum::Location_Beach ]))
                 ;
 
                 $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth, PetSkillEnum::Brawl, PetSkillEnum::Nature ], $activityLog);
@@ -694,7 +694,7 @@ class GatheringService implements IPetActivity
                 $lootList = $loot;
                 $lootList[] = $moneys . '~~m~~';
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went to a Sandy Beach, and stole ' . ArrayFunctions::list_nice_sorted($lootList) . ' while the seagulls weren\'t paying attention.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', 'Moneys' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', 'Moneys', PetActivityLogTagEnum::Location_Beach ]))
                 ;
                 $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::GATHER, true);
@@ -702,7 +702,7 @@ class GatheringService implements IPetActivity
             else
             {
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went to a Sandy Beach, and stole ' . ArrayFunctions::list_nice_sorted($loot) . ' while the seagulls weren\'t paying attention.')
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', 'Stealth', PetActivityLogTagEnum::Location_Beach ]))
                 ;
                 $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Stealth, PetSkillEnum::Nature ], $activityLog);
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::GATHER, true);

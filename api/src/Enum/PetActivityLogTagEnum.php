@@ -117,6 +117,7 @@ final class PetActivityLogTagEnum
     public const string Location_The_Deep_Sea = 'Location: The Deep Sea';
     public const string Location_The_Fructal_Plane = 'Location: The Fructal Plane';
     public const string Location_The_Burnt_Forest = 'Location: The Burnt Forest';
+    public const string Location_Beach = 'Location: Beach';
 
     public const string Location_Hedge_Maze = 'Location: Hedge Maze';
     public const string Location_Hedge_Maze_Sphinx = 'Location: Hedge Maze Sphinx';
