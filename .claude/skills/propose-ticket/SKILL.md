@@ -25,6 +25,7 @@ The recommendation is only as good as the research behind it. Tickets that refer
 2. **Read the priors.** Related completed tickets in `docs/tickets/complete/` and relevant `docs/` reference files. The *why* behind existing shapes is free context.
 3. **Trace every consumer of what you'd touch.** The highest-value finds are integration points that would *silently* break — a list that another feature derives presentation order from, a default another path assumes. Grep the symbol; read each caller.
 4. **Let tests tell you the invariants.** Tests that encode current assumptions reveal what must stay true and what your change would break. Their names are often the spec.
+5. **Go online when the problem is bigger than this repo.** Most research is in-codebase — but reach for the web (`WebSearch`/`WebFetch`) when the problem feels niche (an unfamiliar library's quirk, a format spec, a platform limitation) or when it smells like "this has *got* to have been solved already" (a known algorithm, an established pattern, a common footgun). It needn't happen every time; the trigger is a hunch that the answer lives outside the code. When you do, prefer authoritative sources (official docs, the library's own issues) over drive-by blog posts, and fold what you find into the options and gotchas — cite it so the user can follow the trail.
 
 ## Phase 2: Read between the lines
 
