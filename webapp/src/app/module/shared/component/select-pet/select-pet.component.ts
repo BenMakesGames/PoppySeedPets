@@ -117,12 +117,7 @@ export class SelectPetComponent implements OnInit {
   goToPage(page: number)
   {
     this.page = page;
-    this.suggest(this.search.nativeElement.value).subscribe({
-      next: r => this.applyResults(r.data),
-      error: () => {
-        this.searching = false;
-      }
-    });
+    this.reload();
   }
 
   private applyResults(data: FilterResultsSerializationGroup<MyPetSerializationGroup>)
