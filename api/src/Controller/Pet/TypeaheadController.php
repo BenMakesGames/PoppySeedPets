@@ -42,8 +42,8 @@ class TypeaheadController
             $petTypeaheadService->setSpeciesId(ULID::fromUserInput($request->query->getString('speciesId'), 'speciesId'));
         }
 
-        $suggestions = $petTypeaheadService->search('name', $request->query->getString('search'));
+        $suggestions = $petTypeaheadService->searchPaginated('name', $request->query->getString('search'), $request->query->getInt('page', 0));
 
-        return $responseService->success($suggestions, [ SerializationGroupEnum::MY_PET, SerializationGroupEnum::MY_PET_LOCATION ]);
+        return $responseService->success($suggestions, [ SerializationGroupEnum::FILTER_RESULTS, SerializationGroupEnum::MY_PET, SerializationGroupEnum::MY_PET_LOCATION ]);
     }
 }
