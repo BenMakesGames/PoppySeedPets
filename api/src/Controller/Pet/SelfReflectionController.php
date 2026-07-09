@@ -194,7 +194,12 @@ class SelfReflectionController
             RelationshipEnum::Dislike
         ]);
 
-        $suggestions = array_map(function(Pet $otherPet) use($pet) {
+        $suggestions = $petRelationshipTypeaheadService->searchPaginated('name', $request->query->getString('search'), $request->query->getInt('page', 0));
+
+        /** @var Pet[] $matchedPets */
+        $matchedPets = $suggestions->results;
+
+        $suggestions->results = array_map(function(Pet $otherPet) use($pet) {
             $possibleRelationships = PetRelationshipService::getRelationshipsBetween(
                 PetRelationshipService::max(RelationshipEnum::Friend, $otherPet->getRelationshipWithOrThrow($pet)->getRelationshipGoal()),
                 PetRelationshipService::max(RelationshipEnum::Friend, $pet->getRelationshipWithOrThrow($otherPet)->getRelationshipGoal())
@@ -204,8 +209,8 @@ class SelfReflectionController
                 'pet' => $otherPet,
                 'possibleRelationships' => $possibleRelationships
             ];
-        }, $petRelationshipTypeaheadService->search('name', $request->query->getString('search')));
+        }, $matchedPets);
 
-        return $responseService->success($suggestions, [ SerializationGroupEnum::PET_PUBLIC_PROFILE ]);
+        return $responseService->success($suggestions, [ SerializationGroupEnum::FILTER_RESULTS, SerializationGroupEnum::PET_PUBLIC_PROFILE ]);
     }
 }
