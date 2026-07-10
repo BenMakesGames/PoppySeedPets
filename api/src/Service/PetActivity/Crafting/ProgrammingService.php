@@ -579,6 +579,8 @@ class ProgrammingService implements IPetActivity
         $impDiscovery = '%pet:' . $pet->getId() . '.name% started ' . $actionInterrupted . ', but an Infinity Imp popped up, and started to attack!';
 
         $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Infinity Imp', $impDiscovery);
+        PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
+
 
         $isLucky = $this->rng->rngNextInt(1, 50) == 1 && $pet->hasMerit(MeritEnum::LUCKY);
 
@@ -637,8 +639,7 @@ class ProgrammingService implements IPetActivity
             ->setIcon('icons/activity-logs/confused')
         ;
 
-        PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
-
+        
         $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Science ], $activityLog);
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROGRAM, false);
 
