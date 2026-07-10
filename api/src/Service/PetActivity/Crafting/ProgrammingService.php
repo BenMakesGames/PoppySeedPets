@@ -579,7 +579,6 @@ class ProgrammingService implements IPetActivity
         $impDiscovery = '%pet:' . $pet->getId() . '.name% started ' . $actionInterrupted . ', but an Infinity Imp popped up, and started to attack!';
 
         $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Infinity Imp', $impDiscovery);
-        PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
 
 
         $isLucky = $this->rng->rngNextInt(1, 50) == 1 && $pet->hasMerit(MeritEnum::LUCKY);
@@ -599,7 +598,7 @@ class ProgrammingService implements IPetActivity
                     ->appendEntry('(Lucky~!)')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Lucky~!' ]));
             }
-
+            PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
             $this->petExperienceService->gainExp($pet, 5, [ PetSkillEnum::Science, PetSkillEnum::Brawl ], $activityLog);
 
             $this->createInfinityImp($pet);
@@ -615,6 +614,7 @@ class ProgrammingService implements IPetActivity
                     ->setIcon('icons/activity-logs/confused')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Programming', PetActivityLogTagEnum::Physics ]))
                 ;
+                PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
                 $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Science ], $activityLog);
                 $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' received this by unraveling an Infinity Imp.', $activityLog);
                 return $activityLog;
@@ -629,6 +629,7 @@ class ProgrammingService implements IPetActivity
                     ->setIcon('icons/activity-logs/confused')
                     ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Programming', 'Fighting' ]))
                 ;
+                PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
                 $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Science ], $activityLog);
                 $this->inventoryService->petCollectsItem($loot, $pet, $pet->getName() . ' received this by slaying an Infinity Imp.', $activityLog);
                 return $activityLog;
@@ -638,7 +639,8 @@ class ProgrammingService implements IPetActivity
         $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, $impDiscovery . ' %pet:' . $pet->getId() . '.name% ran away until the imp finally gave up and returned to the strange dimension from whence it came.')
             ->setIcon('icons/activity-logs/confused')
         ;
-
+        
+        PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
         
         $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Science ], $activityLog);
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::PROGRAM, false);
