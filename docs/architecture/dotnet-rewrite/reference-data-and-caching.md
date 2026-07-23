@@ -229,6 +229,40 @@ search path joins in SQL. Which points at the model in §6: keep definitions **D
 so search JOINs just work, but give player rows a bare `int ItemId` (no nav property) so the
 hot path *cannot* accidentally join and is forced to stitch from memory.
 
+#### Growth ceiling & the pathological near-total case
+
+*Is a big `IN` list ever DoS-level here? No — not on any realistic horizon.* The list is
+bounded by the *item table* size, which grows slowly (~1,400 items over ~8 years ≈ ~175/yr;
+~50 years to reach 10,000). MySQL's relevant thresholds:
+
+- **~200 elements** — `eq_range_index_dive_limit`: above this, cardinality estimation switches
+  from per-value index dives to index statistics. A planning heuristic (cheaper, slightly less
+  accurate), **not** a performance cliff.
+- **~tens of thousands** — measurable planning/parse overhead, still completes.
+- **~hundreds of thousands** — can exceed `range_optimizer_max_mem_size` (8 MB default) →
+  optimizer abandons range access, may full-scan. The genuinely "sad" zone — far beyond PSP.
+- Query text is a non-issue (`max_allowed_packet` 64 MB default; 10k ids ≈ 60 KB).
+
+A worst-case full-table `id IN (~2,800)` a decade out is ~15 KB of text and low-single-digit
+ms. So numerically we're fine for the game's plausible lifetime.
+
+**The `id IN (every id except a handful)` case is a design smell, not a scaling threat**, and
+is neutralized three ways:
+
+1. **Prefer the JOIN (D2).** A JOIN never materializes an id list — "matches 95% of items" is
+   a cheap scan with a WHERE. The giant-IN failure mode is *unique to id-set-IN*; keeping
+   definitions DB-queryable avoids it entirely. This is the strongest argument for D2.
+2. **Emit the smaller side.** When using id-set-IN, choose `id IN (matches)` vs
+   `id NOT IN (complement)` by whichever is smaller → caps the list at ≤ half the table;
+   "all but a handful" becomes `NOT IN (handful)`.
+3. **Bail when near-total.** If the in-memory predicate matches ≥ ~80 % of items, drop the
+   item filter from SQL entirely (it's ~a no-op) and, if needed, exclude the handful in app
+   code after the query.
+
+**Backstop:** the predicate space is bounded by fixed item attributes (list ≤ item count), and
+the rate-limiter + single-flight gating already cap query rate — so there's no unbounded
+amplification and no DoS vector even from a hostile user.
+
 **Where the other options still fit:**
 - Start hot paths at **C** (just query) if we want to defer the in-memory store — it's a valid
   baseline — but D is cheap enough that I'd do it up front.
