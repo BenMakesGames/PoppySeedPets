@@ -127,10 +127,55 @@ mismatch in §3.3 — so that's the item to get right and to test explicitly (lo
 
 ---
 
-## 6. Open decision (to ratify)
+## 6. Security posture & hardening (from scratch)
+
+**The scheme itself is sound — "old" here means canonical, not outdated.** An opaque, random,
+server-side session id looked up in a table is the OWASP-recommended session-management
+approach; it is *more* secure than a JWT-in-cookie for session purposes because it is instantly
+revocable (delete the row), carries no tamperable/leakable payload, and keeps the server
+authoritative. The security is in the handling, and PSP's is mostly good.
+
+**Strengths already present (✅ verified):**
+- Token is ~**238 bits** of CSPRNG entropy (40 chars over a 62-char alphabet via `random_int`,
+  `CryptographicFunctions.php:39`) — unguessable.
+- Cookie is **`Secure` + `HttpOnly`** → not sent over plaintext, not readable by JS (XSS can't
+  exfiltrate `document.cookie`).
+- **`SameSite=Lax` + POST-only mutations** → meaningful CSRF protection for free (there is *no*
+  anti-CSRF token — the `csrf` hits in `config/reference.php` are Symfony's reference dump, not
+  enabled — so SameSite + the "GET never mutates" rule is the CSRF defense).
+- **Server-generated id on login** → session fixation not exploitable.
+- Revocable + expiring.
+
+**Hardening opportunities (cheap; the rewrite is the moment):**
+1. **Hash the session id at rest — the biggest one.** Today `user_session.session_id` is stored
+   **plaintext**, so a read-only DB leak (SQLi, leaked backup) yields *every live session token*
+   → impersonate everyone until expiry. Store a **SHA-256 of the token**; the cookie holds the
+   plaintext, the server hashes-then-looks-up (index on the hash). One line, and a DB leak
+   yields nothing usable. (Note the asymmetry: passwords are argon2i'd; session tokens — equally
+   sensitive bearer credentials — are not.)
+2. **Set `SameSite=Lax` explicitly** (§3.3) rather than relying on the browser default.
+3. **Add an absolute session lifetime cap** (expiry currently only *slides*, so an active or
+   stolen-kept-active session never dies) + a **"log out all devices"** (delete the user's rows).
+4. **Keep the token out of JS.** HttpOnly's XSS protection is void if the SPA stores the token in
+   `localStorage` for the Bearer path — verify the browser client uses the cookie; reserve
+   Bearer for non-browser clients.
+5. **Defense-in-depth vs. XSS** (the dominant real threat): CSP + HSTS.
+
+**Explicitly out of scope / accepted risk:** a malicious browser extension (or otherwise
+compromised endpoint) is *inside* the browser trust boundary — it can act as the user or read
+cookies via the extensions API regardless of HttpOnly, and regardless of opaque-token vs. JWT
+vs. anything. No session scheme survives it; the only mitigations are exotic (token binding /
+DPoP / mTLS-bound cookies) and are overkill here. This is **not** a reason to choose a different
+scheme.
+
+---
+
+## 7. Open decision (to ratify)
 
 1. **Preserve sessions across cutover?** (Recommended: yes.)
 2. **v1 = behavioral parity** (keep per-request slide + argon2i), with debounce/rehash/cache as
    later options? (Recommended: yes.)
 3. Confirm the deployment topology keeps the API under `*.poppyseedpets.com` (required for the
    Lax cookie to keep flowing to the SPA).
+4. **Hash session ids at rest in the rewrite?** (Recommended: yes — cheapest high-value
+   hardening; see §6.1.) And which §6 hardening items are in-scope for v1 vs. later.
