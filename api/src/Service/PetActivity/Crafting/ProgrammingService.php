@@ -568,20 +568,20 @@ class ProgrammingService implements IPetActivity
         if($pet->getSpecies()->getName() === PetSpeciesName::InfinityImp->value)
             return $this->infinityImpCollectsBlueprint($pet, $actionInterrupted);
 
-        $impDiscovery = '%pet:' . $pet->getId() . '.name% started ' . $actionInterrupted . ', but an Infinity Imp popped up, and started to attack!';
-
-        $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Infinity Imp', $impDiscovery);
-
-        $activityLog = $this->resolveImpFightOutcome($petWithSkills, $impDiscovery);
+        $activityLog = $this->resolveImpFightOutcome($petWithSkills, $actionInterrupted);
 
         PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::WrangledWithInfinities, $activityLog);
 
         return $activityLog;
     }
 
-    private function resolveImpFightOutcome(ComputedPetSkills $petWithSkills, string $impDiscovery): PetActivityLog
+    private function resolveImpFightOutcome(ComputedPetSkills $petWithSkills, string $actionInterrupted): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
+
+        $impDiscovery = '%pet:' . $pet->getId() . '.name% started ' . $actionInterrupted . ', but an Infinity Imp popped up, and started to attack!';
+
+        $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Infinity Imp', $impDiscovery);
 
         $scienceRoll = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getScience()->getTotal() + $petWithSkills->getHackingBonus()->getTotal());
         $brawlRoll = $this->rng->rngSkillRoll($petWithSkills->getDexterity()->getTotal() + $petWithSkills->getBrawl()->getTotal());
