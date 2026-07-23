@@ -263,6 +263,48 @@ is neutralized three ways:
 the rate-limiter + single-flight gating already cap query rate — so there's no unbounded
 amplification and no DoS vector even from a hostile user.
 
+### 5.2 ULID keys interact with this design (and are safe)
+
+We want more keys — **especially static/content data** — on ULIDs, because content creators
+collide on auto-increment ids when authoring in parallel branches (ULIDs are generated
+client-side, no central sequence, no merge renumbering). This is a well-targeted use of ULIDs
+and it's **orders of magnitude below any performance concern**, with a few hygiene items. See
+also main doc **G16** (mixed INT/ULID migration).
+
+**Where the extra bytes land** (ULID = 16 B `BINARY(16)` / 26-char base32, vs INT 4 B):
+
+- **Definition table PKs themselves:** trivial — a few thousand rows.
+- **FK columns in high-row player tables** (`inventory.item_id`, …): *the only line that's more
+  than a rounding error.* InnoDB stores the PK in every secondary index and FK columns must
+  match the referenced PK width, so 4→16 B multiplies by row count. Even generously (~10 M
+  inventory rows, in a couple of indexes) that's low-hundreds of MB — real but not a latency or
+  capacity concern at PSP scale.
+- **id-set-`IN` lists (§5.1):** 16 raw bytes/id → ~22 KB at 1,400 ids, ~3× an int list, still
+  far below the tens-of-thousands-of-elements zone. Non-issue.
+- **JSON wire / in-memory store key:** 26-char strings add ~KB to big inventory payloads (and
+  base32 is high-entropy, compresses poorly, but the absolute size is small);
+  `FrozenDictionary<Ulid, …>` on a 16-byte struct key is negligible.
+
+**ULIDs dodge the classic UUID pitfall:** random `UUIDv4` PKs fragment the clustered index on
+insert; **ULIDs are time-ordered**, so inserts stay ~monotonic (locality near auto-increment) —
+and for static data, insert locality is irrelevant anyway (seed once). So the content-data case
+is the *best* case for ULIDs.
+
+**Do it right (correctness/hygiene, not perf):**
+1. Store `BINARY(16)`, never `CHAR(26/36)` (text is ~2.25× bytes, loses byte-sortability).
+2. Keep canonical big-endian (timestamp-first) layout so the index stays insert-ordered —
+   `Ulid::toBinary()` already does this.
+3. **Bind raw bytes** in queries (esp. id-set-`IN`) — a ULID bound as base32 silently matches
+   **zero rows** against `BINARY(16)` with no error (G16).
+4. Scope PK conversion to the tables with the collision problem (content/definition tables +
+   the FK columns referencing them). Leave high-write *player* PKs as `bigint` auto-increment
+   unless they share the parallel-authoring motivation — avoids widening their hottest indexes.
+
+**Tooling note:** map `Ulid ↔ BINARY(16)` via an EF value converter. .NET 9's
+`Guid.CreateVersion7()` (UUIDv7) is a native, same-properties alternative (time-ordered,
+`BINARY(16)`, no third-party dep) — but the API already emits **base32 ULIDs** consumed by the
+Angular client, so staying on ULID keeps the wire contract consistent.
+
 **Where the other options still fit:**
 - Start hot paths at **C** (just query) if we want to defer the in-memory store — it's a valid
   baseline — but D is cheap enough that I'd do it up front.
