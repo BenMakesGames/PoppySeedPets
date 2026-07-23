@@ -15,6 +15,24 @@
 
 ---
 
+## Decisions ratified (living log)
+
+Settled calls that override the "open decision" notes further down. Newest first.
+
+- **RNG: deterministic, but NOT PHP-identical.** The C# port does **not** need to reproduce
+  PHP's exact random sequences. Deterministic RNG features (weather, pet-shelter roster,
+  rare-pet-day, etc.) **may produce different results in this release**, as long as they stay
+  **deterministic and self-consistent** — i.e. the forecast/prediction path and the
+  realization path share one implementation (see **G3**). This retires the bit-exact-`IRandom`
+  requirement and the cross-language golden-test strategy. **Neither specific algorithm is
+  sacred:** the sequential PRNG need not be Xoshiro256\*\*, and the positional noise hash need
+  not be Squirrel3 — any good seedable PRNG and any good noise function will do.
+- **Web Push (VAPID) — DROPPED.** Never fully implemented in PHP; not ported.
+- **Patreon integration — DROPPED.** Never finished in PHP; not ported (OAuth connect +
+  the HMAC-MD5 webhook both go away).
+
+---
+
 ## 0. How to read this
 
 The rewrite cost is **not** evenly distributed. Ranked roughly by "how much does this
@@ -188,8 +206,9 @@ Four mechanisms, **all via Symfony kernel events** (no middleware equivalent in 
   effects are all inline branching. The "infinity imps" case
   (`Crafting/ProgrammingService.php:563`) even encodes a set-theory joke as control flow
   (`2 × Infinity Imp = Infinity Imp + Infinity Vault Blueprint`). No schema would express it.
-- **Determinism seams:** `IRandom` (~2,510 calls; the reproducibility crown jewel) and
-  `Clock`. Every roll/gate goes through `IRandom`.
+- **Determinism seams:** `IRandom` (~2,510 calls) and `Clock`. Every roll/gate goes through
+  `IRandom`; the seedable `Xoshiro` impl + the `squirrel3Noise` hash back the deterministic
+  features. Must stay seedable/deterministic, but **not** PHP-identical (see G3).
 - **State model:** activities mutate the shared `Pet` aggregate + house inventory
   (`HouseSimService` scoped state) and write `PetActivityLog` rows as side effects. Change
   is reconciled via a `PetChanges` **before/after entity diff**, not an event stream.
@@ -206,7 +225,8 @@ Four mechanisms, **all via Symfony kernel events** (no middleware equivalent in 
   (`PerformanceProfiler`). No file uploads/blob storage anywhere.
 - **Redis:** used purely as a PSR-6 cache pool (Doctrine result cache, app cache, the two
   "locks", rate-limiter state). No native sessions, no pub/sub.
-- **Patreon:** OAuth connect + a **webhook whose signature is HMAC-MD5** (keep the MD5).
+- **Patreon:** ~~OAuth connect + a webhook (HMAC-MD5)~~ — **DROPPED** (never finished; not
+  ported). `UserSubscription`/`PatreonTierEnum` fall away with it.
 - **Chinese lunisolar calendar** (`overtrue/chinese-calendar`) feeds seasonal content via
   `CalendarFunctions` (a ~30-predicate holiday oracle).
 - **Custom logic evaluator** `JsonLogicParserService` — a homegrown recursive evaluator for
@@ -243,12 +263,44 @@ balance and the jokes. ~2,510 `IRandom` calls, ~369 outcome methods.
 → **Open decision:** the port strategy for this bulk (mechanical translation vs.
 re-expression), and whether to preserve the hybrid orchestrator+registry split (it is
 order-sensitive — the `return`-short-circuit ladder is intentional).
+→ **Testing (updated per G3):** the record-PHP-outputs-and-replay-in-.NET *parity* strategy
+is **retired** — live gameplay RNG needn't match PHP. Tests become C#-internal instead:
+seed the C# `IRandom` and assert against C#'s own recorded baselines (characterization),
+plus the "forecast == realization" invariant test for date-seeded features. Correctness of
+the *logic* (which outcomes are reachable, item math) is still validated against the PHP
+source by reading, not by output diffing.
 
-**G3. `IRandom` must be reimplemented bit-exact.** ✅
-It's the one seam that makes the whole imperative mass reproducible/testable. A .NET port
-must reproduce the *exact* sequence and `rngSkillRoll` semantics, or every replay and
-golden test diverges. `Clock` ports cleanly to `TimeProvider`; `IRandom` does not port
-"cleanly" — it must match.
+**G3. RNG must stay deterministic & self-consistent — but NOT PHP-identical.** ✅
+*(See ratified decision at top.)* There are **two** distinct deterministic mechanisms, and
+neither needs to match PHP's byte output:
+- **`Xoshiro` (Xoshiro256\*\*)** — the seedable *sequential* `IRandom` implementation
+  (`src/Service/Xoshiro.php`, wrapping PHP's `Random\Randomizer`). Constructed as
+  `new Xoshiro($seed)` for deterministic features; the live-gameplay default `IRandom` is
+  unseeded. Weather (`WeatherService`) and the per-user daily shelter roster
+  (`AdoptionService`, seeded from `User::getDailySeed()` — a formula over a per-user `fate`
+  int + the date) use this.
+- **`RandomFunctions::squirrel3Noise(seed, position)`** — a *stateless positional noise
+  hash* (Squirrel3), a pure function of `(seed, position)` with no stream state. Rare-pet-day
+  is `squirrel3Noise(591, dateAsInt) % 100 === 1` (`AdoptionService::getRarePetIndices`).
+
+**The invariant to preserve is self-consistency, not parity.** The Magic Crystal Ball's
+`findNextRarePetDay` (`Controller/Item/MagicCrystalBallController.php`) simply walks future
+dates calling the **same** `AdoptionService::isRarePetDay($date)` used on the real day — so
+"forecast == realization" holds automatically **as long as both paths call one C#
+implementation**. Same for the weather forecast endpoint. So the C# requirements are only:
+(a) a seedable sequential PRNG (any good one — `System.Random` on modern .NET happens to be
+xoshiro256\*\*, but the choice is free) and (b) a stateless positional noise hash
+`Noise(seed, position)` (any good noise function — Squirrel3 is **not** required to be kept);
+both must be **pure functions of their inputs**, and every "predict" path must share the
+implementation of its "realize" path.
+- **Accepted consequence:** deterministic outcomes (which day is a rare-pet day, the weather)
+  **will shift at cutover** vs. what PHP would have produced — a forecast the PHP app already
+  showed may not match what C# later realizes. This is explicitly acceptable for this release.
+- **Optional, cheap continuity:** both algorithms are small and portable, so *if* seamless
+  continuity across the cutover is ever wanted, matching them bit-for-bit is low-effort — but
+  it is **not** required and not currently planned.
+
+`Clock` still ports cleanly to `TimeProvider`.
 
 **G4. Serialization is a side-effecting request-finalization step, not JSON mapping.** ✅
 Normalizers issue DB queries and branch on requested group; `ResponseService` deletes rows
@@ -368,10 +420,8 @@ faithfully means porting *almost nothing*:
 | `symfony/expression-language` ⇒ rules engine | Unused. The real engine is homegrown `JsonLogicParserService` (G8). |
 | `symfony/http-client` + guzzle ⇒ outbound APIs | No outbound HTTP in app code (guzzle == JSON helper). |
 | `symfony/lock` ⇒ distributed locks | Configured to `flock`, unused. Real locks are cache-key based (G7). |
-
-**Loose end to investigate:** `.env` defines `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (Web
-Push). Not covered in this pass — confirm whether push notifications are live and where
-they're sent before assuming there's no push subsystem.
+| Patreon integration | **DROPPED** (ratified) — never finished. OAuth + MD5 webhook + `UserSubscription`/`PatreonTierEnum` are not ported. |
+| VAPID keys ⇒ Web Push | **DROPPED** (ratified) — never fully implemented. No push subsystem in the port. |
 
 ---
 
@@ -401,13 +451,13 @@ Recorded from project owner direction + existing `docs/architecture/`. Listed so
 3. **ULID conversion (G16)** — finish it during the rewrite, or match the mixed state?
 4. **The single-flight bug (G15)** — replicate or fix; and does currency get real
    protection?
-5. **Activity-port strategy (G2/G3)** — mechanical translation vs. re-expression, and the
-   golden-test approach (record PHP outputs against a seeded `IRandom`, replay in .NET).
+5. **Activity-port strategy (G2)** — mechanical translation vs. re-expression, and whether to
+   preserve the order-sensitive orchestrator+registry split. *(RNG/testing sub-question is
+   settled — see G3 / ratified log.)*
 6. **DTO source of truth (G5)** — frontend TS models vs. group definitions vs. captured
    responses.
 7. **Transaction granularity (2.5)** — keep many-small-flushes semantics or move to
    per-request `SaveChanges` (changes atomicity, e.g. `BuyController`'s double flush).
-8. **VAPID / Web Push** — confirm whether a push subsystem exists at all.
 
 ---
 
