@@ -215,6 +215,9 @@ class CraftingService implements IPetActivity
 
             if($this->houseSimService->hasInventory('Iron Sword') && $this->houseSimService->hasInventory('Laser Pointer'))
                 $possibilities[] = $this->createLaserGuidedSword(...);
+
+            if($this->houseSimService->hasInventory('Bec de Corbin') && $this->houseSimService->hasInventory('Black Feathers'))
+                $possibilities[] = $this->createRavensBeak(...);
         }
 
         if($this->houseSimService->hasInventory('Antenna'))
@@ -712,6 +715,47 @@ class CraftingService implements IPetActivity
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Crafts ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(15, 30), PetActivityStatEnum::CRAFT, false);
+        }
+
+        return $activityLog;
+    }
+
+    private function createRavensBeak(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+        $roll = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getDexterity()->getTotal() + $petWithSkills->getCrafts()->getTotal());
+
+        if($roll >= 22)
+        {
+            $this->houseSimService->getState()->loseItem('Bec de Corbin', 1);
+            $this->houseSimService->getState()->loseItem('Glue', 1);
+            $this->houseSimService->getState()->loseItem('Black Feathers', 1);
+
+            $pet->increaseEsteem(4);
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% created a Raven\'s Beak by gluing Black Feathers onto a Bec de Corbin.')
+                ->setIcon('items/tool/spear/ravens-beak')
+                ->addInterestingness(PetActivityLogInterestingness::HoHum + 22)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [
+                    PetActivityLogTagEnum::Crafting,
+                    PetActivityLogTagEnum::Location_At_Home,
+                ]))
+            ;
+
+            $this->inventoryService->petCollectsItem('Raven\'s Beak', $pet, $pet->getName() . ' created this by gluing Black Feathers onto a Bec de Corbin. (Definitely a raven, now!)', $activityLog);
+
+            $this->petExperienceService->gainExp($pet, 4, [ PetSkillEnum::Crafts ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::CRAFT, true);
+        }
+        else
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to glue Black Feathers onto a Bec de Corbin, but they kept ending up in all the wrong places...')
+                ->setIcon('icons/activity-logs/confused')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Location_At_Home ]))
+            ;
+
+            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Crafts ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::CRAFT, false);
         }
 
         return $activityLog;

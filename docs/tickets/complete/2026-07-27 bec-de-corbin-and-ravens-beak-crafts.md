@@ -86,3 +86,27 @@ Nest the gate inside the existing `if($this->houseSimService->hasInventory('Glue
 - [ ] Manual: equip the crafted `Raven's Beak` on a pet and confirm it renders and grips correctly (the migration sets `grip_x`/`grip_y`/`grip_angle`/`grip_scale` shared with the Bec de Corbin).
 - [ ] Regression: with `Iron Bar` + `Crooked Stick` + `Toadstool` in the house, confirm `Scythe`/`Garden Shovel` and `Mushketeer` still craft — the new gate sits in the same block.
 - [ ] Regression: with `Feathers` + `Hunting Spear` in the house, confirm `Decorated Spear` still crafts, and that a house holding `Black Feathers` but no plain `Feathers` does not offer it.
+
+## Learnings
+
+### Architectural decisions
+- **Open Decision 1 (burn band): included**, as the default recommended. `createBecDeCorbin` opens with the standard `$roll <= 2 && $petWithSkills->getHasProtectionFromHeat()->getTotal() <= 0` guard copied from `createMeatSeekingClaymore`: `increaseSafety(-rngNextInt(2, 24))`, `icons/activity-logs/burn`, 1 exp, `rngNextInt(30, 60)` minutes, no ingredients lost. The Raven's Beak has no fumble band at all.
+- **Open Decision 2 (exp skills): `[PetSkillEnum::Crafts]` alone** for both, matching their host groups (`IronSmithingService` awards Crafts universally; `createDecoratedSpear` likewise) rather than the `Crafts + Brawl` of the `Hunting Spear` lineage.
+- **Open Decision 3 (crit band): neither craft got one.** Both are single-success-band, like `createMushketeer` and `createDecoratedSpear`.
+- **Open Decision 4 (values):** Bec de Corbin — esteem +3, 3 exp / `rngNextInt(60, 75)` min on success, 1 exp / `rngNextInt(45, 75)` on failure. Raven's Beak — esteem +4, 4 exp / `rngNextInt(45, 75)` on success, 2 exp / `rngNextInt(30, 60)` on failure.
+- **Open Decision 5 (flavor):** the falcon joke is echoed in both crafts. The Bec de Corbin's ordinary-failure line has the head looking "more like a falcon's beak than a raven's"; the Raven's Beak's `petCollectsItem` comment closes it with "(Definitely a raven, now!)". Both lines are body-neutral — the pet forges, sets, and glues, with no mention of what does the work.
+- **The artwork dictates the flavor text, and the artwork is the only place the recipe's fiction is recorded.** The first draft of the Bec de Corbin lines described welding a new iron beak onto the spear; the actual `tool/spear/bec-de-corbin` art repurposes the *Hunting Spear's own talon* as the beak, with the iron forming the hammer head opposite it. Nothing in the DB row, the item description, or the recipe names says so. Read the item art before writing craft flavor text, especially for a craft whose inputs could plausibly combine several ways.
+- **`createRavensBeak` is `private`, not `public`** as the Implementation section suggested. It is only ever reached through `CraftingService::possibilities()`, and private is both the house majority in that file (49 private `create*` methods to 8 public) and what both structural analogues (`createLaserGuidedSword`, `createCrowsEye`) do. `createDecoratedSpear` is public but has no external caller either, so its visibility is not a pattern worth copying.
+
+### Interesting tidbits
+- `IronSmithingService` methods vary on log tags: some tag `[ 'Smithing' ]`, some `[ 'Smithing', 'Crafting' ]` (`createMushketeer` among them). `CraftingService` methods instead use the `PetActivityLogTagEnum` constants plus `Location_At_Home`. Each new method follows its own file's dominant convention — raw `'Smithing'` string in the smithing helper, enum constants in `CraftingService` — so the two crafts do not look alike, and that is correct.
+- The Bec de Corbin gate had to go inside the `Iron Bar` block rather than beside the `Feathers`/`Hunting Spear` gate in `CraftingService`; the two `Hunting Spear` consumers now live in different services and different activity groups, which is invisible from either call site.
+
+### Related areas affected
+- None beyond the three files. No new constructor dependencies: `SmithingService` already injects `IronSmithingService`, and the Raven's Beak craft is a same-class call.
+- Still open (deliberately out of scope): there is no `Melt Raven's Beak` entry in `RecipeRepository`, though `Melt Bec de Corbin` exists.
+
+### Rejected alternatives
+- **Putting `createRavensBeak` on `IronSmithingService`** — rejected on the invariant noted in the ticket: every method there consumes an `Iron Bar`, and the Raven's Beak consumes no metal.
+- **Gating the Raven's Beak under the `Feathers` block** next to `createDecoratedSpear` — rejected; that block gates on the plain `Feathers` item, so a house with `Black Feathers` and no `Feathers` would never see the craft. It sits under `Glue` beside `createLaserGuidedSword` instead.
+- **Using `createDecoratedSpear`'s narrower `DEX + Crafts` pool** for the Raven's Beak — rejected per the ticket; DC 22 against that pool would be punishing. It rolls against `INT + DEX + Crafts`.

@@ -178,6 +178,9 @@ class SmithingService implements IPetActivity
             if($this->houseSimService->hasInventory('Toadstool'))
                 $possibilities[] = $this->ironSmithingService->createMushketeer(...);
 
+            if($this->houseSimService->hasInventory('Hunting Spear'))
+                $possibilities[] = $this->ironSmithingService->createBecDeCorbin(...);
+
             if($this->houseSimService->hasInventory('Green Dye') && $this->houseSimService->hasInventory('Bug-catcher\'s Net'))
                 $possibilities[] = $this->ironSmithingService->createWaterStrider(...);
         }
