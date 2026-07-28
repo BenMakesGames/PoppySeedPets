@@ -727,6 +727,55 @@ class IronSmithingService
         return $activityLog;
     }
 
+    public function createBecDeCorbin(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+        $roll = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getStamina()->getTotal() + $petWithSkills->getCrafts()->getTotal() + $petWithSkills->getSmithingBonus()->getTotal());
+
+        if($roll <= 2 && $petWithSkills->getHasProtectionFromHeat()->getTotal() <= 0)
+        {
+            $pet->increaseSafety(-$this->rng->rngNextInt(2, 24));
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to forge an Iron Bar into the head of a Bec de Corbin, but got burned while trying! :(')
+                ->setIcon('icons/activity-logs/burn')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Smithing' ]))
+            ;
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Crafts ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 60), PetActivityStatEnum::SMITH, false);
+        }
+        else if($roll >= 16)
+        {
+            $this->houseSimService->getState()->loseItem('Iron Bar', 1);
+            $this->houseSimService->getState()->loseItem('Hunting Spear', 1);
+
+            $pet->increaseEsteem(3);
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% forged an Iron Bar into a hammer head, and re-set a Hunting Spear\'s talon opposite it as a beak, making a Bec de Corbin.')
+                ->setIcon('items/tool/spear/bec-de-corbin')
+                ->addInterestingness(PetActivityLogInterestingness::HoHum + 16)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Smithing' ]))
+            ;
+
+            $this->inventoryService->petCollectsItem('Bec de Corbin', $pet, $pet->getName() . ' made this by re-setting a Hunting Spear\'s talon into a freshly-forged iron head.', $activityLog);
+
+            $this->petExperienceService->gainExp($pet, 3, [ PetSkillEnum::Crafts ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 75), PetActivityStatEnum::SMITH, true);
+        }
+        else
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to re-set a Hunting Spear\'s talon into an iron head, but at every angle it looked more like a falcon\'s beak than a raven\'s...')
+                ->setIcon('icons/activity-logs/confused')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Smithing' ]))
+            ;
+
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Crafts ], $activityLog);
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::SMITH, false);
+        }
+
+        return $activityLog;
+    }
+
     public function createSnailpplingHook(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
