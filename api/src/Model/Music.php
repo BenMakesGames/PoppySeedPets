@@ -570,6 +570,9 @@ class Music
         'Fa-a-ces. You see a lot of people got two fa-a-ces. You must give your mind to all the fa-a-ces...',
 
         // Stop, by B.W.H.
-        '[indistinct] peeeopleeee[?]. [indistinct] thinkin\' aboooout me. Driving [indistinct] wiiiith yooou. I [indistinct] Blackway through the ni-ight - stop [indistinct]!'
+        '[indistinct] peeeopleeee[?]. [indistinct] thinkin\' aboooout me. Driving [indistinct] wiiiith yooou. I [indistinct] Blackway through the ni-ight - stop [indistinct]!',
+
+        // Lemonade, by aespa
+        'I\'ma stand all on my own. 어디라도 now I can go. 새롭게 open the door. I need more-- lemonaaaaaaaaaaade!',
     ];
 }
