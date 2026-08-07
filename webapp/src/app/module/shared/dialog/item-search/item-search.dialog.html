@@ -90,8 +90,58 @@
         <p>
           <label>Item Tag</label>
           <span class="input">
-          <button (click)="doClearTag()" class="link-text"><app-pet-activity-log-tag [tag]="itemTag" /></button>
-        </span>
+            <button (click)="doClearTag()" class="link-text"><app-pet-activity-log-tag [tag]="itemTag" /></button>
+          </span>
+        </p>
+      }
+      @else
+      {
+        <p>
+          <label>Item Tag</label>
+          <input
+            #tagSearch
+            cdkOverlayOrigin
+            #tagTrigger="cdkOverlayOrigin"
+            type="text"
+            placeholder="e.g. Fresh Fruit"
+            autocomplete="off"
+            (input)="onTagInput($event)"
+            (focus)="onTagFocus()"
+            (keydown)="onTagKeydown($event)"
+            role="combobox"
+            aria-autocomplete="list"
+            [attr.aria-expanded]="suggestions ? 'true' : 'false'"
+            [attr.aria-activedescendant]="selectedSuggestion >= 0 ? 'tagItem' + selectedSuggestion : undefined"
+          />
+          <ng-template
+            cdkConnectedOverlay
+            [cdkConnectedOverlayOrigin]="tagTrigger"
+            [cdkConnectedOverlayOpen]="suggestions !== null"
+            [cdkConnectedOverlayPositions]="dropdownPositions"
+            [cdkConnectedOverlayWidth]="tagSearch.offsetWidth"
+            (overlayOutsideClick)="suggestions = null"
+          >
+            <div class="tag-select" role="listbox">
+              @if(suggestions.length === 0)
+              {
+                <p>No tags matched.</p>
+              }
+              @else
+              {
+                @for(group of suggestions; let i = $index; track i)
+                {
+                  <button
+                    type="button"
+                    [class.selected]="i == selectedSuggestion"
+                    (click)="doSelectGroup(group)"
+                    (mouseover)="selectedSuggestion = i"
+                    role="option"
+                    [id]="'tagItem' + i"
+                  >{{ group }}</button>
+                }
+              }
+            </div>
+          </ng-template>
         </p>
       }
       <div class="buttons centered" style="margin-top:1rem">
