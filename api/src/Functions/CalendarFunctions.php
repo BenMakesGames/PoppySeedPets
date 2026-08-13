@@ -326,14 +326,33 @@ final class CalendarFunctions
     public static function isLeonidPeakOrAdjacent(\DateTimeInterface $dt): bool
     {
         $year = (int)$dt->format('Y');
-        $monthAndDay = (int)$dt->format('nd');
 
         $leonidPeakDay = array_key_exists($year, self::LeonidPeakDays)
             ? self::LeonidPeakDays[$year]
             : self::LeonidPeakDayDefault
         ;
 
-        return abs($monthAndDay - $leonidPeakDay) <= 1;
+        return self::isPeakOrAdjacent($dt, $leonidPeakDay);
+    }
+
+    public static function isPerseidPeakOrAdjacent(\DateTimeInterface $dt): bool
+    {
+        $extraDays = self::PerseidExtraDaysAfterPeak[(int)$dt->format('Y')] ?? 0;
+
+        return self::isPeakOrAdjacent($dt, self::PerseidPeakDay, $extraDays);
+    }
+
+    /**
+     * NOTE: $peakDay is a packed month-and-day integer, as produced by `format('nd')`; the comparison is arithmetic on
+     * that packed value, so it is only correct for peaks that are at least one day away from either end of their month.
+     * (For a peak of 1101, "the day before" would come out as 1100, rather than the last day of October.) $extraDays
+     * pushes the end of the window further out, and is subject to the same limitation.
+     */
+    private static function isPeakOrAdjacent(\DateTimeInterface $dt, int $peakDay, int $extraDays = 0): bool
+    {
+        $monthAndDay = (int)$dt->format('nd');
+
+        return $monthAndDay >= $peakDay - 1 && $monthAndDay <= $peakDay + 1 + $extraDays;
     }
 
     public static function isLeapDay(\DateTimeInterface $dt): bool
@@ -459,6 +478,9 @@ final class CalendarFunctions
         if(self::isLeonidPeakOrAdjacent($dt))
             $events[] = HolidayEnum::Leonids;
 
+        if(self::isPerseidPeakOrAdjacent($dt))
+            $events[] = HolidayEnum::Perseids;
+
         if(self::isLeapDay($dt))
             $events[] = HolidayEnum::LeapDay;
 
@@ -501,6 +523,21 @@ final class CalendarFunctions
      */
     public const array LeonidPeakDays = [
         2022 => 1119,
+    ];
+
+    /**
+     * unlike the Leonids, whose peak drifts with Tempel-Tuttle's 33-year cycle, the Perseids peak on the same day every
+     * year, so their peak needs no per-year override table.
+     */
+    public const int PerseidPeakDay = 812;
+
+    /**
+     * days added to the *end* of the Perseids window, for a given year only; years which are omitted get the usual
+     * peak-and-adjacent window. 2026's two days are here because the event shipped on the last day of that window,
+     * leaving players no time to see it.
+     */
+    public const array PerseidExtraDaysAfterPeak = [
+        2026 => 2,
     ];
 
 }

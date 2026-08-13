@@ -27,12 +27,14 @@ use App\Functions\GroupNameGenerator;
 use App\Functions\PetActivityLogFactory;
 use App\Functions\PetActivityLogTagHelpers;
 use App\Model\PetChanges;
+use App\Model\WeatherSky;
 use App\Service\Clock;
 use App\Service\HattierService;
 use App\Service\InventoryService;
 use App\Service\IRandom;
 use App\Service\PetExperienceService;
 use App\Service\PetRelationshipService;
+use App\Service\WeatherService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class AstronomyClubService
@@ -124,7 +126,29 @@ class AstronomyClubService
             ->increaseSkillRollTotal($skill)
         ;
 
-        if(CalendarFunctions::isLeonidPeakOrAdjacent($this->clock->now))
+        // unlike the Leonids, the Perseids fall during the island's rainiest month, so the club only gets to watch them
+        // on the rare August night with a clear sky; otherwise, the meeting goes ahead as usual
+        if(CalendarFunctions::isPerseidPeakOrAdjacent($this->clock->now) && WeatherService::getSky($this->clock->now) === WeatherSky::Clear)
+        {
+            $messageTemplate = '%pet% watched the Perseids with %group%, and collected some of their Stardust!';
+
+            foreach($group->getMembers() as $member)
+            {
+                $member->increaseEsteem($this->rng->rngNextInt(3, 6));
+
+                $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $member, $this->formatMessage($messageTemplate, $member, $group, ''))
+                    ->setIcon(self::ActivityIcon)
+                    ->addInterestingness(PetActivityLogInterestingness::HolidayOrSpecialEvent)
+                    ->setChanges($petChanges[$member->getId()]->compare($member))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Group Hangout', 'Astronomy Lab', 'Special Event', 'Perseids' ]))
+                ;
+
+                $this->inventoryService->petCollectsItem('Stardust', $member, $this->formatMessage($messageTemplate, $member, $group, 'this'), $activityLog);
+
+                $activityLogsPerPet[$member->getId()] = $activityLog;
+            }
+        }
+        else if(CalendarFunctions::isLeonidPeakOrAdjacent($this->clock->now))
         {
             $messageTemplate = '%pet% watched the Leonids with %group%, and collected some of their Stardust!';
 
