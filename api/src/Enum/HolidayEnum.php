@@ -51,6 +51,7 @@ enum HolidayEnum: string
 
     // weird events?
     case Leonids = 'The Leonids Meteor Shower';
+    case Perseids = 'The Perseids Meteor Shower';
 
     // full moons
     case BlueMoon = 'Blue Moon';

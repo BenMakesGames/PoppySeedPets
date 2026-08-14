@@ -71,6 +71,7 @@ final class PetActivityLogTagEnum
     public const string One_on_One_Hangout = '1-on-1 Hangout';
     public const string Park_Event = 'Park Event';
     public const string Painting = 'Painting';
+    public const string Perseids = 'Perseids';
     public const string Physics = 'Physics';
     public const string Pi_Day = 'Pi Day';
     public const string Pooping = 'Pooping';
