@@ -126,6 +126,34 @@ class CookAndCombineController
             }
         }
 
+        $bulkSpicingPlan = InventoryModifierFunctions::planBulkSpicing($inventory);
+
+        if($bulkSpicingPlan !== null)
+        {
+            foreach($bulkSpicingPlan->pairs as [$food, $spice])
+                InventoryModifierFunctions::spiceUp($em, $food, $spice);
+
+            $count = count($bulkSpicingPlan->pairs);
+            $foodName = $bulkSpicingPlan->pairs[0][0]->getItem()->getName();
+            $spiceName = $bulkSpicingPlan->pairs[0][0]->getSpice()->getName();
+
+            if($bulkSpicingPlan->leftoverFoodCount > 0)
+                $responseService->addFlashMessage($count . ' of those ' . $foodName . ' now have the ' . $spiceName . ' spice - but there wasn\'t enough for the last ' . $bulkSpicingPlan->leftoverFoodCount . ' ' . $foodName . ' so they\'re plain for now.');
+            else if($bulkSpicingPlan->leftoverSpiceCount > 0)
+                $responseService->addFlashMessage('All ' . $count . ' of those ' . $foodName . ' now have the ' . $spiceName . ' spice! You have ' . $bulkSpicingPlan->leftoverSpiceCount . ' ' . $spiceName . ' spices leftover.');
+            else
+                $responseService->addFlashMessage('All ' . $count . ' of those ' . $foodName . ' now have the ' . $spiceName . ' spice! Batch-prepping FTW!');
+
+            $em->flush();
+
+            $responseService->setReloadInventory();
+
+            return $responseService->success(array_map(fn(array $pair) => $pair[0], $bulkSpicingPlan->pairs), [ SerializationGroupEnum::MY_INVENTORY ]);
+        }
+
+        if(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory))
+            throw new PSPInvalidOperationException('Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.');
+
         $results = $cookingService->prepareRecipeByHand($user, $user, $inventory);
 
         // do this before checking if anything was made
