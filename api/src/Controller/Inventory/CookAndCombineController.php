@@ -135,7 +135,8 @@ class CookAndCombineController
 
             $count = count($bulkSpicingPlan->pairs);
             $foodName = $bulkSpicingPlan->pairs[0][0]->getItem()->getName();
-            $spiceName = $bulkSpicingPlan->pairs[0][0]->getSpice()->getName();
+            $spiceName = $bulkSpicingPlan->pairs[0][1]->getItems()->getSpice()?->getName()
+                ?? throw new PSPInvalidOperationException('There is no spice to be found!');
 
             if($bulkSpicingPlan->leftoverFoodCount > 0)
                 $responseService->addFlashMessage($count . ' of those ' . $foodName . ' now have the ' . $spiceName . ' spice - but there wasn\'t enough for the last ' . $bulkSpicingPlan->leftoverFoodCount . ' ' . $foodName . ' so they\'re plain for now.');
