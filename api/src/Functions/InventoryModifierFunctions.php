@@ -18,6 +18,7 @@ use App\Entity\Inventory;
 use App\Entity\Item;
 use App\Entity\Spice;
 use App\Exceptions\PSPInvalidOperationException;
+use App\Model\BulkSpicingPlan;
 use Doctrine\ORM\EntityManagerInterface;
 
 class InventoryModifierFunctions
@@ -40,6 +41,78 @@ class InventoryModifierFunctions
         $food->setSpice($spice->getItem()->getSpice());
 
         $em->remove($spice);
+    }
+
+    /**
+     * Figures out whether a selection of inventory items is an unambiguous request to bulk-spice
+     * every selected food with one of the selected spices. Handles the case where food and spice
+     * counts are equal, the case where there are more foods than spices (the extra foods are left
+     * unspiced), and the case where there are more spices than foods (the extra spices are left
+     * unused). Every other case is ambiguous, and returns null.
+     *
+     * @param Inventory[] $inventory
+     */
+    public static function planBulkSpicing(array $inventory): ?BulkSpicingPlan
+    {
+        $foods = array_values(array_filter($inventory, fn(Inventory $i) => $i->getItem()->getFood() !== null));
+        $spices = array_values(array_filter($inventory, fn(Inventory $i) => $i->getItem()->getSpice() !== null));
+
+        // something in the selection is neither food nor spice
+        if(count($foods) + count($spices) !== count($inventory))
+            return null;
+
+        if(count($foods) === 0 || count($spices) === 0)
+            return null;
+
+        if(array_any($foods, fn(Inventory $i) => $i->getSpice() !== null))
+            return null;
+
+        $firstFoodItem = $foods[0]->getItem();
+
+        if(array_any($foods, fn(Inventory $i) => $i->getItem() !== $firstFoodItem))
+            return null;
+
+        $firstSpiceItem = $spices[0]->getItem();
+
+        if(array_any($spices, fn(Inventory $i) => $i->getItem() !== $firstSpiceItem))
+            return null;
+
+        $pairCount = min(count($foods), count($spices));
+
+        $pairs = array_map(
+            fn(Inventory $food, Inventory $spice) => [ $food, $spice ],
+            array_slice($foods, 0, $pairCount),
+            array_slice($spices, 0, $pairCount)
+        );
+
+        return new BulkSpicingPlan(
+            $pairs,
+            leftoverFoodCount: count($foods) - $pairCount,
+            leftoverSpiceCount: count($spices) - $pairCount
+        );
+    }
+
+    /**
+     * True when a selection is entirely food and spice items (so it's clearly an attempt at
+     * bulk-spicing, not some other recipe), but doesn't match any of planBulkSpicing's
+     * unambiguous patterns. False for anything planBulkSpicing can handle, and false when the
+     * selection includes items that are neither food nor spice (that's not this feature's
+     * concern - it's left to the existing recipe-matching logic).
+     *
+     * @param Inventory[] $inventory
+     */
+    public static function isAmbiguousBulkSpicingAttempt(array $inventory): bool
+    {
+        $foods = array_filter($inventory, fn(Inventory $i) => $i->getItem()->getFood() !== null);
+        $spices = array_filter($inventory, fn(Inventory $i) => $i->getItem()->getSpice() !== null);
+
+        if(count($foods) + count($spices) !== count($inventory))
+            return false;
+
+        if(count($foods) === 0 || count($spices) === 0)
+            return false;
+
+        return self::planBulkSpicing($inventory) === null;
     }
 
     public static function getNameWithModifiers(Inventory $item): string

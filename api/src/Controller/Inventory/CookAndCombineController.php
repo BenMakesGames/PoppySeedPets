@@ -21,6 +21,7 @@ use App\Exceptions\PSPNotFoundException;
 use App\Functions\ArrayFunctions;
 use App\Functions\GrammarFunctions;
 use App\Functions\InventoryModifierFunctions;
+use App\Model\BulkSpicingPlan;
 use App\Service\CookingService;
 use App\Service\InventoryService;
 use App\Service\IRandom;
@@ -125,6 +126,42 @@ class CookAndCombineController
                 return $responseService->success($spiced, [ SerializationGroupEnum::MY_INVENTORY ]);
             }
         }
+
+        $bulkSpicingPlan = InventoryModifierFunctions::planBulkSpicing($inventory);
+
+        if($bulkSpicingPlan !== null)
+        {
+            foreach($bulkSpicingPlan->pairs as [$food, $spice])
+                InventoryModifierFunctions::spiceUp($em, $food, $spice);
+
+            $count = count($bulkSpicingPlan->pairs);
+            /** @var array{0: Inventory, 1: Inventory} $firstPair */
+            $firstPair = $bulkSpicingPlan->pairs[0];
+            /** @var Inventory $firstFood */
+            $firstFood = $firstPair[0];
+            /** @var Inventory $firstSpice */
+            $firstSpice = $firstPair[1];
+
+            $foodName = $firstFood->getItem()->getName();
+            $spiceName = $firstSpice->getItem()->getSpice()?->getName()
+                ?? throw new PSPInvalidOperationException('There is no spice to be found!');
+
+            if($bulkSpicingPlan->leftoverFoodCount > 0)
+                $responseService->addFlashMessage((string)$count . ' of those ' . (string)$foodName . ' now have the ' . (string)$spiceName . ' spice - but there wasn\'t enough for the last ' . (string)$bulkSpicingPlan->leftoverFoodCount . ' ' . (string)$foodName . ' so they\'re plain for now.');
+            else if($bulkSpicingPlan->leftoverSpiceCount > 0)
+                $responseService->addFlashMessage('All ' . (string)$count . ' of those ' . (string)$foodName . ' now have the ' . (string)$spiceName . ' spice! You have ' . (string)$bulkSpicingPlan->leftoverSpiceCount . ' ' . (string)$spiceName . ' spices leftover.');
+            else
+                $responseService->addFlashMessage('All ' . (string)$count . ' of those ' . (string)$foodName . ' now have the ' . (string)$spiceName . ' spice! Batch-prepping FTW!');
+
+            $em->flush();
+
+            $responseService->setReloadInventory();
+
+            return $responseService->success(array_map(fn(array $pair) => $pair[0], $bulkSpicingPlan->pairs), [ SerializationGroupEnum::MY_INVENTORY ]);
+        }
+
+        if(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory))
+            throw new PSPInvalidOperationException('Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.');
 
         $results = $cookingService->prepareRecipeByHand($user, $user, $inventory);
 
