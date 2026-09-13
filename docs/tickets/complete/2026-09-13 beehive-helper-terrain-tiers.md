@@ -124,3 +124,24 @@ Mirror `getGoodsForTerrain`'s shape: two public entry points, `getHelperGatherTi
 - [ ] Repeat with a Green Thumb helper on a jungle hex: two items per harvest, both from the jungle gather tables.
 - [ ] Give a test pet very low skills and harvest a few times: only base-tier items appear.
 - [ ] Non-helper bars (Royal Jelly / Honeycomb / misc) behave exactly as before on the same hexes.
+
+## Learnings
+
+### Architectural decisions
+- **`ExtraItemTiers` value object** (`App\Model`) holds the four tier lists as readonly `string[]` props and throws in its constructor if any tier is empty - the "tier lists may not be empty" constraint is enforced at construction, not at draw time. Open Decision 1 resolved as the default.
+- **Thin wrapper, not a signature change.** `PetAssistantService::getExtraItemFromTiers(IRandom, int, ExtraItemTiers)` unpacks into the existing four-array `getExtraItem`, so `FeedController` / `WeedController` are untouched. Open Decision 2: `Gather` naming.
+- **`helperHuntsOrGathers` receives `BeehiveSpaceTypeEnum`, not `BeehiveSpace`** - it only needs the terrain, and the service methods key on the enum.
+
+### Problems encountered
+- **The ticket contradicted itself on Naner**: Decision 2's tables put Naner only in Jungle gather, while Constraints and Acceptance Criteria demanded it in every gather table. User chose the tables as written: **BeeNana is now a Jungle-only badge**. The "every gather table contains Naner" criterion is therefore intentionally unmet.
+- `/tmp` in Git Bash is not PHP's `/tmp` on Windows - a heredoc written to `/tmp/x.php` is invisible to `php -r 'file_get_contents("/tmp/x.php")'`. Use the session scratchpad path for files that PHP has to read.
+
+### Interesting tidbits
+- In-process harvest testing: the scratchpad `harvest_test.php` resolves every tier item name through `ItemRepository::findOneByName` (70 distinct names, all present), then fires `POST /beehive/harvest` with `bar: helper` against user 704's first unharvested space of a chosen terrain, resetting `helperProgress` to 2000 between calls. Green Thumb was verified by temporarily `addMerit`-ing it onto the helper and removing it after.
+
+### Related areas affected
+- `webapp` `beehive.component.scss` picked up one unrelated tweak during this ticket (user request mid-implementation): `.bar-with-button button` is a fixed 100px wide.
+
+### Rejected alternatives
+- Changing `getExtraItem`'s signature to take `ExtraItemTiers` and updating the two other helper sites - would be one method instead of two, but the ticket's default was to leave the four-array signature alone; revisit if a third caller wants tiers.
+- Adding Naner to the Beach/Grassy/Rocky base tiers to satisfy the constraint - offered, declined.

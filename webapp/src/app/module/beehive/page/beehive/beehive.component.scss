@@ -109,6 +109,7 @@ app-progress-bar {
   margin-bottom: 0.5rem;
 
   button {
+    width: 100px;
     padding: 0.25em 0.75em;
 
     // the border has to come out of the padding, or the button grows by 2px when it goes wire

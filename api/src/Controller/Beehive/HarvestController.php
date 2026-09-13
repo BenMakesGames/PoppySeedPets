@@ -17,6 +17,7 @@ use App\Entity\Inventory;
 use App\Entity\Pet;
 use App\Entity\User;
 use App\Enum\BeehiveBarEnum;
+use App\Enum\BeehiveSpaceTypeEnum;
 use App\Enum\LocationEnum;
 use App\Enum\MeritEnum;
 use App\Enum\PetActivityLogInterestingness;
@@ -122,7 +123,7 @@ class HarvestController
 
             case BeehiveBarEnum::Helper:
                 $beehive->setHelperProgress(0);
-                self::helperHuntsOrGathers($em, $inventoryService, $rng, $helper, $user);
+                self::helperHuntsOrGathers($em, $inventoryService, $rng, $beehiveService, $helper, $user, $space->type);
                 break;
         }
 
@@ -182,10 +183,10 @@ class HarvestController
                     '(Bee power!)'
                 ]);
 
-                $responseService->addFlashMessage("You received $itemList, AND some friendly bees increased your Basement - it can now hold {$user->getBasementSize()} items! $howNice");
+                $responseService->addFlashMessage("The bees bring you $itemList, AND some friendly bees increased your Basement - it can now hold {$user->getBasementSize()} items! $howNice");
             }
             else
-                $responseService->addFlashMessage("You received $itemList.");
+                $responseService->addFlashMessage("The bees bring you $itemList.");
         }
         else if($basementGrew)
         {
@@ -207,9 +208,10 @@ class HarvestController
     }
 
     /**
-     * The helper pet's own hunt/gather reward (no base reward from the space's terrain).
+     * The helper pet's own hunt/gather reward (no base reward from the space's terrain, but the terrain decides which
+     * tier tables are in play).
      */
-    private static function helperHuntsOrGathers(EntityManagerInterface $em, InventoryService $inventoryService, IRandom $rng, Pet $helper, User $user): void
+    private static function helperHuntsOrGathers(EntityManagerInterface $em, InventoryService $inventoryService, IRandom $rng, BeehiveService $beehiveService, Pet $helper, User $user, BeehiveSpaceTypeEnum $terrain): void
     {
         $petWithSkills = $helper->getComputedSkills();
 
@@ -219,19 +221,11 @@ class HarvestController
         {
             $gathering = $petWithSkills->getPerception()->getTotal() + $petWithSkills->getNature()->getTotal() + $petWithSkills->getGatheringBonus()->getTotal();
 
-            $extraItem1 = PetAssistantService::getExtraItem($rng, $gathering,
-                [ 'Tea Leaves', 'Blueberries', 'Blackberries', 'Grandparoot', 'Orange', 'Red' ],
-                [ 'Onion', 'Paper', 'Naner', /* Naner is used for badge, below */ 'Iron Ore' ],
-                [ 'Gypsum', 'Mixed Nuts', 'Apricot', 'Silver Ore', ],
-                [ 'Gold Ore', 'Liquid-hot Magma' ]
-            );
+            $gatherTiers = $beehiveService->getHelperGatherTiers($terrain);
 
-            $extraItem2 = PetAssistantService::getExtraItem($rng, $gathering,
-                [ 'Agrimony', 'Blueberries', 'Blackberries', 'Orange', 'Red' ],
-                [ 'Onion', 'Tomato', 'Naner', /* Naner is used for badge, below */ 'Sunflower' ],
-                [ 'Mint', 'Mixed Nuts', 'Apricot', 'Melowatern', ],
-                [ 'Goodberries', 'Iris' ]
-            );
+            // two independent draws from the same tables; Naner is used for badge, below
+            $extraItem1 = PetAssistantService::getExtraItemFromTiers($rng, $gathering, $gatherTiers);
+            $extraItem2 = PetAssistantService::getExtraItemFromTiers($rng, $gathering, $gatherTiers);
 
             $activityLog = PetActivityLogFactory::createUnreadLog($em, $helper, ActivityHelpers::PetName($helper) . ' helped ' . $user->getName() . '\'s bees while they were out gathering, and collected ' . $extraItem1 . ' AND ' . $extraItem2 . '.');
 
@@ -255,23 +249,14 @@ class HarvestController
 
             if($doGatherAction)
             {
-                $extraItem = PetAssistantService::getExtraItem($rng, $gathering,
-                    [ 'Tea Leaves', 'Blueberries', 'Blackberries', 'Grandparoot', 'Orange', 'Red' ],
-                    [ 'Onion', 'Paper', 'Naner', /* Naner is used for badge, below */ 'Iron Ore' ],
-                    [ 'Gypsum', 'Mixed Nuts', 'Apricot', 'Silver Ore', ],
-                    [ 'Gold Ore', 'Liquid-hot Magma' ],
-                );
+                // Naner is used for badge, below
+                $extraItem = PetAssistantService::getExtraItemFromTiers($rng, $gathering, $beehiveService->getHelperGatherTiers($terrain));
 
                 $verb = 'gather';
             }
             else
             {
-                $extraItem = PetAssistantService::getExtraItem($rng, $hunting,
-                    [ 'Scales', 'Feathers', 'Egg' ],
-                    [ 'Toadstool', 'Talon', 'Onion' ],
-                    [ 'Toad Legs', 'Jar of Fireflies' ],
-                    [ 'Silver Bar', 'Gold Bar', 'Quintessence' ],
-                );
+                $extraItem = PetAssistantService::getExtraItemFromTiers($rng, $hunting, $beehiveService->getHelperHuntTiers($terrain));
 
                 $verb = 'hunt';
             }

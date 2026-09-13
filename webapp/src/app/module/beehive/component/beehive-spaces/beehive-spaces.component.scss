@@ -57,8 +57,9 @@
   &.rocky { background-color: #8a8a8a; }
 
   &.harvested {
-    filter: grayscale(0.8);
+    background-color: #666;
     opacity: 0.4;
+    color: rgba(224, 224, 224, 0.8);
 
     > .spent {
       position: absolute;
