@@ -9,7 +9,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ApiService} from "../../../shared/service/api.service";
-import {MyBeehiveSerializationGroup} from "../../../../model/my-beehive.serialization-group";
+import {BeehiveBar, MyBeehiveResponse, MyBeehiveSerializationGroup} from "../../../../model/my-beehive.serialization-group";
 import {ApiResponseModel} from "../../../../model/api-response.model";
 import {UserDataService} from "../../../../service/user-data.service";
 import {MyAccountSerializationGroup} from "../../../../model/my-account/my-account.serialization-group";
@@ -20,6 +20,24 @@ import { MessagesService } from "../../../../service/messages.service";
 import { InteractWithAwayPetDialog } from "../../../pet-helpers/dialog/interact-with-away-pet/interact-with-away-pet-dialog.component";
 import { MatDialog } from "@angular/material/dialog";
 import { FeedBeehiveDialog } from "../../dialog/feed-beehive/feed-beehive.dialog";
+import { AreYouSureDialog } from "../../../../dialog/are-you-sure/are-you-sure.dialog";
+
+// one row under the "Progress" heading: a bar, plus either a Harvest button or a status word
+interface BeehiveBarRow
+{
+  bar: BeehiveBar;
+  label: string;
+
+  // how the bar is named in the screen-reader prompt for choosing a space
+  deployLabel: string;
+
+  percent: number;
+
+  // whether app:buzz-buzz (api/src/Command/BuzzBuzzCommand.php) will advance this bar on its next
+  // run. worker & hard-worker bees always advance; royalty bees only advance while the colony is
+  // working (i.e. it has flower power to spend), and the helper's bar only exists while a helper does
+  growing: boolean;
+}
 
 @Component({
     templateUrl: './beehive.component.html',
@@ -32,6 +50,8 @@ export class BeehiveComponent implements OnInit, OnDestroy {
   dialog = null;
   loading = true;
   beehive: MyBeehiveSerializationGroup;
+  canReroll = false;
+  deploying: BeehiveBar|null = null;
   user: MyAccountSerializationGroup;
   interacting = false;
   beehiveAjax = Subscription.EMPTY;
@@ -47,8 +67,8 @@ export class BeehiveComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.beehiveAjax = this.api.get<MyBeehiveSerializationGroup>('/beehive').subscribe({
-      next: (r: ApiResponseModel<MyBeehiveSerializationGroup>) => {
+    this.beehiveAjax = this.api.get<MyBeehiveResponse>('/beehive').subscribe({
+      next: (r: ApiResponseModel<MyBeehiveResponse>) => {
         this.loadBeehive(r.data);
         this.loading = false;
       }
@@ -60,9 +80,10 @@ export class BeehiveComponent implements OnInit, OnDestroy {
     this.userSubscription.unsubscribe();
   }
 
-  private loadBeehive(beehive: MyBeehiveSerializationGroup)
+  private loadBeehive(data: MyBeehiveResponse)
   {
-    this.beehive = beehive;
+    this.beehive = data.beehive;
+    this.canReroll = data.canReroll;
   }
 
   doViewItem(itemName: string)
@@ -72,19 +93,68 @@ export class BeehiveComponent implements OnInit, OnDestroy {
 
   doGiveItem()
   {
+    if(this.interacting || this.beehive.flowerPowerIsMaxed) return;
+
     FeedBeehiveDialog.open(this.matDialog).afterClosed().subscribe({
-      next: (data: MyBeehiveSerializationGroup|null|undefined) => {
+      next: (data: MyBeehiveResponse|null|undefined) => {
         if(data)
         {
-          this.beehive = data;
+          this.loadBeehive(data);
         }
       }
     })
   }
 
-  doHarvest()
+  // the bars under "Progress", in display order; the helper's bar only exists while a helper does
+  get bars(): BeehiveBarRow[]
   {
-    this.postInteraction('harvest');
+    const bars: BeehiveBarRow[] = [
+      { bar: 'misc', label: 'Worker bees', deployLabel: 'Worker bees', percent: this.beehive.miscPercent, growing: true },
+      { bar: 'honeycomb', label: 'Hard-worker bees', deployLabel: 'Hard-worker bees', percent: this.beehive.honeycombPercent, growing: true },
+      { bar: 'royalJelly', label: 'Royalty bees', deployLabel: 'Royalty bees', percent: this.beehive.royalJellyPercent, growing: this.beehive.isWorking },
+    ];
+
+    if(this.beehive.helper)
+      bars.push({ bar: 'helper', label: 'Helper pet', deployLabel: this.beehive.helper.name, percent: this.beehive.helperPercent, growing: true });
+
+    return bars;
+  }
+
+  get deployingLabel(): string
+  {
+    return this.bars.find(b => b.bar === this.deploying)?.deployLabel ?? '';
+  }
+
+  // a second click on the same bar's button cancels
+  doToggleDeploy(bar: BeehiveBar)
+  {
+    if(this.interacting) return;
+
+    this.deploying = this.deploying === bar ? null : bar;
+  }
+
+  doDeployOnSpace(space: number)
+  {
+    if(!this.deploying) return;
+
+    const bar = this.deploying;
+
+    this.deploying = null;
+
+    this.postInteraction('harvest', { bar: bar, space: space });
+  }
+
+  doReroll()
+  {
+    if(this.interacting || this.deploying) return;
+
+    AreYouSureDialog.open(this.matDialog, 'Re-roll the Beehive\'s Spaces?', 'Consume 1 Gold Compass and re-roll all 19 spaces? Harvested spaces stay harvested.', 'Spin the needle!', 'Never mind')
+      .afterClosed()
+      .subscribe(yes => {
+        if(yes)
+          this.postInteraction('reroll');
+      })
+    ;
   }
 
   private postInteraction(action: string, data: any = {})
@@ -93,10 +163,10 @@ export class BeehiveComponent implements OnInit, OnDestroy {
 
     this.interacting = true;
 
-    this.api.post<MyBeehiveSerializationGroup>('/beehive/' + action, data).subscribe({
-      next: (r: ApiResponseModel<MyBeehiveSerializationGroup>) => {
+    this.api.post<MyBeehiveResponse>('/beehive/' + action, data).subscribe({
+      next: (r: ApiResponseModel<MyBeehiveResponse>) => {
         this.dialog = null;
-        this.beehive = r.data;
+        this.loadBeehive(r.data);
         this.interacting = false;
       },
       error: () => {
@@ -118,9 +188,9 @@ export class BeehiveComponent implements OnInit, OnDestroy {
           const everHadAHelper = this.user.canAssignHelpers;
 
           this.api.post('/beehive/assignHelper/' + pet.id).subscribe({
-            next: (r: ApiResponseModel<MyBeehiveSerializationGroup>) => {
+            next: (r: ApiResponseModel<MyBeehiveResponse>) => {
               this.dialog = null;
-              this.beehive = r.data;
+              this.loadBeehive(r.data);
               this.interacting = false;
 
               if(this.userDataService.user.value.canAssignHelpers && !everHadAHelper)
@@ -150,6 +220,8 @@ export class BeehiveComponent implements OnInit, OnDestroy {
     this.api.post('/pet/' + this.beehive.helper.id + '/stopHelping').subscribe({
       next: _ => {
         this.beehive.helper = null;
+        this.beehive.helperPercent = 0;
+        if(this.deploying === 'helper') this.deploying = null;
         this.interacting = false;
       },
       error: _ => {

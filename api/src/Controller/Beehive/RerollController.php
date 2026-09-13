@@ -10,35 +10,52 @@ declare(strict_types=1);
  *
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
-
 namespace App\Controller\Beehive;
 
-use App\Entity\Pet;
 use App\Enum\SerializationGroupEnum;
+use App\Enum\UnlockableFeatureEnum;
+use App\Exceptions\PSPInvalidOperationException;
+use App\Exceptions\PSPNotUnlockedException;
+use App\Functions\InventoryHelpers;
+use App\Functions\PlayerLogFactory;
 use App\Service\BeehiveService;
-use App\Service\PetAssistantService;
 use App\Service\ResponseService;
+use App\Service\UserAccessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use App\Service\UserAccessor;
 
 #[Route("/beehive")]
-class AssignHelperController
+class RerollController
 {
-    #[Route("/assignHelper/{pet}", methods: ["POST"])]
+    #[Route("/reroll", methods: ["POST"])]
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
-    public function assignHelper(
-        Pet $pet, ResponseService $responseService, EntityManagerInterface $em,
-        UserAccessor $userAccessor, BeehiveService $beehiveService
+    public function reroll(
+        ResponseService $responseService, EntityManagerInterface $em, BeehiveService $beehiveService,
+        UserAccessor $userAccessor
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
 
-        PetAssistantService::helpBeehive($user, $pet);
+        if(!$user->hasUnlockedFeature(UnlockableFeatureEnum::Beehive) || !$user->getBeehive())
+            throw new PSPNotUnlockedException('Beehive');
+
+        $compass = InventoryHelpers::findOneToConsume($em, $user, 'Gold Compass');
+
+        if(!$compass)
+            throw new PSPInvalidOperationException('You need a Gold Compass (at home, or in your Basement) to do that.');
+
+        $em->remove($compass);
+        $responseService->setReloadInventory();
+
+        $beehiveService->rerollSpaceTypes($user->getBeehive());
+
+        PlayerLogFactory::create($em, $user, 'You used a Gold Compass on your Beehive; the bees rearranged their spaces.', [ 'Beehive' ]);
 
         $em->flush();
+
+        $responseService->addFlashMessage('The needle spins... and the bees rearrange themselves!');
 
         return $responseService->success($beehiveService->getResponseData($user), [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
     }

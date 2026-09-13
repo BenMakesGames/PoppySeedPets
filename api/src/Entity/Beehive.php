@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Model\BeehiveSpace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -53,6 +54,13 @@ class Beehive
     #[ORM\Column(type: 'float')]
     private float $miscProgress = 0;
 
+    #[ORM\Column(type: 'float')]
+    private float $helperProgress = 0;
+
+    /** @var array{type: string, harvested: bool}[] */
+    #[ORM\Column(type: 'json')]
+    private array $spaces;
+
     #[Groups(["helperPet"])]
     #[ORM\OneToOne(targetEntity: Pet::class, cascade: ['persist', 'remove'])]
     private ?Pet $helper = null;
@@ -63,10 +71,14 @@ class Beehive
     /** @phpstan-ignore property.unused */
     private int $version;
 
-    public function __construct(User $user, string $name)
+    /**
+     * @param BeehiveSpace[] $spaces
+     */
+    public function __construct(User $user, string $name, array $spaces)
     {
         $this->user = $user;
         $this->queenName = $name;
+        $this->setSpaces($spaces);
     }
 
     public function getId(): int
@@ -197,6 +209,72 @@ class Beehive
     public function getMiscPercent(): float
     {
         return min(1, round($this->miscProgress / 2000, 2));
+    }
+
+    public function setHelperProgress(int $helperProgress): self
+    {
+        $this->helperProgress = $helperProgress;
+
+        return $this;
+    }
+
+    #[Groups(["myBeehive"])]
+    public function getHelperPercent(): float
+    {
+        return min(1, round($this->helperProgress / 2000, 2));
+    }
+
+    /**
+     * @return BeehiveSpace[]
+     */
+    #[Groups(["myBeehive"])]
+    public function getSpaces(): array
+    {
+        return array_map(fn(array $space) => BeehiveSpace::fromArray($space), $this->spaces);
+    }
+
+    /**
+     * @param BeehiveSpace[] $spaces
+     */
+    public function setSpaces(array $spaces): self
+    {
+        if(count($spaces) !== BeehiveSpace::Count)
+            throw new \InvalidArgumentException('A beehive must have exactly ' . BeehiveSpace::Count . ' spaces.');
+
+        $this->spaces = array_map(fn(BeehiveSpace $space) => $space->toArray(), array_values($spaces));
+
+        return $this;
+    }
+
+    public function getSpace(int $index): ?BeehiveSpace
+    {
+        if(!array_key_exists($index, $this->spaces))
+            return null;
+
+        return BeehiveSpace::fromArray($this->spaces[$index]);
+    }
+
+    public function markSpaceHarvested(int $index): self
+    {
+        if(!array_key_exists($index, $this->spaces))
+            throw new \InvalidArgumentException('There is no space #' . $index . '.');
+
+        $this->spaces[$index]['harvested'] = true;
+
+        return $this;
+    }
+
+    public function resetHarvestedSpaces(): self
+    {
+        foreach($this->spaces as $i => $space)
+            $this->spaces[$i]['harvested'] = false;
+
+        return $this;
+    }
+
+    public function countUnharvestedSpaces(): int
+    {
+        return count(array_filter($this->spaces, fn(array $space) => !$space['harvested']));
     }
 
     public function getHelper(): ?Pet

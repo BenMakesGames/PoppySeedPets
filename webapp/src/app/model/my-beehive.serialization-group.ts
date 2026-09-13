@@ -9,6 +9,16 @@
  */
 import { HelperPetSerializationGroup } from "./helper-pet.serialization-group";
 
+export type BeehiveSpaceType = 'jungle'|'beach'|'grassy'|'rocky';
+
+export type BeehiveBar = 'royalJelly'|'honeycomb'|'misc'|'helper';
+
+export interface BeehiveSpace
+{
+  type: BeehiveSpaceType;
+  harvested: boolean;
+}
+
 export interface MyBeehiveSerializationGroup
 {
   workers: number;
@@ -19,5 +29,13 @@ export interface MyBeehiveSerializationGroup
   royalJellyPercent: number;
   honeycombPercent: number;
   miscPercent: number;
+  helperPercent: number;
   helper: HelperPetSerializationGroup|null;
+  spaces: BeehiveSpace[];
+}
+
+export interface MyBeehiveResponse
+{
+  beehive: MyBeehiveSerializationGroup;
+  canReroll: boolean;
 }

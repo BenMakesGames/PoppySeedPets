@@ -1,0 +1,33 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<div class="hex-grid" [class.selectable]="selectable()">
+  @for(row of rows(); track $index)
+  {
+    <div class="hex-row">
+      @for(entry of row; track entry.index)
+      {
+        <button
+          type="button"
+          [class]="'hex ' + entry.space.type"
+          [class.harvested]="entry.space.harvested"
+          [disabled]="!selectable() || entry.space.harvested"
+          [title]="entry.space.type + (entry.space.harvested ? ' (picked clean)' : '')"
+          (click)="doChoose(entry.index)"
+        >
+          <i [class]="'fa-solid ' + icon(entry.space.type)"></i>
+          @if(entry.space.harvested)
+          {
+            <i class="fa-solid fa-check spent"></i>
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

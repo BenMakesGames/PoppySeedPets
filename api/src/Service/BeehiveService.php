@@ -16,14 +16,20 @@ namespace App\Service;
 use App\Entity\Beehive;
 use App\Entity\Inventory;
 use App\Entity\User;
+use App\Enum\BeehiveSpaceTypeEnum;
+use App\Enum\HolidayEnum;
 use App\Enum\LocationEnum;
+use App\Exceptions\PSPNotUnlockedException;
+use App\Functions\InventoryHelpers;
+use App\Model\BeehiveSpace;
 use Doctrine\ORM\EntityManagerInterface;
 
 class BeehiveService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly IRandom $rng
+        private readonly IRandom $rng,
+        private readonly Clock $clock,
     )
     {
     }
@@ -36,11 +42,107 @@ class BeehiveService
         $beehive = new Beehive(
             user: $user,
             name: $this->rng->rngNextFromArray(self::QueenNames),
+            spaces: $this->rollSpaces(),
         );
 
         $this->em->persist($beehive);
 
         $user->setBeehive($beehive);
+    }
+
+    /**
+     * What every beehive endpoint returns: the hive, plus whether the player can afford to re-roll its spaces.
+     *
+     * @return array{beehive: Beehive, canReroll: bool}
+     */
+    public function getResponseData(User $user): array
+    {
+        return [
+            'beehive' => $user->getBeehive() ?? throw new PSPNotUnlockedException('Beehive'),
+            'canReroll' => InventoryHelpers::findOneToConsume($this->em, $user, 'Gold Compass') !== null,
+        ];
+    }
+
+    /**
+     * Re-rolls every space's terrain type; harvested flags are untouched.
+     */
+    public function rerollSpaceTypes(Beehive $beehive): void
+    {
+        $beehive->setSpaces(array_map(
+            fn(BeehiveSpace $space) => new BeehiveSpace(BeehiveSpaceTypeEnum::roll($this->rng), $space->harvested),
+            $beehive->getSpaces()
+        ));
+    }
+
+    /**
+     * 19 fresh, unharvested spaces, each an independent weighted draw of terrain type.
+     *
+     * @return BeehiveSpace[]
+     */
+    public function rollSpaces(): array
+    {
+        $spaces = [];
+
+        for($i = 0; $i < BeehiveSpace::Count; $i++)
+            $spaces[] = new BeehiveSpace(BeehiveSpaceTypeEnum::roll($this->rng));
+
+        return $spaces;
+    }
+
+    /**
+     * @return string[] item names; duplicates are extra weight
+     */
+    public function getGoodsForTerrain(BeehiveSpaceTypeEnum $type): array
+    {
+        return match($type)
+        {
+            BeehiveSpaceTypeEnum::Jungle => $this->getJungleGoods(),
+            BeehiveSpaceTypeEnum::Beach => $this->getBeachGoods(),
+            BeehiveSpaceTypeEnum::Grassy => $this->getGrassyGoods(),
+            BeehiveSpaceTypeEnum::Rocky => $this->getRockyGoods(),
+        };
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getJungleGoods(): array
+    {
+        $goods = [ 'Sugar', 'Glue', 'Crooked Stick', 'Honeycomb', 'Antenna', 'Cacao Fruit', 'Chanterelle' ];
+
+        if(WeatherService::getWeather($this->clock->now)->isHoliday(HolidayEnum::ApricotFestival))
+            $goods[] = 'Apricot';
+
+        return $goods;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getBeachGoods(): array
+    {
+        return [ 'Sand Dollar', 'Feathers', 'Seaweed', 'Crooked Stick', 'Scales' ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getGrassyGoods(): array
+    {
+        $goods = [ 'Sugar', 'Sweet Beet', 'Honeycomb', 'Fluff', 'Moth', 'Rosemary' ];
+
+        if(WeatherService::getWeather($this->clock->now)->isHoliday(HolidayEnum::SaintPatricks))
+            $goods[] = '1-leaf Clover';
+
+        return $goods;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getRockyGoods(): array
+    {
+        return [ 'Silica Grounds', 'Crooked Stick', 'Rock Candy' ];
     }
 
     /**

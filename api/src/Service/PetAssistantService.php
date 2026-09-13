@@ -144,7 +144,12 @@ class PetAssistantService
         if($pet->getLocation() == PetLocationEnum::BEEHIVE)
         {
             if($user->getBeehive())
-                $user->getBeehive()->setHelper(null);
+            {
+                $user->getBeehive()
+                    ->setHelper(null)
+                    ->setHelperProgress(0)
+                ;
+            }
         }
         else if($pet->getLocation() == PetLocationEnum::GREENHOUSE)
         {
