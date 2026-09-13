@@ -8,83 +8,115 @@
   ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
   -->
 <main>
-  <h2>Beehive<app-help-link link="beehive" /></h2>
   @if(loading)
   {
-    <p><app-loading-throbber [randomText]="true"/></p>
+    <div class="hive-interior">
+      <h2>Beehive<app-help-link link="beehive" /></h2>
+      <p><app-loading-throbber [randomText]="true"/></p>
+    </div>
   }
   @else
   {
-    <app-npc-dialog npc="bee-queen" [name]="'Queen ' + beehive.queenName">
-      @if(dialog)
-      {
-        <p>{{ dialog }}</p>
-      }
-      @else if(beehive.isWorking)
-      {
-        <p>Bzzbzz the colony is working hard thanks to the food you brought us. Thank you bzzbzz.</p>
-        @if(beehive.workers >= 2000 && !user.canAssignHelpers)
+    <div class="hive-interior">
+      <h2>Beehive<app-help-link link="beehive" /></h2>
+      <app-npc-dialog npc="bee-queen" [name]="'Queen ' + beehive.queenName">
+        @if(dialog)
         {
-          <p>Also, the colony has grown, thanks to your help. We've been thinking about branching out. Do you have any ideas?</p>
+          <p>{{ dialog }}</p>
         }
-      }
-      @else
-      {
-        <p>Bzzbzz the colony is always in need of more flowers, fruit, and planty foods. Will you help us?</p>
-        @if(beehive.workers >= 2000 && !user.canAssignHelpers)
+        @else if(beehive.isWorking)
         {
-          <p>Also, the colony has grown, thanks to your help bzzbzz. We've been thinking about branching out. Do you have any ideas?</p>
+          <p>Bzzbzz the colony is working hard thanks to the food you brought us. Thank you bzzbzz.</p>
+          @if(beehive.workers >= 2000 && !user.canAssignHelpers)
+          {
+            <p>Also, the colony has grown, thanks to your help. We've been thinking about branching out. Do you have any ideas?</p>
+          }
         }
-      }
-    </app-npc-dialog>
-    <ul class="dialog-choices" [class.disabled]="interacting">
-      @if(!beehive.flowerPowerIsMaxed)
-      {
-        <li><button type="button" (click)="doGiveItem()">"I have some food for the hive."</button></li>
-      }
+        @else
+        {
+          <p>Bzzbzz the colony is always in need of more flowers, fruit, and planty foods. Will you help us?</p>
+          @if(beehive.workers >= 2000 && !user.canAssignHelpers)
+          {
+            <p>Also, the colony has grown, thanks to your help bzzbzz. We've been thinking about branching out. Do you have any ideas?</p>
+          }
+        }
+      </app-npc-dialog>
       @if(beehive.workers >= 2000 && !user.canAssignHelpers)
       {
-        <li><button type="button" (click)="doAssignHelper()">"Branching out? Maybe one of my pets can help you..."</button></li>
+        <ul class="dialog-choices" [class.disabled]="interacting">
+          <li><button type="button" (click)="doAssignHelper()">"Branching out? Maybe one of my pets can help you..."</button></li>
+        </ul>
       }
-    </ul>
-    @if(user.canAssignHelpers)
-    {
-      <hr />
-    }
-    <div class="bee-deets">
-      <div>
-        <h3>Colony</h3>
-        <app-progress-bar label="Flower Power" [percent]="beehive.flowerPowerPercent" />
-        <div><i class="fa-regular fa-bee"></i> {{ beehive.workers|number }} workers</div>
+      <div class="bee-inside">
+        <div class="colony">
+          <h3>Colony</h3>
+          <div class="bar-with-button">
+            <app-progress-bar label="Flower Power" [percent]="beehive.flowerPowerPercent" />
+            <div class="buttons" [class.disabled]="interacting"><button type="button" (click)="doGiveItem()" [class.disabled]="beehive.flowerPowerIsMaxed">Feed</button></div>
+          </div>
+          <div><i class="fa-regular fa-bee"></i> {{ beehive.workers|number }} workers</div>
+        </div>
+        @if(user.canAssignHelpers)
+        {
+          <div class="helper">
+            <h3>Helper</h3>
+            @if(beehive.helper)
+            {
+              <div class="helper-deets">
+                <div><button type="button" (click)="doViewHelper()" class="link-text"><app-pet-appearance [pet]="beehive.helper" /></button></div>
+                <div>
+                  <p><span style="font-weight:bold;">{{ beehive.helper.name }}</span> is helping the bees.</p>
+                  <div class="buttons" [class.disabled]="interacting">
+                    <button type="button" (click)="doRecallHelper()">Take Home</button>
+                  </div>
+                </div>
+              </div>
+            }
+            @else
+            {
+              <p>No one is helping the bees out right now. (A pet skilled at hunting and/or gathering would really help here!)</p>
+              <div class="buttons" [class.disabled]="interacting">
+                <button type="button" (click)="doAssignHelper()">Assign a Helper</button>
+              </div>
+            }
+          </div>
+        }
       </div>
-      <div>
+    </div>
+    <div class="bee-outside">
+      <div class="progress">
         <h3>Progress</h3>
-        <app-progress-bar [label]="'Royal Jelly ' + (beehive.royalJellyPercent >= 1 ? '(ready!)' : (beehive.isWorking ? '(producing)' : '(paused)'))" [percent]="beehive.royalJellyPercent" />
-        <app-progress-bar [label]="'Honeycomb ' + (beehive.honeycombPercent >= 1 ? '(ready!)' : (beehive.isWorking ? '(producing)' : '(producing slowly)'))" [percent]="beehive.honeycombPercent" />
-        <app-progress-bar [label]="'Normal Bee Stuff ' + (beehive.miscPercent >= 1 ? '(ready!)' : (beehive.isWorking ? '(producing quickly)' : '(producing)'))" [percent]="beehive.miscPercent" />
-        <div class="buttons" [class.disabled]="interacting"><button type="button" (click)="doHarvest()" [class.disabled]="beehive.royalJellyPercent < 1 && beehive.honeycombPercent < 1 && beehive.miscPercent < 1">Harvest</button></div>
+        @for(bar of bars; track bar.bar)
+        {
+          <div class="bar-with-button">
+            <app-progress-bar [label]="bar.label" [percent]="bar.percent" />
+            @if(bar.percent >= 1)
+            {
+              <div class="buttons" [class.disabled]="interacting"><button type="button" (click)="doToggleDeploy(bar.bar)" [class.wire]="deploying === bar.bar">{{ deploying === bar.bar ? 'Cancel' : 'Harvest' }}</button></div>
+            }
+            @else
+            {
+              <span class="bar-status">{{ bar.growing ? 'Building...' : 'Stalled' }}</span>
+            }
+          </div>
+        }
       </div>
-      @if(user.canAssignHelpers)
+      <div class="pointer" [class.deploying]="!!deploying" aria-hidden="true"></div>
+      <div class="terrain">
+        @if(deploying)
+        {
+          <p class="sr-only">Choose a space to deploy the {{ deployingLabel }} on.</p>
+        }
+        <app-beehive-spaces [spaces]="beehive.spaces" [selectable]="!!deploying && !interacting" (spaceChosen)="doDeployOnSpace($event)" />
+      </div>
+      @if(canReroll)
       {
-        <div>
-          <h3>Helper</h3>
-          @if(beehive.helper)
-          {
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 1em; margin-bottom: 1em;">
-              <div><button type="button" (click)="doViewHelper()" class="link-text"><app-pet-appearance [pet]="beehive.helper" /></button></div>
-              <div><span style="font-weight:bold;">{{ beehive.helper.name }}</span> is helping the bees hunt &amp; gather not-so-normal bee stuff.</div>
-            </div>
-            <div class="buttons" [class.disabled]="interacting">
-              <button type="button" (click)="doRecallHelper()">Take Home</button>
-            </div>
-          }
-          @else
-          {
-            <p>No one is helping the bees out right now. (A pet skilled at hunting and/or gathering would really help here!)</p>
-            <div class="buttons" [class.disabled]="interacting">
-              <button type="button" (click)="doAssignHelper()">Assign a Helper</button>
-            </div>
-          }
+        <div class="compass" [class.disabled]="interacting || deploying">
+          <img src="/assets/images/items/tool/compass/navigation-gold.svg" alt="" aria-hidden="true" />
+          <div>
+            <p>Use a Gold Compass to find new land.</p>
+            <div class="buttons"><button type="button" (click)="doReroll()">Do it!</button></div>
+          </div>
         </div>
       }
     </div>

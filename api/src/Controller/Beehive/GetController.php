@@ -16,6 +16,7 @@ namespace App\Controller\Beehive;
 use App\Enum\SerializationGroupEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Exceptions\PSPNotUnlockedException;
+use App\Service\BeehiveService;
 use App\Service\ResponseService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,7 +29,7 @@ class GetController
     #[Route("", methods: ["GET"])]
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
     public function getBeehive(
-        ResponseService $responseService, UserAccessor $userAccessor
+        ResponseService $responseService, UserAccessor $userAccessor, BeehiveService $beehiveService
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
@@ -36,6 +37,6 @@ class GetController
         if(!$user->hasUnlockedFeature(UnlockableFeatureEnum::Beehive) || !$user->getBeehive())
             throw new PSPNotUnlockedException('Beehive');
 
-        return $responseService->success($user->getBeehive(), [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
+        return $responseService->success($beehiveService->getResponseData($user), [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
     }
 }

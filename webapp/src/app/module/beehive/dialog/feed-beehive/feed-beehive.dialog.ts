@@ -14,7 +14,7 @@ import {Subscription} from "rxjs";
 import { ThemeService } from "../../../shared/service/theme.service";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { ItemOtherPropertiesIcons } from "../../../../model/item-other-properties-icons";
-import { MyBeehiveSerializationGroup } from "../../../../model/my-beehive.serialization-group";
+import { MyBeehiveResponse } from "../../../../model/my-beehive.serialization-group";
 import { DialogTitleWithIconsComponent } from "../../../shared/component/dialog-title-with-icons/dialog-title-with-icons.component";
 import { LoadingThrobberComponent } from "../../../shared/component/loading-throbber/loading-throbber.component";
 import { InventoryItemComponent } from "../../../shared/component/inventory-item/inventory-item.component";
@@ -135,8 +135,8 @@ export class FeedBeehiveDialog implements OnDestroy {
       flowers: Object.keys(this.selected)
     };
 
-    this.api.post<MyBeehiveSerializationGroup>('/beehive/feed', data).subscribe({
-      next: (r: ApiResponseModel<MyBeehiveSerializationGroup>) => {
+    this.api.post<MyBeehiveResponse>('/beehive/feed', data).subscribe({
+      next: (r: ApiResponseModel<MyBeehiveResponse>) => {
         this.dialogRef.close(r.data);
       },
       error: () => {
