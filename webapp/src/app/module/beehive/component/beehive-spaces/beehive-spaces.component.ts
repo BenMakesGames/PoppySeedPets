@@ -31,9 +31,9 @@ export class BeehiveSpacesComponent {
   static readonly RowLengths = [ 3, 4, 5, 4, 3 ];
 
   static readonly Icons: Record<BeehiveSpaceType, string> = {
-    jungle: 'fa-tree',
-    beach: 'fa-umbrella-beach',
-    grassy: 'fa-seedling',
+    jungle: 'fa-tree-palm',
+    beach: 'fa-wave',
+    grassy: 'fa-flower-tulip',
     rocky: 'fa-mountain',
   };
 
