@@ -21,6 +21,7 @@ use App\Exceptions\PSPNotFoundException;
 use App\Functions\ArrayFunctions;
 use App\Functions\GrammarFunctions;
 use App\Functions\InventoryModifierFunctions;
+use App\Model\BulkSpicingPlan;
 use App\Service\CookingService;
 use App\Service\InventoryService;
 use App\Service\IRandom;
@@ -125,6 +126,72 @@ class CookAndCombineController
                 return $responseService->success($spiced, [ SerializationGroupEnum::MY_INVENTORY ]);
             }
         }
+
+        $bulkSpicingPlan = InventoryModifierFunctions::planBulkSpicing($inventory);
+
+        if($bulkSpicingPlan !== null)
+        {
+            foreach($bulkSpicingPlan->pairs as [$food, $spice])
+                InventoryModifierFunctions::spiceUp($em, $food, $spice);
+
+            $spicedFoodQuantities = [];
+            $appliedSpiceQuantities = [];
+            $spicedFoods = [];
+            $appliedSpices = [];
+
+            foreach($bulkSpicingPlan->pairs as [$food, $spice])
+            {
+                $foodName = $food->getItem()->getName();
+                $spiceName = $spice->getItem()->getName();
+
+                $spicedFoodQuantities[$foodName] = ($spicedFoodQuantities[$foodName] ?? 0) + 1;
+                $appliedSpiceQuantities[$spiceName] = ($appliedSpiceQuantities[$spiceName] ?? 0) + 1;
+                $spicedFoods[] = $food;
+                $appliedSpices[] = $spice;
+            }
+
+            if($bulkSpicingPlan->leftoverFoodCount > 0)
+            {
+                $unspicedFoodQuantities = [];
+
+                foreach($inventory as $item)
+                {
+                    if($item->getItem()->getFood() !== null && !in_array($item, $spicedFoods, true))
+                    {
+                        $foodName = $item->getItem()->getName();
+                        $unspicedFoodQuantities[$foodName] = ($unspicedFoodQuantities[$foodName] ?? 0) + 1;
+                    }
+                }
+
+                $responseService->addFlashMessage(ArrayFunctions::list_nice_quantities($spicedFoodQuantities) . ' are now seasoned: ' . ArrayFunctions::list_nice_quantities($appliedSpiceQuantities) . ' - but there wasn\'t enough for the last ' . ArrayFunctions::list_nice_quantities($unspicedFoodQuantities) . ' so they\'re plain for now.');
+            }
+            else if($bulkSpicingPlan->leftoverSpiceCount > 0)
+            {
+                $leftoverSpiceQuantities = [];
+
+                foreach($inventory as $item)
+                {
+                    if($item->getItem()->getSpice() !== null && !in_array($item, $appliedSpices, true))
+                    {
+                        $spiceName = $item->getItem()->getName();
+                        $leftoverSpiceQuantities[$spiceName] = ($leftoverSpiceQuantities[$spiceName] ?? 0) + 1;
+                    }
+                }
+
+                $responseService->addFlashMessage(ArrayFunctions::list_nice_quantities($spicedFoodQuantities) . ' are now seasoned: ' . ArrayFunctions::list_nice_quantities($appliedSpiceQuantities) . '! You have ' . ArrayFunctions::list_nice_quantities($leftoverSpiceQuantities) . ' leftover.');
+            }
+            else
+                $responseService->addFlashMessage(ArrayFunctions::list_nice_quantities($spicedFoodQuantities) . ' are now seasoned: ' . ArrayFunctions::list_nice_quantities($appliedSpiceQuantities) . '! Batch-prepping FTW!');
+
+            $em->flush();
+
+            $responseService->setReloadInventory();
+
+            return $responseService->success(array_map(fn(array $pair) => $pair[0], $bulkSpicingPlan->pairs), [ SerializationGroupEnum::MY_INVENTORY ]);
+        }
+
+        if(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory))
+            throw new PSPInvalidOperationException('Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.');
 
         $results = $cookingService->prepareRecipeByHand($user, $user, $inventory);
 
