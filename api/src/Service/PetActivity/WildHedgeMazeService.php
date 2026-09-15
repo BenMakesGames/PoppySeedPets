@@ -283,6 +283,9 @@ class WildHedgeMazeService
 
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 120), PetActivityStatEnum::GATHER, true);
 
+        foreach($loot as $itemName)
+            $this->inventoryService->petCollectsItem($itemName, $pet, $pet->getName() . ' found this in a Wild Hedgemaze.', $activityLog);
+
         return $activityLog;
     }
 
