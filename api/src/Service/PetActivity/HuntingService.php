@@ -719,7 +719,7 @@ class HuntingService implements IPetActivity
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . $defeatMethod . ' a Sand Castle, looting its ' . $loot . '!' . ($isLucky ? ' (Lucky~!)' : ''))
                 ->setIcon($gotShell ? 'items/animal/seashell-secret' : 'items/mineral/silca')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Location_Beach ]))
             ;
 
             if($isLucky)
@@ -1870,7 +1870,7 @@ class HuntingService implements IPetActivity
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' went out hunting, and encountered a Miniature Naner Crab! After stalking it for awhile, ' . ActivityHelpers::PetName($pet) . ' ate an entire claw off, slaying it! (Ah~! A true Gourmand!) Finally, they recovered ' . $prize->getNameWithArticle() . ' off of its legs, and brought it home.')
                 ->addInterestingness(PetActivityLogInterestingness::ActivityUsingMerit)
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Gourmand ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Hunting, PetActivityLogTagEnum::Eating, PetActivityLogTagEnum::Stealth, PetActivityLogTagEnum::Gourmand, PetActivityLogTagEnum::Location_Beach ]))
             ;
 
             $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' collected this from the remains of a Miniature Naner Crab.', $activityLog);
