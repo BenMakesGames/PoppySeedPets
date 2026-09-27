@@ -1,0 +1,115 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This file is part of the Poppy Seed Pets API.
+ *
+ * The Poppy Seed Pets API is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * The Poppy Seed Pets API is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Service\StarKindred;
+
+use App\Enum\StarKindredSkillEnum;
+use App\Enum\StarKindredThemeEnum;
+use App\Model\StarKindred\StarKindredAdventure;
+use App\Model\StarKindred\StarKindredEncounter;
+use App\Service\IRandom;
+use App\Service\Xoshiro;
+
+/**
+ * Generates the day's two ★Kindred adventures. The RNG is seeded by the date, so every player on the
+ * server gets the same two adventures, and nothing needs to be stored.
+ */
+final class StarKindredDailyAdventures
+{
+    public const int AdventuresPerDay = 2;
+    private const int EncountersPerAdventure = 3;
+
+    /**
+     * @return StarKindredAdventure[]
+     */
+    public static function forDate(\DateTimeImmutable $date): array
+    {
+        $rng = new Xoshiro(crc32('★Kindred ' . $date->format('Y-m-d')));
+
+        $adventures = [];
+        $usedThemes = [];
+        $usedSkills = [];
+
+        for($i = 0; $i < self::AdventuresPerDay; $i++)
+        {
+            $adventure = self::generate($rng, $i, $usedThemes, $usedSkills);
+
+            $adventures[] = $adventure;
+            $usedThemes[] = $adventure->theme;
+            $usedSkills = [ ...$usedSkills, ...$adventure->getSkillsTested() ];
+        }
+
+        return $adventures;
+    }
+
+    /**
+     * @param StarKindredThemeEnum[] $usedThemes
+     * @param StarKindredSkillEnum[] $usedSkills
+     */
+    private static function generate(IRandom $rng, int $index, array $usedThemes, array $usedSkills): StarKindredAdventure
+    {
+        $theme = $rng->rngNextFromArray(array_values(array_filter(
+            StarKindredThemeEnum::cases(),
+            fn(StarKindredThemeEnum $t) => !in_array($t, $usedThemes, true)
+        )));
+
+        // prefer an objective that tests something the other adventure(s) today don't
+        $freshSkills = array_values(array_filter(
+            StarKindredSkillEnum::cases(),
+            fn(StarKindredSkillEnum $s) => !in_array($s, $usedSkills, true)
+        ));
+
+        $objectiveSkill = $rng->rngNextFromArray(count($freshSkills) > 0 ? $freshSkills : StarKindredSkillEnum::cases());
+
+        $themeSkills = array_values(array_filter(
+            $theme->skills(),
+            fn(StarKindredSkillEnum $s) => $s !== $objectiveSkill
+        ));
+
+        $encounterSkills = [
+            ...$rng->rngNextSubsetFromArray($themeSkills, self::EncountersPerAdventure - 1),
+            $objectiveSkill, // the objective is always the climax
+        ];
+
+        $tokens = [
+            '{place}' => $rng->rngNextFromArray($theme->places()),
+            '{foe}' => $rng->rngNextFromArray($theme->foes()),
+            '{relic}' => $rng->rngNextFromArray(StarKindredEncounterText::Relics),
+            '{captive}' => $rng->rngNextFromArray(StarKindredEncounterText::Captives),
+        ];
+
+        $encounters = array_map(
+            function(StarKindredSkillEnum $skill) use($rng, $tokens) {
+                $text = $rng->rngNextFromArray(StarKindredEncounterText::encounters($skill));
+
+                return new StarKindredEncounter(
+                    $skill,
+                    strtr($text['title'], $tokens),
+                    strtr($text['success'], $tokens),
+                    strtr($text['failure'], $tokens),
+                );
+            },
+            $encounterSkills
+        );
+
+        $objective = StarKindredEncounterText::objective($objectiveSkill);
+
+        return new StarKindredAdventure(
+            $index,
+            $theme,
+            strtr($objective['title'], $tokens),
+            ucfirst(strtr($objective['summary'], $tokens)),
+            $encounters,
+        );
+    }
+}

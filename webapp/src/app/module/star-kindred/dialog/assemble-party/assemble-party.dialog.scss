@@ -1,0 +1,69 @@
+/*
+ * This file is part of the Poppy Seed Pets Webapp.
+ *
+ * The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+ */
+.difficulties {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-bottom: 1em;
+
+  > button {
+    flex: 1;
+    background-color: transparent;
+    border: 2px transparent solid;
+    color: rgb(var(--color-link-and-button));
+
+    &.checked {
+      border-color: rgb(var(--color-link-and-button));
+    }
+  }
+}
+
+.available {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+
+  button {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25em;
+    background: transparent;
+    color: var(--color-text-on-content-background);
+    border: 2px transparent solid;
+
+    &.checked {
+      border-color: rgb(var(--color-link-and-button));
+      background-color: rgb(var(--color-speech-bubble-background));
+    }
+  }
+}
+
+.character-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1em;
+  font-size: 85%;
+  opacity: 0.85;
+}
+
+.odds {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.risky {
+  color: rgb(var(--color-warning));
+  font-weight: bold;
+}

@@ -1,0 +1,44 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<div class="dialog">
+  <h4>Roll a New Character</h4>
+  <div class="dialog-body" [class.disabled]="rolling">
+    <p>Which pet will roll up a new ★Kindred character? (The dice decide everything else!)</p>
+    @if(!pets)
+    {
+      <app-loading-throbber />
+    }
+    @else if(pets.resultCount === 0)
+    {
+      <p><i>All of your pets already have ★Kindred characters!</i></p>
+    }
+    @else
+    {
+      @if(pets.pageCount > 1)
+      {
+        <app-paginator [pageCount]="pets.pageCount" [page]="pets.page" (pageChange)="doChangePage($event)" />
+      }
+      <ul class="pets">
+        @for(pet of pets.results; track pet.id)
+        {
+          <li>
+            <button type="button" (click)="doRoll(pet)">
+              <app-pet-appearance [pet]="pet" size="3em" />
+              <span>{{ pet.name }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+    <p class="buttons centered">
+      <button type="button" class="wire" (click)="doCancel()">Cancel</button>
+    </p>
+  </div>
+</div>

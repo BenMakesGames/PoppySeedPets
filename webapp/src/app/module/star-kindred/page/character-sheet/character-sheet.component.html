@@ -1,0 +1,101 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main>
+  <h2>
+    <a routerLink="/library">Library</a> » <a routerLink="/starKindred">★Kindred</a>
+    @if(character?.retiredOn)
+    {
+      » <a routerLink="/starKindred/retired">Retired Adventurers</a>
+    }
+    » Character Sheet
+  </h2>
+  @if(!character)
+  {
+    <app-loading-throbber />
+  }
+  @else
+  {
+    <div class="sheet">
+      <div class="header">
+        <app-character-card [character]="character" />
+        <dl>
+          @if(character.retiredOn)
+          {
+            <dt>Retired</dt><dd>{{ character.retiredOn|date:'mediumDate' }}</dd>
+          }
+          @else if(character.experienceToNextLevel !== null)
+          {
+            <dt>Experience</dt><dd>{{ character.experience }} / {{ character.experienceToNextLevel }}</dd>
+          }
+          @else
+          {
+            <dt>Experience</dt><dd>Max level! Ready to retire.</dd>
+          }
+          <dt>Adventures</dt><dd>{{ character.adventuresCompleted }} ({{ character.adventuresWon }} won)</dd>
+          <dt>Created</dt><dd>{{ character.createdOn|date:'mediumDate' }}</dd>
+        </dl>
+      </div>
+
+      @if(character.epilogue)
+      {
+        <blockquote class="epilogue">{{ character.epilogue }}</blockquote>
+      }
+
+      <div class="columns">
+        <section>
+          <h3>Stats</h3>
+          <table>
+            <tbody>
+              @for(stat of character.stats; track stat.name)
+              {
+                <tr>
+                  <th>
+                    {{ stat.name }}
+                    @if(stat.growth === 'primary')
+                    {
+                      <i class="fa-solid fa-angles-up" title="Primary stat: grows fastest as {{ character.class }}s level up" aria-label="primary stat"></i>
+                    }
+                    @else if(stat.growth === 'secondary')
+                    {
+                      <i class="fa-solid fa-angle-up" title="Secondary stat: grows quickly as {{ character.class }}s level up" aria-label="secondary stat"></i>
+                    }
+                  </th>
+                  <td>{{ stat.value }}</td>
+                  <td>({{ stat.modifier >= 0 ? '+' : '' }}{{ stat.modifier }})</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <h3>Skills</h3>
+          <table>
+            <tbody>
+              @for(skill of character.skills; track skill.name)
+              {
+                <tr [class.class-skill]="skill.isClassSkill">
+                  <th>
+                    {{ skill.name }}
+                    @if(skill.isClassSkill)
+                    {
+                      <i class="fa-solid fa-star" title="{{ character.class }} class skill" aria-label="class skill"></i>
+                    }
+                  </th>
+                  <td><small>{{ skill.stat }}</small></td>
+                  <td>{{ skill.value >= 0 ? '+' : '' }}{{ skill.value }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+  }
+</main>

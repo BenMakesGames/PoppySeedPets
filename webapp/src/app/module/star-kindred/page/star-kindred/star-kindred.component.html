@@ -1,0 +1,78 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main>
+  <h2><a routerLink="/library">Library</a> » ★Kindred <app-help-link link="starKindred" /></h2>
+  @if(!status)
+  {
+    <app-loading-throbber />
+  }
+  @else
+  {
+    <h3>Today's Adventures</h3>
+    @if(!status.canPlayToday)
+    {
+      <p class="played">Your pets have already played ★Kindred today. Come back tomorrow for new adventures!</p>
+    }
+    <div class="adventures">
+      @for(adventure of status.adventures; track adventure.index)
+      {
+        <div class="adventure">
+          <h4>{{ adventure.title }}</h4>
+          <markdown [data]="adventure.summary" />
+          <p class="skills">
+            <b>Tests:</b>
+            @for(skill of adventure.skillsTested; track skill)
+            {
+              <span class="skill">{{ skill }}</span>
+            }
+          </p>
+          @if(status.canPlayToday)
+          {
+            <div class="buttons">
+              <button type="button" (click)="doChooseParty(adventure)" [class.disabled]="!hasAdventurers">Choose Party</button>
+            </div>
+          }
+        </div>
+      }
+      @if(hasRetirees)
+      {
+        <div class="adventure retirement">
+          <h4>The Final Adventure</h4>
+          <p>Level {{ status.maxLevel }} adventurers have nothing left to prove. Send up to {{ status.maxPartySize }} of them on one last journey, and retire them into legend.</p>
+          @if(status.canPlayToday)
+          {
+            <div class="buttons">
+              <button type="button" (click)="doChooseParty(null)">Retire Adventurers</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <h3>Adventurers</h3>
+    @if(status.characters.length === 0)
+    {
+      <p>None of your pets have a ★Kindred character yet! Roll one up to start adventuring.</p>
+    }
+    @else
+    {
+      <ul class="characters">
+        @for(character of status.characters; track character.id)
+        {
+          <li><a [routerLink]="[ '/starKindred/character', character.id ]"><app-character-card [character]="character" /></a></li>
+        }
+      </ul>
+    }
+    <div class="buttons">
+      <button type="button" (click)="doRollCharacter()">Roll a New Character</button>
+      <a class="button wire" routerLink="/starKindred/retired">Book of Retired Adventurers</a>
+    </div>
+  }
+</main>
