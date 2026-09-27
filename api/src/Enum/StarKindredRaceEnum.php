@@ -18,7 +18,6 @@ enum StarKindredRaceEnum: string
     case Human = 'Human';
     case Elf = 'Elf';
     case Dwarf = 'Dwarf';
-    case Brownie = 'Brownie';
     case Gnome = 'Gnome';
     case Beastkin = 'Beastkin';
     case Goblin = 'Goblin';
@@ -44,6 +43,26 @@ enum StarKindredRaceEnum: string
     }
 
     /**
+     * Androgynous races don't roll a sex (which is only used to pick a name and portrait).
+     */
+    public function isAndrogynous(): bool
+    {
+        return match($this)
+        {
+            self::Beastkin, self::Dwarf, self::Nymph => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Used to build portrait filenames, ex: "high-fae".
+     */
+    public function slug(): string
+    {
+        return str_replace(' ', '-', strtolower($this->value));
+    }
+
+    /**
      * Applied once, when the character is rolled.
      * @return array<value-of<StarKindredStatEnum>, int>
      */
@@ -54,7 +73,6 @@ enum StarKindredRaceEnum: string
             self::Human => [ 'Strength' => 1, 'Dexterity' => 1, 'Constitution' => 1, 'Intelligence' => 1, 'Wisdom' => 1, 'Charisma' => 1 ],
             self::Elf => [ 'Dexterity' => 2, 'Wisdom' => 1, 'Constitution' => -1 ],
             self::Dwarf => [ 'Constitution' => 2, 'Strength' => 1, 'Charisma' => -1 ],
-            self::Brownie => [ 'Dexterity' => 2, 'Charisma' => 1, 'Strength' => -1 ],
             self::Gnome => [ 'Intelligence' => 2, 'Dexterity' => 1, 'Strength' => -1 ],
             self::Beastkin => [ 'Strength' => 2, 'Constitution' => 1, 'Intelligence' => -1 ],
             self::Goblin => [ 'Dexterity' => 2, 'Intelligence' => 1, 'Wisdom' => -1 ],

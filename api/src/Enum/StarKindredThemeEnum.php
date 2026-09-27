@@ -118,7 +118,7 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * Always awarded on victory.
+     * Usually the Veteran reward (as a stack of 2).
      */
     public function prize(): string
     {
@@ -140,7 +140,7 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * Rolled once per loot drop.
+     * The Novice reward is one of these.
      * @return string[]
      */
     public function lootTable(): array
@@ -167,7 +167,7 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * A chance at one of these on victory, depending on difficulty.
+     * The Demigod reward is one of these (and the Hero reward, too, if the setting has no hat styling).
      * @return string[]
      */
     public function treasures(): array
@@ -194,7 +194,7 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * The hat styling a victory here may inspire.
+     * If set, this is always the Hero reward.
      */
     public function aura(): ?string
     {

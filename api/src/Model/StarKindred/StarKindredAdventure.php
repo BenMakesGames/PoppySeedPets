@@ -13,23 +13,29 @@ declare(strict_types=1);
 
 namespace App\Model\StarKindred;
 
+use App\Enum\StarKindredDifficultyEnum;
 use App\Enum\StarKindredSkillEnum;
 use App\Enum\StarKindredThemeEnum;
 
 /**
  * One of the day's procedurally-generated adventures. Never stored; regenerated from the date on demand.
+ *
+ * $id is a hash of the adventure's content, so if a deploy changes what today's adventures are, a
+ * player who picked one before the deploy gets a "not found" instead of a different adventure.
  */
 final readonly class StarKindredAdventure
 {
     /**
      * @param StarKindredEncounter[] $encounters
+     * @param StarKindredReward[] $rewards One per difficulty, in difficulty order
      */
     public function __construct(
-        public int $index,
+        public string $id,
         public StarKindredThemeEnum $theme,
         public string $title,
         public string $summary,
         public array $encounters,
+        public array $rewards,
     )
     {
     }
@@ -48,5 +54,16 @@ final readonly class StarKindredAdventure
         }
 
         return $skills;
+    }
+
+    /**
+     * @return StarKindredReward[]
+     */
+    public function getRewardsFor(StarKindredDifficultyEnum $difficulty): array
+    {
+        return array_values(array_filter(
+            $this->rewards,
+            fn(StarKindredReward $r) => $r->difficulty->tier() <= $difficulty->tier()
+        ));
     }
 }

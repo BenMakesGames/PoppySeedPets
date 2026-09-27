@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Service;
 
+use App\Enum\StarKindredDifficultyEnum;
+use App\Model\StarKindred\StarKindredAdventure;
+use App\Model\StarKindred\StarKindredReward;
 use App\Service\StarKindred\StarKindredDailyAdventures;
 use PHPUnit\Framework\TestCase;
 
@@ -26,6 +29,7 @@ class StarKindredDailyAdventuresTest extends TestCase
     public function testDailyAdventuresAreDeterministicAndDistinct(): void
     {
         $day = new \DateTimeImmutable('2026-01-01 00:00:00');
+        $previousIds = [];
 
         for($i = 0; $i < 400; $i++)
         {
@@ -44,6 +48,38 @@ class StarKindredDailyAdventuresTest extends TestCase
                 'The day\'s adventures must have objectives testing different skills.'
             );
             self::assertStringNotContainsString('{', $a->title . $a->summary . $b->title . $b->summary, 'Unreplaced token!');
+            self::assertNotSame($a->id, $b->id, 'The day\'s adventures must have different ids.');
+            self::assertNotContains($a->id, $previousIds, 'Adventure ids must not repeat across days.');
+
+            $previousIds[] = $a->id;
+            $previousIds[] = $b->id;
+
+            foreach($morning as $adventure)
+                self::assertRewardsAreWellFormed($adventure);
         }
+    }
+
+    private static function assertRewardsAreWellFormed(StarKindredAdventure $adventure): void
+    {
+        self::assertSame(
+            array_map(fn(StarKindredDifficultyEnum $d) => $d->value, StarKindredDifficultyEnum::cases()),
+            array_map(fn(StarKindredReward $r) => $r->difficulty->value, $adventure->rewards),
+            'There must be exactly one reward per difficulty, in difficulty order.'
+        );
+
+        foreach($adventure->rewards as $reward)
+        {
+            self::assertTrue(($reward->item === null) !== ($reward->aura === null), 'A reward is an item OR a hat styling.');
+
+            if($reward->aura)
+                self::assertSame(StarKindredDifficultyEnum::Hero, $reward->difficulty, 'Hat stylings are always the Hero reward.');
+            else
+                self::assertGreaterThan(0, $reward->quantity);
+        }
+
+        if($adventure->theme->aura())
+            self::assertSame($adventure->theme->aura(), $adventure->rewards[StarKindredDifficultyEnum::Hero->tier()]->aura);
+
+        self::assertCount(3, $adventure->getRewardsFor(StarKindredDifficultyEnum::Hero), 'Rewards are cumulative.');
     }
 }

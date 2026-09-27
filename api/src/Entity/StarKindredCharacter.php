@@ -50,6 +50,12 @@ class StarKindredCharacter
     #[ORM\Column(type: 'string', length: 20, enumType: StarKindredClassEnum::class)]
     private StarKindredClassEnum $characterClass;
 
+    /**
+     * @see \App\Service\StarKindred\StarKindredPortraits
+     */
+    #[ORM\Column(type: 'string', length: 30)]
+    private string $portrait;
+
     #[ORM\Column(type: 'integer')]
     private int $level = 1;
 
@@ -97,7 +103,7 @@ class StarKindredCharacter
      * @param array<value-of<StarKindredStatEnum>, int> $baseStats
      */
     public function __construct(
-        Pet $pet, string $name, StarKindredRaceEnum $race, StarKindredClassEnum $characterClass,
+        Pet $pet, string $name, StarKindredRaceEnum $race, StarKindredClassEnum $characterClass, string $portrait,
         array $baseStats, \DateTimeImmutable $createdOn
     )
     {
@@ -105,6 +111,7 @@ class StarKindredCharacter
         $this->name = $name;
         $this->race = $race;
         $this->characterClass = $characterClass;
+        $this->portrait = $portrait;
         $this->strength = $baseStats[StarKindredStatEnum::Strength->value];
         $this->dexterity = $baseStats[StarKindredStatEnum::Dexterity->value];
         $this->constitution = $baseStats[StarKindredStatEnum::Constitution->value];
@@ -137,6 +144,11 @@ class StarKindredCharacter
     public function getCharacterClass(): StarKindredClassEnum
     {
         return $this->characterClass;
+    }
+
+    public function getPortrait(): string
+    {
+        return $this->portrait;
     }
 
     public function getLevel(): int

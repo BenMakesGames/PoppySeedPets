@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace App\Service\StarKindred;
 
+use App\Enum\StarKindredDifficultyEnum;
 use App\Enum\StarKindredSkillEnum;
 use App\Enum\StarKindredThemeEnum;
 use App\Model\StarKindred\StarKindredAdventure;
 use App\Model\StarKindred\StarKindredEncounter;
+use App\Model\StarKindred\StarKindredReward;
 use App\Service\IRandom;
 use App\Service\Xoshiro;
 
@@ -28,6 +30,14 @@ final class StarKindredDailyAdventures
 {
     public const int AdventuresPerDay = 2;
     private const int EncountersPerAdventure = 3;
+
+    /**
+     * Null if no adventure with that id is available on that date.
+     */
+    public static function find(\DateTimeImmutable $date, string $id): ?StarKindredAdventure
+    {
+        return array_find(self::forDate($date), fn(StarKindredAdventure $a) => $a->id === $id);
+    }
 
     /**
      * @return StarKindredAdventure[]
@@ -42,7 +52,7 @@ final class StarKindredDailyAdventures
 
         for($i = 0; $i < self::AdventuresPerDay; $i++)
         {
-            $adventure = self::generate($rng, $i, $usedThemes, $usedSkills);
+            $adventure = self::generate($rng, $date, $i, $usedThemes, $usedSkills);
 
             $adventures[] = $adventure;
             $usedThemes[] = $adventure->theme;
@@ -56,7 +66,7 @@ final class StarKindredDailyAdventures
      * @param StarKindredThemeEnum[] $usedThemes
      * @param StarKindredSkillEnum[] $usedSkills
      */
-    private static function generate(IRandom $rng, int $index, array $usedThemes, array $usedSkills): StarKindredAdventure
+    private static function generate(IRandom $rng, \DateTimeImmutable $date, int $index, array $usedThemes, array $usedSkills): StarKindredAdventure
     {
         $theme = $rng->rngNextFromArray(array_values(array_filter(
             StarKindredThemeEnum::cases(),
@@ -103,13 +113,44 @@ final class StarKindredDailyAdventures
         );
 
         $objective = StarKindredEncounterText::objective($objectiveSkill);
+        $title = strtr($objective['title'], $tokens);
+        $summary = ucfirst(strtr($objective['summary'], $tokens));
+        $rewards = self::generateRewards($rng, $theme);
 
-        return new StarKindredAdventure(
-            $index,
-            $theme,
-            strtr($objective['title'], $tokens),
-            ucfirst(strtr($objective['summary'], $tokens)),
-            $encounters,
-        );
+        // hash everything a player sees, so ANY change to the adventure (ex: from a deploy) changes its id
+        $id = substr(hash('sha256', json_encode([
+            $date->format('Y-m-d'), $index, $theme->value, $title, $summary,
+            array_map(fn(StarKindredEncounter $e) => [ $e->skill->value, $e->title, $e->success, $e->failure ], $encounters),
+            array_map(fn(StarKindredReward $r) => [ $r->difficulty->value, $r->item, $r->quantity, $r->aura ], $rewards),
+        ], JSON_THROW_ON_ERROR)), 0, 16);
+
+        return new StarKindredAdventure($id, $theme, $title, $summary, $encounters, $rewards);
+    }
+
+    /**
+     * Four tiers of increasing value, awarded cumulatively by difficulty. A setting's hat styling is
+     * always the Hero reward, so Demigod always offers something a player can collect again.
+     *
+     * @return StarKindredReward[]
+     */
+    private static function generateRewards(IRandom $rng, StarKindredThemeEnum $theme): array
+    {
+        $treasures = array_values($theme->treasures());
+        $rng->rngNextShuffle($treasures);
+
+        $veteranReward = $rng->rngNextInt(1, 4) === 1
+            ? StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $rng->rngNextFromArray(StarKindredAdventureService::RecruitFigures), 1)
+            : StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $theme->prize(), 2);
+
+        $aura = $theme->aura();
+
+        return [
+            StarKindredReward::item(StarKindredDifficultyEnum::Novice, $rng->rngNextFromArray($theme->lootTable()), 1),
+            $veteranReward,
+            $aura
+                ? StarKindredReward::aura(StarKindredDifficultyEnum::Hero, $aura)
+                : StarKindredReward::item(StarKindredDifficultyEnum::Hero, $treasures[1], 1),
+            StarKindredReward::item(StarKindredDifficultyEnum::Demigod, $treasures[0], 1),
+        ];
     }
 }

@@ -16,6 +16,8 @@ export interface StarKindredCharacter
   name: string;
   race: string;
   class: string;
+  /** filename (without extension) in assets/images/star-kindred/portraits */
+  portrait: string;
   level: number;
   experience: number;
   experienceToNextLevel: number|null;
@@ -28,14 +30,22 @@ export interface StarKindredCharacter
   skills: { name: string, stat: string, value: number, isClassSkill: boolean }[];
 }
 
+export interface StarKindredReward
+{
+  difficulty: string;
+  item: { name: string, image: string, quantity: number }|null;
+  aura: { name: string, image: string|null, alreadyUnlocked: boolean }|null;
+}
+
 export interface StarKindredAdventure
 {
-  index: number;
+  id: string;
   theme: string;
   title: string;
   summary: string;
   encounters: { title: string, skill: string }[];
   skillsTested: string[];
+  rewards: StarKindredReward[];
 }
 
 export interface StarKindredDifficulty
@@ -51,6 +61,7 @@ export interface StarKindredStatus
   maxPartySize: number;
   maxLevel: number;
   adventures: StarKindredAdventure[];
+  retirementRewards: { perAdventurer: StarKindredReward[], aura: StarKindredReward };
   difficulties: StarKindredDifficulty[];
   characters: StarKindredCharacter[];
 }

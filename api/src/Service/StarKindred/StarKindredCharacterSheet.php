@@ -16,7 +16,6 @@ namespace App\Service\StarKindred;
 use App\Entity\StarKindredCharacter;
 use App\Enum\StarKindredSkillEnum;
 use App\Enum\StarKindredStatEnum;
-use App\Model\StarKindred\StarKindredAdventure;
 
 /**
  * Explicit response mappings shared by the ★Kindred endpoints. The "pet" key holds the Pet entity, so
@@ -37,6 +36,7 @@ final class StarKindredCharacterSheet
             'name' => $c->getName(),
             'race' => $c->getRace()->value,
             'class' => $class->value,
+            'portrait' => $c->getPortrait(),
             'level' => $c->getLevel(),
             'experience' => $c->getExperience(),
             'experienceToNextLevel' => $c->isMaxLevel() ? null : StarKindredCharacter::experienceToNextLevel($c->getLevel()),
@@ -67,21 +67,6 @@ final class StarKindredCharacterSheet
                 ],
                 StarKindredSkillEnum::cases()
             ),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public static function mapAdventure(StarKindredAdventure $a): array
-    {
-        return [
-            'index' => $a->index,
-            'theme' => $a->theme->value,
-            'title' => $a->title,
-            'summary' => $a->summary,
-            'encounters' => array_map(fn($e) => [ 'title' => $e->title, 'skill' => $e->skill->value ], $a->encounters),
-            'skillsTested' => array_map(fn(StarKindredSkillEnum $s) => $s->value, $a->getSkillsTested()),
         ];
     }
 }

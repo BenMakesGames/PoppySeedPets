@@ -38,7 +38,7 @@ class ValidateStarKindredRewardsTest extends KernelTestCase
 
         $itemNames = [
             ...StarKindredAdventureService::RecruitFigures,
-            ...StarKindredAdventureService::RetirementTreasures,
+            ...StarKindredAdventureService::RetirementRewardsPerAdventurer,
         ];
 
         $auraNames = [ StarKindredAdventureService::RetirementAura ];

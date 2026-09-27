@@ -14,6 +14,13 @@
   align-items: center;
   text-align: left;
 
+  .portrait {
+    width: 3.5em;
+    height: 3.5em;
+    flex-shrink: 0;
+    border-radius: 5px;
+  }
+
   h5 {
     margin: 0;
   }

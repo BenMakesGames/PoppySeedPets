@@ -15,6 +15,7 @@ import { StarKindredComponent } from "./page/star-kindred/star-kindred.component
 import { CharacterSheetComponent } from "./page/character-sheet/character-sheet.component";
 import { RetiredComponent } from "./page/retired/retired.component";
 import { CharacterCardComponent } from "./component/character-card/character-card.component";
+import { RewardComponent } from "./component/reward/reward.component";
 import { AssemblePartyDialog } from "./dialog/assemble-party/assemble-party.dialog";
 import { RollCharacterDialog } from "./dialog/roll-character/roll-character.dialog";
 import { AdventureResultsDialog } from "./dialog/adventure-results/adventure-results.dialog";
@@ -29,6 +30,7 @@ import { PetAppearanceComponent } from "../shared/component/pet-appearance/pet-a
     CharacterSheetComponent,
     RetiredComponent,
     CharacterCardComponent,
+    RewardComponent,
     AssemblePartyDialog,
     RollCharacterDialog,
     AdventureResultsDialog,

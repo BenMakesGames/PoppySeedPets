@@ -16,8 +16,8 @@ namespace App\Controller\StarKindred;
 use App\Enum\LocationEnum;
 use App\Enum\StarKindredDifficultyEnum;
 use App\Enum\UnlockableFeatureEnum;
-use App\Exceptions\PSPFormValidationException;
 use App\Exceptions\PSPInvalidOperationException;
+use App\Exceptions\PSPNotFoundException;
 use App\Exceptions\PSPNotUnlockedException;
 use App\Service\Clock;
 use App\Service\InventoryService;
@@ -49,8 +49,10 @@ class GoOnAdventureController
         if(!$user->hasUnlockedFeature(UnlockableFeatureEnum::StarKindred))
             throw new PSPNotUnlockedException('★Kindred');
 
-        $adventure = StarKindredDailyAdventures::forDate($clock->now)[$request->adventure]
-            ?? throw new PSPFormValidationException('That adventure isn\'t available today.');
+        // ids are content hashes: if today's adventures changed since the player loaded the page (a new
+        // day began, or a deploy changed the generator), the old id simply won't be found
+        $adventure = StarKindredDailyAdventures::find($clock->now, $request->adventureId)
+            ?? throw new PSPNotFoundException('That adventure could not be found. (Maybe a new day has begun?) Please reload, and try again.');
 
         if(InventoryService::countTotalInventory($em, $user, LocationEnum::Home) > 150)
             throw new PSPInvalidOperationException('Your house is far too cluttered to play ★Kindred!');
@@ -75,7 +77,7 @@ class GoOnAdventureRequest
      * @param int[] $characters
      */
     public function __construct(
-        public readonly int $adventure,
+        public readonly string $adventureId,
         public readonly StarKindredDifficultyEnum $difficulty,
         public readonly array $characters,
     )

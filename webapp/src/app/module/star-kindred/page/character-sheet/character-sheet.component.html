@@ -24,23 +24,34 @@
   {
     <div class="sheet">
       <div class="header">
-        <app-character-card [character]="character" />
-        <dl>
-          @if(character.retiredOn)
-          {
-            <dt>Retired</dt><dd>{{ character.retiredOn|date:'mediumDate' }}</dd>
-          }
-          @else if(character.experienceToNextLevel !== null)
-          {
-            <dt>Experience</dt><dd>{{ character.experience }} / {{ character.experienceToNextLevel }}</dd>
-          }
-          @else
-          {
-            <dt>Experience</dt><dd>Max level! Ready to retire.</dd>
-          }
-          <dt>Adventures</dt><dd>{{ character.adventuresCompleted }} ({{ character.adventuresWon }} won)</dd>
-          <dt>Created</dt><dd>{{ character.createdOn|date:'mediumDate' }}</dd>
-        </dl>
+        <img class="portrait" [src]="'/assets/images/star-kindred/portraits/' + character.portrait + '.png'" alt="" />
+        <div class="banner">
+          <div class="title">
+            <h3>{{ character.name }}</h3>
+            <div>Level {{ character.level }} {{ character.race }} {{ character.class }}</div>
+          </div>
+          <a class="player" [routerLink]="'/poppyopedia/pet/' + character.pet.id">
+            <small>Played by</small>
+            <app-pet-appearance [pet]="character.pet" size="3.5em" />
+            <span>{{ character.pet.name }}</span>
+          </a>
+          <dl class="facts">
+            @if(character.retiredOn)
+            {
+              <dt>Retired</dt><dd>{{ character.retiredOn|date:'mediumDate' }}</dd>
+            }
+            @else if(character.experienceToNextLevel !== null)
+            {
+              <dt>Experience</dt><dd>{{ character.experience }} / {{ character.experienceToNextLevel }}</dd>
+            }
+            @else
+            {
+              <dt>Experience</dt><dd>Max level! Ready to retire.</dd>
+            }
+            <dt>Adventures</dt><dd>{{ character.adventuresCompleted }} ({{ character.adventuresWon }} won)</dd>
+            <dt>Created</dt><dd>{{ character.createdOn|date:'mediumDate' }}</dd>
+          </dl>
+        </div>
       </div>
 
       @if(character.epilogue)

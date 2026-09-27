@@ -28,23 +28,31 @@
   padding: 1em;
   display: flex;
   flex-direction: column;
+  gap: 0.75em; // children set no vertical margins of their own; this is the only spacing between them
 
+  // a header strip across the top of the card, styled like table headers
   h4 {
-    margin-top: 0;
+    margin: -1em -1em 0;
+    padding: 0.5em 1em;
+    border-radius: 5px 5px 0 0;
+    background-color: rgb(var(--color-primary));
+    color: rgb(var(--color-text-on-primary));
+    text-align: center;
   }
 
   markdown {
     flex-grow: 1;
   }
 
-  .buttons {
-    margin-bottom: 0;
+  > .buttons, > p, > ul {
+    margin: 0;
   }
 }
 
 .skills {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.25em 0.5em;
   align-items: baseline;
 }
@@ -70,5 +78,24 @@
     padding: 0.5em;
     border-radius: 5px;
     background-color: rgb(var(--color-speech-bubble-background));
+  }
+}
+
+.rewards {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75em;
+}
+
+.retirement-rewards {
+  list-style: none;
+  padding-left: 0;
+
+  > li + li {
+    margin-top: 0.25em;
   }
 }

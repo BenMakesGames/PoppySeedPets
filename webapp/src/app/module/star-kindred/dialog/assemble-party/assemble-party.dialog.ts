@@ -15,6 +15,7 @@ import {
   StarKindredAdventureResult,
   StarKindredCharacter,
   StarKindredDifficulty,
+  StarKindredReward,
   StarKindredStatus
 } from "../../model/star-kindred.models";
 
@@ -35,6 +36,7 @@ export class AssemblePartyDialog {
   selected: StarKindredCharacter[] = [];
   difficulty: StarKindredDifficulty;
   skillOdds: { skill: string, averageRoll: number, target: number }[] = [];
+  rewards: StarKindredReward[] = [];
   embarking = false;
 
   constructor(
@@ -50,6 +52,8 @@ export class AssemblePartyDialog {
       ? c.level < this.status.maxLevel
       : c.level >= this.status.maxLevel
     );
+
+    this.computeOdds();
   }
 
   isSelected = (character: StarKindredCharacter) => this.selected.some(c => c.id === character.id);
@@ -75,6 +79,10 @@ export class AssemblePartyDialog {
   private computeOdds()
   {
     if(!this.adventure) return;
+
+    // rewards are cumulative: beating a difficulty awards its tier, and every easier tier
+    const tier = this.status.difficulties.indexOf(this.difficulty);
+    this.rewards = this.adventure.rewards.filter(r => this.status.difficulties.findIndex(d => d.name === r.difficulty) <= tier);
 
     // the target scales with party size, so compare the party's total bonus to the total target
     this.skillOdds = this.adventure.skillsTested.map(skill => ({
@@ -104,7 +112,7 @@ export class AssemblePartyDialog {
     const characters = this.selected.map(c => c.id);
 
     const request = this.adventure
-      ? this.api.post<StarKindredAdventureResult>('/starKindred/adventure', { adventure: this.adventure.index, difficulty: this.difficulty.name, characters })
+      ? this.api.post<StarKindredAdventureResult>('/starKindred/adventure', { adventureId: this.adventure.id, difficulty: this.difficulty.name, characters })
       : this.api.post<StarKindredAdventureResult>('/starKindred/retire', { characters })
     ;
 

@@ -12,7 +12,7 @@
   <div class="dialog-body" [class.disabled]="embarking">
     @if(adventure)
     {
-      <p>Choose up to {{ status.maxPartySize }} adventurers, and a difficulty. Harder adventures give more loot and experience, but every adventurer raises the bar for the whole party.</p>
+      <p>Choose up to {{ status.maxPartySize }} adventurers, and a difficulty. Harder adventures give more rewards and experience, but every adventurer raises the bar for the whole party.</p>
       <div class="difficulties" role="radiogroup" aria-label="Difficulty">
         @for(d of status.difficulties; track d.name)
         {
@@ -21,6 +21,13 @@
           </button>
         }
       </div>
+      <p class="rewards-heading"><b>Victory on {{ difficulty.name }} earns:</b></p>
+      <ul class="rewards">
+        @for(reward of rewards; track reward.difficulty)
+        {
+          <li><app-star-kindred-reward [reward]="reward" /></li>
+        }
+      </ul>
     }
     @else
     {

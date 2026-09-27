@@ -54,42 +54,17 @@ enum StarKindredDifficultyEnum: string
         return min(intdiv($this->victoryExperience(), 2), 5 * (1 + $encountersWon));
     }
 
-    public function lootPerEncounterWon(): int
-    {
-        return match($this)
-        {
-            self::Novice => 1,
-            self::Veteran => 2,
-            self::Hero => 3,
-            self::Demigod => 4,
-        };
-    }
-
     /**
-     * Percent chance, on victory, that the adventure's grand treasure is found.
+     * 0 for the easiest difficulty; each harder difficulty is one higher. Rewards are cumulative by tier.
      */
-    public function treasureChance(): int
+    public function tier(): int
     {
         return match($this)
         {
-            self::Novice => 10,
-            self::Veteran => 35,
-            self::Hero => 75,
-            self::Demigod => 100,
-        };
-    }
-
-    /**
-     * Percent chance, on victory, that the adventure inspires a new hat styling.
-     */
-    public function auraChance(): int
-    {
-        return match($this)
-        {
-            self::Novice => 5,
-            self::Veteran => 10,
-            self::Hero => 20,
-            self::Demigod => 40,
+            self::Novice => 0,
+            self::Veteran => 1,
+            self::Hero => 2,
+            self::Demigod => 3,
         };
     }
 }
