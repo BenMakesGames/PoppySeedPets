@@ -23,6 +23,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class InventoryModifierFunctions
 {
+    private const string AmbiguousBulkSpicingMessage = 'Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.';
+
     public static function enchant(EntityManagerInterface $em, Inventory $tool, Inventory $enchantment): void
     {
         if($tool->getEnchantment())
@@ -48,9 +50,14 @@ class InventoryModifierFunctions
      * every selected food with one of the selected spices. Handles the case where food and spice
      * counts are equal, the case where there are more foods than spices (the extra foods are left
      * unspiced), and the case where there are more spices than foods (the extra spices are left
-     * unused). Every other case is ambiguous, and returns null.
+     * unused).
+     *
+     * Returns null when the selection isn't a bulk-spicing attempt at all (it includes items that
+     * are neither food nor spice, or lacks either), leaving it to the existing recipe-matching
+     * logic. Throws when the selection is entirely food and spice, but ambiguous.
      *
      * @param Inventory[] $inventory
+     * @throws PSPInvalidOperationException
      */
     public static function planBulkSpicing(array $inventory): ?BulkSpicingPlan
     {
@@ -65,7 +72,7 @@ class InventoryModifierFunctions
             return null;
 
         if(array_any($foods, fn(Inventory $i) => $i->getSpice() !== null))
-            return null;
+            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
 
         $firstFoodItem = $foods[0]->getItem();
         $hasMixedFoods = array_any($foods, fn(Inventory $i) => $i->getItem() !== $firstFoodItem);
@@ -74,13 +81,13 @@ class InventoryModifierFunctions
         $hasMixedSpices = array_any($spices, fn(Inventory $i) => $i->getItem() !== $firstSpiceItem);
 
         if($hasMixedFoods && $hasMixedSpices)
-            return null;
+            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
 
         if($hasMixedFoods && count($spices) < count($foods))
-            return null;
+            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
 
         if($hasMixedSpices && count($spices) > count($foods))
-            return null;
+            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
 
         $pairCount = min(count($foods), count($spices));
 
@@ -95,29 +102,6 @@ class InventoryModifierFunctions
             leftoverFoodCount: count($foods) - $pairCount,
             leftoverSpiceCount: count($spices) - $pairCount
         );
-    }
-
-    /**
-     * True when a selection is entirely food and spice items (so it's clearly an attempt at
-     * bulk-spicing, not some other recipe), but doesn't match any of planBulkSpicing's
-     * unambiguous patterns. False for anything planBulkSpicing can handle, and false when the
-     * selection includes items that are neither food nor spice (that's not this feature's
-     * concern - it's left to the existing recipe-matching logic).
-     *
-     * @param Inventory[] $inventory
-     */
-    public static function isAmbiguousBulkSpicingAttempt(array $inventory): bool
-    {
-        $foods = array_filter($inventory, fn(Inventory $i) => $i->getItem()->getFood() !== null);
-        $spices = array_filter($inventory, fn(Inventory $i) => $i->getItem()->getSpice() !== null);
-
-        if(count($foods) + count($spices) !== count($inventory))
-            return false;
-
-        if(count($foods) === 0 || count($spices) === 0)
-            return false;
-
-        return self::planBulkSpicing($inventory) === null;
     }
 
     public static function getNameWithModifiers(Inventory $item): string

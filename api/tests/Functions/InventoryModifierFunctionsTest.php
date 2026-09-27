@@ -18,6 +18,7 @@ use App\Entity\Item;
 use App\Entity\ItemFood;
 use App\Entity\Spice;
 use App\Entity\User;
+use App\Exceptions\PSPInvalidOperationException;
 use App\Functions\InventoryModifierFunctions;
 use PHPUnit\Framework\TestCase;
 
@@ -157,41 +158,6 @@ class InventoryModifierFunctionsTest extends TestCase
         $this->assertSame($garlic, $plan->pairs[1][1]->getItem());
     }
 
-    public function testUniformFoodTypesWithMixedSpicesAndMoreSpicesReturnsNull(): void
-    {
-        $owner = new User('Tester', 'tester@example.com');
-        $egg = self::makeFoodItem('Egg');
-        $onion = self::makeSpiceItem('Onion');
-        $garlic = self::makeSpiceItem('Garlic');
-
-        $inventory = [
-            self::makeInventory($owner, $egg),
-            self::makeInventory($owner, $onion),
-            self::makeInventory($owner, $garlic),
-        ];
-
-        $this->assertNull(InventoryModifierFunctions::planBulkSpicing($inventory));
-    }
-
-    public function testAlreadySpicedFoodReturnsNull(): void
-    {
-        $owner = new User('Tester', 'tester@example.com');
-        $egg = self::makeFoodItem('Egg');
-        $onion = self::makeSpiceItem('Onion');
-
-        $alreadySpiced = self::makeInventory($owner, $egg);
-        $alreadySpiced->setSpice($onion->getSpice());
-
-        $inventory = [
-            self::makeInventory($owner, $egg),
-            $alreadySpiced,
-            self::makeInventory($owner, $onion),
-            self::makeInventory($owner, $onion),
-        ];
-
-        $this->assertNull(InventoryModifierFunctions::planBulkSpicing($inventory));
-    }
-
     public function testMoreFoodsThanSpicesSpicesAsManyAsPossibleAndTracksLeftoverFoods(): void
     {
         $owner = new User('Tester', 'tester@example.com');
@@ -262,7 +228,8 @@ class InventoryModifierFunctionsTest extends TestCase
             self::makeInventory($owner, $garlic),
         ];
 
-        $this->assertTrue(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory));
+        $this->expectException(PSPInvalidOperationException::class);
+        InventoryModifierFunctions::planBulkSpicing($inventory);
     }
 
     public function testMixedFoodTypesWithTooFewUniformSpicesIsAmbiguous(): void
@@ -281,8 +248,8 @@ class InventoryModifierFunctionsTest extends TestCase
             self::makeInventory($owner, $onion),
         ];
 
-        $this->assertNull(InventoryModifierFunctions::planBulkSpicing($inventory));
-        $this->assertTrue(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory));
+        $this->expectException(PSPInvalidOperationException::class);
+        InventoryModifierFunctions::planBulkSpicing($inventory);
     }
 
     public function testUniformFoodTypesWithMixedSpicesAndMoreSpicesIsAmbiguous(): void
@@ -298,7 +265,8 @@ class InventoryModifierFunctionsTest extends TestCase
             self::makeInventory($owner, $garlic),
         ];
 
-        $this->assertTrue(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory));
+        $this->expectException(PSPInvalidOperationException::class);
+        InventoryModifierFunctions::planBulkSpicing($inventory);
     }
 
     public function testAlreadySpicedFoodIsAmbiguous(): void
@@ -317,26 +285,11 @@ class InventoryModifierFunctionsTest extends TestCase
             self::makeInventory($owner, $onion),
         ];
 
-        $this->assertTrue(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory));
+        $this->expectException(PSPInvalidOperationException::class);
+        InventoryModifierFunctions::planBulkSpicing($inventory);
     }
 
-    public function testSuccessfulBulkSpicingSelectionIsNotAmbiguous(): void
-    {
-        $owner = new User('Tester', 'tester@example.com');
-        $egg = self::makeFoodItem('Egg');
-        $onion = self::makeSpiceItem('Onion');
-
-        $inventory = [
-            self::makeInventory($owner, $egg),
-            self::makeInventory($owner, $egg),
-            self::makeInventory($owner, $onion),
-            self::makeInventory($owner, $onion),
-        ];
-
-        $this->assertFalse(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory));
-    }
-
-    public function testSelectionWithNonFoodNonSpiceItemsIsNotAmbiguous(): void
+    public function testSelectionWithNonFoodNonSpiceItemsReturnsNull(): void
     {
         $owner = new User('Tester', 'tester@example.com');
         $egg = self::makeFoodItem('Egg');
@@ -351,6 +304,6 @@ class InventoryModifierFunctionsTest extends TestCase
         ];
 
         // not our concern - this is deferred to the existing recipe-matching logic, unchanged
-        $this->assertFalse(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory));
+        $this->assertNull(InventoryModifierFunctions::planBulkSpicing($inventory));
     }
 }

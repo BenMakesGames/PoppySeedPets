@@ -21,7 +21,6 @@ use App\Exceptions\PSPNotFoundException;
 use App\Functions\ArrayFunctions;
 use App\Functions\GrammarFunctions;
 use App\Functions\InventoryModifierFunctions;
-use App\Model\BulkSpicingPlan;
 use App\Service\CookingService;
 use App\Service\InventoryService;
 use App\Service\IRandom;
@@ -131,9 +130,6 @@ class CookAndCombineController
 
         if($bulkSpicingPlan !== null)
         {
-            foreach($bulkSpicingPlan->pairs as [$food, $spice])
-                InventoryModifierFunctions::spiceUp($em, $food, $spice);
-
             $spicedFoodQuantities = [];
             $appliedSpiceQuantities = [];
             $spicedFoods = [];
@@ -141,6 +137,8 @@ class CookAndCombineController
 
             foreach($bulkSpicingPlan->pairs as [$food, $spice])
             {
+                InventoryModifierFunctions::spiceUp($em, $food, $spice);
+
                 $foodName = $food->getItem()->getName();
                 $spiceName = $spice->getItem()->getName();
 
@@ -189,9 +187,6 @@ class CookAndCombineController
 
             return $responseService->success(array_map(fn(array $pair) => $pair[0], $bulkSpicingPlan->pairs), [ SerializationGroupEnum::MY_INVENTORY ]);
         }
-
-        if(InventoryModifierFunctions::isAmbiguousBulkSpicingAttempt($inventory))
-            throw new PSPInvalidOperationException('Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.');
 
         $results = $cookingService->prepareRecipeByHand($user, $user, $inventory);
 
