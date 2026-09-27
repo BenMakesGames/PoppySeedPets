@@ -109,7 +109,7 @@ class BeehiveService
      */
     private function getJungleGoods(): array
     {
-        $goods = [ 'Sugar', 'Glue', 'Crooked Stick', 'Honeycomb', 'Antenna', 'Cacao Fruit', 'Chanterelle' ];
+        $goods = [ 'Honeycomb', 'Sugar', 'Glue', 'Crooked Stick', 'Antenna', 'Cacao Fruit', 'Chanterelle' ];
 
         if(WeatherService::getWeather($this->clock->now)->isHoliday(HolidayEnum::ApricotFestival))
             $goods[] = 'Apricot';
@@ -122,7 +122,7 @@ class BeehiveService
      */
     private function getBeachGoods(): array
     {
-        return [ 'Sand Dollar', 'Feathers', 'Seaweed', 'Crooked Stick', 'Scales' ];
+        return [ 'Honeycomb', 'Sand Dollar', 'Feathers', 'Seaweed', 'Crooked Stick', 'Scales' ];
     }
 
     /**
@@ -130,7 +130,7 @@ class BeehiveService
      */
     private function getGrassyGoods(): array
     {
-        $goods = [ 'Sugar', 'Sweet Beet', 'Honeycomb', 'Fluff', 'Moth', 'Rosemary' ];
+        $goods = [ 'Honeycomb', 'Sugar', 'Sweet Beet', 'Honeycomb', 'Fluff', 'Moth', 'Rosemary' ];
 
         if(WeatherService::getWeather($this->clock->now)->isHoliday(HolidayEnum::SaintPatricks))
             $goods[] = '1-leaf Clover';
@@ -143,7 +143,7 @@ class BeehiveService
      */
     private function getRockyGoods(): array
     {
-        return [ 'Silica Grounds', 'Crooked Stick', 'Rock Candy' ];
+        return [ 'Honeycomb', 'Silica Grounds', 'Crooked Stick', 'Rock Candy' ];
     }
 
     /**
