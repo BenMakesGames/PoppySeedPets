@@ -66,8 +66,8 @@ class InventoryModifierFunctionsTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertCount(3, $plan->pairs);
-        $this->assertSame(0, $plan->leftoverFoodCount);
-        $this->assertSame(0, $plan->leftoverSpiceCount);
+        $this->assertCount(0, $plan->leftoverFoods);
+        $this->assertCount(0, $plan->leftoverSpices);
 
         foreach($plan->pairs as [$food, $spice])
         {
@@ -94,8 +94,8 @@ class InventoryModifierFunctionsTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertCount(2, $plan->pairs);
-        $this->assertSame(0, $plan->leftoverFoodCount);
-        $this->assertSame(0, $plan->leftoverSpiceCount);
+        $this->assertCount(0, $plan->leftoverFoods);
+        $this->assertCount(0, $plan->leftoverSpices);
 
         $this->assertSame($egg, $plan->pairs[0][0]->getItem());
         $this->assertSame($fish, $plan->pairs[1][0]->getItem());
@@ -121,8 +121,8 @@ class InventoryModifierFunctionsTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertCount(2, $plan->pairs);
-        $this->assertSame(0, $plan->leftoverFoodCount);
-        $this->assertSame(0, $plan->leftoverSpiceCount);
+        $this->assertCount(0, $plan->leftoverFoods);
+        $this->assertCount(0, $plan->leftoverSpices);
 
         $this->assertSame($egg, $plan->pairs[0][0]->getItem());
         $this->assertSame($egg, $plan->pairs[1][0]->getItem());
@@ -149,8 +149,8 @@ class InventoryModifierFunctionsTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertCount(2, $plan->pairs);
-        $this->assertSame(1, $plan->leftoverFoodCount);
-        $this->assertSame(0, $plan->leftoverSpiceCount);
+        $this->assertCount(1, $plan->leftoverFoods);
+        $this->assertCount(0, $plan->leftoverSpices);
 
         $this->assertSame($egg, $plan->pairs[0][0]->getItem());
         $this->assertSame($egg, $plan->pairs[1][0]->getItem());
@@ -176,8 +176,8 @@ class InventoryModifierFunctionsTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertCount(2, $plan->pairs);
-        $this->assertSame(1, $plan->leftoverFoodCount);
-        $this->assertSame(0, $plan->leftoverSpiceCount);
+        $this->assertCount(1, $plan->leftoverFoods);
+        $this->assertCount(0, $plan->leftoverSpices);
 
         foreach($plan->pairs as [$food, $spice])
         {
@@ -203,8 +203,8 @@ class InventoryModifierFunctionsTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertCount(1, $plan->pairs);
-        $this->assertSame(0, $plan->leftoverFoodCount);
-        $this->assertSame(2, $plan->leftoverSpiceCount);
+        $this->assertCount(0, $plan->leftoverFoods);
+        $this->assertCount(2, $plan->leftoverSpices);
 
         foreach($plan->pairs as [$food, $spice])
         {

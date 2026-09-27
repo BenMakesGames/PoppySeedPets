@@ -19,13 +19,13 @@ final class BulkSpicingPlan
 {
     /**
      * @param array{0: Inventory, 1: Inventory}[] $pairs Foods paired with the spice to apply to them.
-     * @param int $leftoverFoodCount Selected foods that won't get spiced, because there weren't enough spices for them.
-     * @param int $leftoverSpiceCount Selected spices that won't get used, because there weren't enough foods for them.
+     * @param Inventory[] $leftoverFoods Selected foods that won't get spiced, because there weren't enough spices for them.
+     * @param Inventory[] $leftoverSpices Selected spices that won't get used, because there weren't enough foods for them.
      */
     public function __construct(
         public readonly array $pairs,
-        public readonly int $leftoverFoodCount = 0,
-        public readonly int $leftoverSpiceCount = 0,
+        public readonly array $leftoverFoods,
+        public readonly array $leftoverSpices,
     )
     {
     }

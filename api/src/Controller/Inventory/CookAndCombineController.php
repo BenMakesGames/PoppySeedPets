@@ -130,62 +130,26 @@ class CookAndCombineController
 
         if($bulkSpicingPlan !== null)
         {
-            $spicedFoodQuantities = [];
-            $appliedSpiceQuantities = [];
-            $spicedFoods = [];
-            $appliedSpices = [];
-
             foreach($bulkSpicingPlan->pairs as [$food, $spice])
-            {
                 InventoryModifierFunctions::spiceUp($em, $food, $spice);
 
-                $foodName = $food->getItem()->getName();
-                $spiceName = $spice->getItem()->getName();
+            $seasoned =
+                self::listNiceItemQuantities(array_column($bulkSpicingPlan->pairs, 0)) .
+                ' are now seasoned: ' .
+                self::listNiceItemQuantities(array_column($bulkSpicingPlan->pairs, 1));
 
-                $spicedFoodQuantities[$foodName] = ($spicedFoodQuantities[$foodName] ?? 0) + 1;
-                $appliedSpiceQuantities[$spiceName] = ($appliedSpiceQuantities[$spiceName] ?? 0) + 1;
-                $spicedFoods[] = $food;
-                $appliedSpices[] = $spice;
-            }
-
-            if($bulkSpicingPlan->leftoverFoodCount > 0)
-            {
-                $unspicedFoodQuantities = [];
-
-                foreach($inventory as $item)
-                {
-                    if($item->getItem()->getFood() !== null && !in_array($item, $spicedFoods, true))
-                    {
-                        $foodName = $item->getItem()->getName();
-                        $unspicedFoodQuantities[$foodName] = ($unspicedFoodQuantities[$foodName] ?? 0) + 1;
-                    }
-                }
-
-                $responseService->addFlashMessage(ArrayFunctions::list_nice_quantities($spicedFoodQuantities) . ' are now seasoned: ' . ArrayFunctions::list_nice_quantities($appliedSpiceQuantities) . ' - but there wasn\'t enough for the last ' . ArrayFunctions::list_nice_quantities($unspicedFoodQuantities) . ' so they\'re plain for now.');
-            }
-            else if($bulkSpicingPlan->leftoverSpiceCount > 0)
-            {
-                $leftoverSpiceQuantities = [];
-
-                foreach($inventory as $item)
-                {
-                    if($item->getItem()->getSpice() !== null && !in_array($item, $appliedSpices, true))
-                    {
-                        $spiceName = $item->getItem()->getName();
-                        $leftoverSpiceQuantities[$spiceName] = ($leftoverSpiceQuantities[$spiceName] ?? 0) + 1;
-                    }
-                }
-
-                $responseService->addFlashMessage(ArrayFunctions::list_nice_quantities($spicedFoodQuantities) . ' are now seasoned: ' . ArrayFunctions::list_nice_quantities($appliedSpiceQuantities) . '! You have ' . ArrayFunctions::list_nice_quantities($leftoverSpiceQuantities) . ' leftover.');
-            }
+            if(count($bulkSpicingPlan->leftoverFoods) > 0)
+                $responseService->addFlashMessage($seasoned . ' - but there wasn\'t enough for the last ' . self::listNiceItemQuantities($bulkSpicingPlan->leftoverFoods) . ' so they\'re plain for now.');
+            else if(count($bulkSpicingPlan->leftoverSpices) > 0)
+                $responseService->addFlashMessage($seasoned . '! You have ' . self::listNiceItemQuantities($bulkSpicingPlan->leftoverSpices) . ' leftover.');
             else
-                $responseService->addFlashMessage(ArrayFunctions::list_nice_quantities($spicedFoodQuantities) . ' are now seasoned: ' . ArrayFunctions::list_nice_quantities($appliedSpiceQuantities) . '! Batch-prepping FTW!');
+                $responseService->addFlashMessage($seasoned . '! Batch-prepping FTW!');
 
             $em->flush();
 
             $responseService->setReloadInventory();
 
-            return $responseService->success(array_map(fn(array $pair) => $pair[0], $bulkSpicingPlan->pairs), [ SerializationGroupEnum::MY_INVENTORY ]);
+            return $responseService->success(array_column($bulkSpicingPlan->pairs, 0), [ SerializationGroupEnum::MY_INVENTORY ]);
         }
 
         $results = $cookingService->prepareRecipeByHand($user, $user, $inventory);
@@ -216,5 +180,13 @@ class CookAndCombineController
         $responseService->addFlashMessage('You prepared ' . ArrayFunctions::list_nice_quantities($qList) . $exclaim);
 
         return $responseService->success($results->inventory, [ SerializationGroupEnum::MY_INVENTORY ]);
+    }
+
+    /**
+     * @param Inventory[] $inventory
+     */
+    private static function listNiceItemQuantities(array $inventory): string
+    {
+        return ArrayFunctions::list_nice_quantities(array_count_values(array_map(fn(Inventory $i) => $i->getItem()->getName(), $inventory)));
     }
 }

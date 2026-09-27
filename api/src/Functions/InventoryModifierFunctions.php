@@ -23,8 +23,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class InventoryModifierFunctions
 {
-    private const string AmbiguousBulkSpicingMessage = 'Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.';
-
     public static function enchant(EntityManagerInterface $em, Inventory $tool, Inventory $enchantment): void
     {
         if($tool->getEnchantment())
@@ -71,23 +69,20 @@ class InventoryModifierFunctions
         if(count($foods) === 0 || count($spices) === 0)
             return null;
 
-        if(array_any($foods, fn(Inventory $i) => $i->getSpice() !== null))
-            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
-
         $firstFoodItem = $foods[0]->getItem();
         $hasMixedFoods = array_any($foods, fn(Inventory $i) => $i->getItem() !== $firstFoodItem);
 
         $firstSpiceItem = $spices[0]->getItem();
         $hasMixedSpices = array_any($spices, fn(Inventory $i) => $i->getItem() !== $firstSpiceItem);
 
-        if($hasMixedFoods && $hasMixedSpices)
-            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
+        // the pairing must not matter: at most one side may be mixed, and any leftovers must come from a uniform side
+        $isAmbiguous =
+            array_any($foods, fn(Inventory $i) => $i->getSpice() !== null)
+            || ($hasMixedFoods && ($hasMixedSpices || count($foods) > count($spices)))
+            || ($hasMixedSpices && count($spices) > count($foods));
 
-        if($hasMixedFoods && count($spices) < count($foods))
-            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
-
-        if($hasMixedSpices && count($spices) > count($foods))
-            throw new PSPInvalidOperationException(self::AmbiguousBulkSpicingMessage);
+        if($isAmbiguous)
+            throw new PSPInvalidOperationException('Hmm, this is some complicated seasoning you\'re requesting. Let\'s not.');
 
         $pairCount = min(count($foods), count($spices));
 
@@ -99,8 +94,8 @@ class InventoryModifierFunctions
 
         return new BulkSpicingPlan(
             $pairs,
-            leftoverFoodCount: count($foods) - $pairCount,
-            leftoverSpiceCount: count($spices) - $pairCount
+            leftoverFoods: array_slice($foods, $pairCount),
+            leftoverSpices: array_slice($spices, $pairCount)
         );
     }
 
