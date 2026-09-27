@@ -8,8 +8,8 @@
   ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
   -->
 <img class="portrait" [src]="'/assets/images/star-kindred/portraits/' + character.portrait + '.png'" alt="" />
-<div>
+<div class="details">
   <h5>{{ character.name }}</h5>
   <div>Level {{ character.level }} {{ character.race }} {{ character.class }}</div>
-  <small>played by {{ character.pet.name }}</small>
+  <small><span class="faded">played by</span> <app-pet-appearance class="pet" [pet]="character.pet" size="2em" [showLunchbox]="false" [disableEgg]="true" /> <span class="faded">{{ character.pet.name }}</span></small>
 </div>

@@ -69,7 +69,7 @@
       }
     </div>
 
-    <h3>Adventurers</h3>
+    <h3>Adventurers ({{ status.characters.length }}/{{ status.maxAdventurers }})</h3>
     @if(status.characters.length === 0)
     {
       <p>None of your pets have a ★Kindred character yet! Roll one up to start adventuring.</p>
@@ -83,9 +83,12 @@
         }
       </ul>
     }
-    <div class="buttons">
-      <button type="button" (click)="doRollCharacter()">Roll a New Character</button>
-      <a class="button wire" routerLink="/starKindred/retired">Book of Retired Adventurers</a>
-    </div>
+    @if(status.characters.length < status.maxAdventurers)
+    {
+      <div class="buttons">
+        <button type="button" (click)="doRollCharacter()">Roll a New Character</button>
+      </div>
+    }
+    <p><a routerLink="/starKindred/retired">Book of Retired Adventurers</a></p>
   }
 </main>

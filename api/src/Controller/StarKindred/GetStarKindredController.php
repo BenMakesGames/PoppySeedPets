@@ -79,6 +79,7 @@ class GetStarKindredController
             [
                 'canPlayToday' => !$starKindred->hasPlayedToday($user),
                 'maxPartySize' => StarKindredAdventureService::MaxPartySize,
+                'maxAdventurers' => StarKindredAdventureService::MaxAdventurers,
                 'maxLevel' => StarKindredCharacter::MaxLevel,
                 'adventures' => array_map(
                     fn(StarKindredAdventure $a) => [

@@ -21,12 +21,26 @@
     border-radius: 5px;
   }
 
+  .details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pet {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 0.5em;
+  }
+
   h5 {
     margin: 0;
   }
 
   small {
-    opacity: 0.8;
     font-style: italic;
+  }
+
+  .faded {
+    opacity: 0.8;
   }
 }

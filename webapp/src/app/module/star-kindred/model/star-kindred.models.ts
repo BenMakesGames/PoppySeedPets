@@ -59,6 +59,7 @@ export interface StarKindredStatus
 {
   canPlayToday: boolean;
   maxPartySize: number;
+  maxAdventurers: number;
   maxLevel: number;
   adventures: StarKindredAdventure[];
   retirementRewards: { perAdventurer: StarKindredReward[], aura: StarKindredReward };

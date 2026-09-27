@@ -29,12 +29,13 @@
 .available {
   list-style: none;
   padding-left: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 0.5em;
 
   button {
     width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: stretch;
