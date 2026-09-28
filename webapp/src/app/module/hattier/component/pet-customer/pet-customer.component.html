@@ -9,7 +9,7 @@
   -->
 <div class="pet" [class.disabled]="!pet.hat">
   <app-pet-appearance [pet]="pet" />
-  <div>
+  <div class="details">
     <h4>{{ pet.name }}</h4>
     @if(!pet.hat)
     {
@@ -18,9 +18,10 @@
     @else
     {
       <p>Wearing <app-item-name-with-bonus [item]="pet.hat.item" [bonus]="pet.hat.enchantment" /></p>
-      <p style="margin:0">
-        <button type="button" (click)="doSelect()">{{ buttonText }}</button>
-      </p>
+      <div class="buttons">
+        <button type="button" (click)="zhuzhUp.emit()">Zhuzh Up</button>
+        <button type="button" (click)="changeFit.emit()">Change Fit</button>
+      </div>
     }
   </div>
 </div>

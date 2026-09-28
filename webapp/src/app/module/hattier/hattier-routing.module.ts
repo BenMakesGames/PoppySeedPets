@@ -13,11 +13,13 @@ import { SelectionComponent } from "./page/selection/selection.component";
 import { DressingRoomComponent } from "./page/dressing-room/dressing-room.component";
 import { CollectionComponent } from "./page/collection/collection.component";
 import { IllusionistComponent } from "./page/illusionist/illusionist.component";
+import { FittingRoomComponent } from "./page/fitting-room/fitting-room.component";
 
 const routes: Routes = [
   { path: '', component: SelectionComponent },
   { path: 'collection', component: CollectionComponent },
   { path: 'illusionist', component: IllusionistComponent },
+  { path: 'fit/:petId', component: FittingRoomComponent },
   { path: ':petId', component: DressingRoomComponent },
 ];
 
