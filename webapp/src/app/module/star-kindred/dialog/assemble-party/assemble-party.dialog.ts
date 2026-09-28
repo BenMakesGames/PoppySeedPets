@@ -36,7 +36,6 @@ export class AssemblePartyDialog {
   selected: StarKindredCharacter[] = [];
   difficulty: StarKindredDifficulty;
   skillOdds: { skill: string, averageRoll: number, target: number }[] = [];
-  rewards: StarKindredReward[] = [];
   embarking = false;
 
   constructor(
@@ -80,16 +79,23 @@ export class AssemblePartyDialog {
   {
     if(!this.adventure) return;
 
-    // rewards are cumulative: beating a difficulty awards its tier, and every easier tier
-    const tier = this.status.difficulties.indexOf(this.difficulty);
-    this.rewards = this.adventure.rewards.filter(r => this.status.difficulties.findIndex(d => d.name === r.difficulty) <= tier);
-
     // the target scales with party size, so compare the party's total bonus to the total target
     this.skillOdds = this.adventure.skillsTested.map(skill => ({
       skill: skill,
       averageRoll: Math.round(this.selected.reduce((total, c) => total + 10.5 + this.skillValue(c, skill), 0)),
       target: this.difficulty.targetPerAdventurer * this.selected.length,
     }));
+  }
+
+  // rewards are cumulative: beating a difficulty awards its tier, and every easier tier
+  get tier(): number
+  {
+    return this.status.difficulties.indexOf(this.difficulty);
+  }
+
+  rewardFor(difficulty: StarKindredDifficulty): StarKindredReward|undefined
+  {
+    return this.adventure?.rewards.find(r => r.difficulty === difficulty.name);
   }
 
   skillValue(character: StarKindredCharacter, skill: string): number

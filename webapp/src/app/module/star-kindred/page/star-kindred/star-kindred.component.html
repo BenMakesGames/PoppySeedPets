@@ -16,14 +16,16 @@
   @else
   {
     <h3>Today's Adventures</h3>
-    @if(!status.canPlayToday)
+    @let play = status.todaysPlay;
+    @if(play)
     {
       <p class="played">Your pets have already played ★Kindred today. Come back tomorrow for new adventures!</p>
     }
     <div class="adventures">
       @for(adventure of status.adventures; track adventure.id)
       {
-        <div class="adventure">
+        @let picked = play?.adventureId === adventure.id;
+        <div class="adventure" [class.not-picked]="play && !picked">
           <h4>{{ adventure.title }}</h4>
           <markdown [data]="adventure.summary" />
           <p class="skills">
@@ -33,12 +35,32 @@
             }
           </p>
           <ul class="rewards" aria-label="Rewards">
-            @for(reward of adventure.rewards; track reward.difficulty)
+            @for(reward of adventure.rewards; track reward.difficulty; let i = $index)
             {
-              <li><app-star-kindred-reward [reward]="reward" part="icon" /></li>
+              <li>
+                @if(reward.item)
+                {
+                  <a [routerLink]="'/poppyopedia/item/' + reward.item.name"><app-star-kindred-reward [reward]="reward" part="icon" /></a>
+                }
+                @else
+                {
+                  <app-star-kindred-reward [reward]="reward" part="icon" />
+                }
+                @if(picked)
+                {
+                  @if(i < play!.rewardsWon)
+                  {
+                    <i class="fa-solid fa-check won" role="img" aria-label="Won"></i>
+                  }
+                  @else
+                  {
+                    <i class="fa-solid fa-xmark lost" role="img" aria-label="Not won"></i>
+                  }
+                }
+              </li>
             }
           </ul>
-          @if(status.canPlayToday)
+          @if(!play)
           {
             <div class="buttons centered">
               <button type="button" (click)="doChooseParty(adventure)" [class.disabled]="!hasAdventurers">Choose Party</button>
@@ -48,18 +70,18 @@
       }
       @if(hasRetirees)
       {
-        <div class="adventure retirement">
+        <div class="adventure retirement" [class.not-picked]="play && play.adventureId !== null">
           <h4>The Final Adventure</h4>
           <p>Level {{ status.maxLevel }} adventurers have nothing left to prove. Send up to {{ status.maxPartySize }} of them on one last journey, and retire them into legend.</p>
           <p><b>Rewards:</b></p>
           <ul class="retirement-rewards">
             @for(reward of status.retirementRewards.perAdventurer; track reward.item?.name)
             {
-              <li><app-star-kindred-reward [reward]="reward" /> <small>(per adventurer)</small></li>
+              <li><a [routerLink]="'/poppyopedia/item/' + reward.item!.name"><app-star-kindred-reward [reward]="reward" /></a> <small>(per adventurer)</small></li>
             }
             <li><app-star-kindred-reward [reward]="status.retirementRewards.aura" /></li>
           </ul>
-          @if(status.canPlayToday)
+          @if(!play)
           {
             <div class="buttons">
               <button type="button" (click)="doChooseParty(null)">Retire Adventurers</button>

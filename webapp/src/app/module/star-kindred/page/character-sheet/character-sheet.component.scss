@@ -186,3 +186,26 @@
 .class-skill {
   font-weight: bold;
 }
+
+.class-feature {
+  margin-top: 1em;
+
+  h4 {
+    margin: 0 0 0.25em;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25em 1em;
+    margin: 0;
+  }
+
+  dt {
+    font-weight: bold;
+  }
+
+  dd {
+    margin: 0;
+  }
+}

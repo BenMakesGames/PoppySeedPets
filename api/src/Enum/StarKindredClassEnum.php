@@ -52,6 +52,11 @@ enum StarKindredClassEnum: string
         };
     }
 
+    public function hasAnimalCompanion(): bool
+    {
+        return $this === self::Ranger || $this === self::Druid;
+    }
+
     /**
      * Class skills improve by a full point every level; all other skills, by half a point.
      * @return StarKindredSkillEnum[]

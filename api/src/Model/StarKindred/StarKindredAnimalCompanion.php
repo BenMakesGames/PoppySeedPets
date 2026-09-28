@@ -13,24 +13,34 @@ declare(strict_types=1);
 
 namespace App\Model\StarKindred;
 
-final readonly class StarKindredAdventureResult
+/**
+ * Rangers & Druids gain one at StarKindredAnimalCompanion::GainedAtLevel.
+ * Stored in StarKindredCharacter::$classFeatures, under "animalCompanion".
+ */
+final readonly class StarKindredAnimalCompanion
 {
-    /**
-     * @param StarKindredCheckResult[] $checks
-     * @param string $text Markdown
-     * @param string[] $loot
-     * @param StarKindredCharacterProgress[] $progress
-     * @param string[] $milestones Markdown; class features gained by leveling up (ex: animal companions)
-     */
+    public const int GainedAtLevel = 4;
+
     public function __construct(
-        public bool $victory,
-        public string $title,
-        public array $checks,
-        public string $text,
-        public array $loot,
-        public array $progress,
-        public array $milestones,
+        public string $name,
+        public string $species,
     )
     {
+    }
+
+    /**
+     * @return array{name: string, species: string}
+     */
+    public function toArray(): array
+    {
+        return [ 'name' => $this->name, 'species' => $this->species ];
+    }
+
+    /**
+     * @param array{name: string, species: string} $data
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self($data['name'], $data['species']);
     }
 }

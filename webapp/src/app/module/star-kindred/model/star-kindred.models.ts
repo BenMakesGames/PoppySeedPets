@@ -26,6 +26,8 @@ export interface StarKindredCharacter
   createdOn: string;
   retiredOn: string|null;
   epilogue: string|null;
+  /** class-specific extras; animalCompanion is for Rangers & Druids. (arrives as [] when there are none) */
+  classFeatures: { animalCompanion?: { name: string, species: string } };
   stats: { name: string, value: number, modifier: number, growth: 'primary'|'secondary'|null }[];
   skills: { name: string, stat: string, value: number, isClassSkill: boolean }[];
 }
@@ -57,7 +59,8 @@ export interface StarKindredDifficulty
 
 export interface StarKindredStatus
 {
-  canPlayToday: boolean;
+  /** null if the player hasn't played yet today; adventureId is null if they spent the day retiring adventurers */
+  todaysPlay: { adventureId: string|null, rewardsWon: number }|null;
   maxPartySize: number;
   maxAdventurers: number;
   maxLevel: number;
@@ -70,6 +73,11 @@ export interface StarKindredStatus
 export interface StarKindredAdventureResult
 {
   victory: boolean;
+  title: string;
+  checks: {
+    success: boolean;
+    text: string;
+  }[];
   text: string;
   loot: string[];
   progress: {
@@ -81,4 +89,6 @@ export interface StarKindredAdventureResult
     level: number;
     retired: boolean;
   }[];
+  /** markdown; class features gained by leveling up (ex: animal companions) */
+  milestones: string[];
 }

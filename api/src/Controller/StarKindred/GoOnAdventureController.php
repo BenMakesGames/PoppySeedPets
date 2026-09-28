@@ -59,8 +59,6 @@ class GoOnAdventureController
 
         $party = $starKindred->findParty($user, $request->characters);
 
-        $starKindred->markPlayedToday($user);
-
         $result = $starKindred->goOnAdventure($user, $adventure, $request->difficulty, $party);
 
         $em->flush();

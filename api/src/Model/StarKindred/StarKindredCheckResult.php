@@ -11,25 +11,17 @@ declare(strict_types=1);
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets API. If not, see <https://www.gnu.org/licenses/>.
  */
 
+
 namespace App\Model\StarKindred;
 
-final readonly class StarKindredAdventureResult
+final readonly class StarKindredCheckResult
 {
     /**
-     * @param StarKindredCheckResult[] $checks
      * @param string $text Markdown
-     * @param string[] $loot
-     * @param StarKindredCharacterProgress[] $progress
-     * @param string[] $milestones Markdown; class features gained by leveling up (ex: animal companions)
      */
     public function __construct(
-        public bool $victory,
-        public string $title,
-        public array $checks,
+        public bool $success,
         public string $text,
-        public array $loot,
-        public array $progress,
-        public array $milestones,
     )
     {
     }

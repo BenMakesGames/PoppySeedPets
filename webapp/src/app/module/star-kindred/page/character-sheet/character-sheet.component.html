@@ -107,6 +107,17 @@
           </table>
         </section>
       </div>
+
+      @if(character.classFeatures.animalCompanion; as companion)
+      {
+        <section class="class-feature">
+          <h4>Animal Companion</h4>
+          <dl>
+            <dt>Name</dt><dd>{{ companion.name }}</dd>
+            <dt>Species</dt><dd>{{ companion.species }}</dd>
+          </dl>
+        </section>
+      }
     </div>
   }
 </main>

@@ -13,9 +13,15 @@
   flex-wrap: wrap;
   gap: 0.5em;
   margin-bottom: 1em;
+}
+
+.difficulty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
 
   > button {
-    flex: 1;
     background-color: transparent;
     border: 2px transparent solid;
     color: rgb(var(--color-link-and-button));
@@ -23,6 +29,26 @@
     &.checked {
       border-color: rgb(var(--color-link-and-button));
     }
+  }
+
+  .reward {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0.25em;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 85%;
+    opacity: 0.5;
+
+    app-star-kindred-reward {
+      flex-direction: column;
+    }
+  }
+
+  &.earned .reward {
+    opacity: 1;
+    background-color: rgb(var(--color-speech-bubble-background));
   }
 }
 
@@ -67,17 +93,4 @@
 .risky {
   color: rgb(var(--color-warning));
   font-weight: bold;
-}
-
-.rewards-heading {
-  margin-bottom: 0.25em;
-}
-
-.rewards {
-  list-style: none;
-  padding-left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-  margin-bottom: 1em;
 }

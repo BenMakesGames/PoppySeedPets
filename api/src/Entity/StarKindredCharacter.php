@@ -17,6 +17,7 @@ use App\Enum\StarKindredClassEnum;
 use App\Enum\StarKindredRaceEnum;
 use App\Enum\StarKindredSkillEnum;
 use App\Enum\StarKindredStatEnum;
+use App\Model\StarKindred\StarKindredAnimalCompanion;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -98,6 +99,13 @@ class StarKindredCharacter
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $epilogue = null;
+
+    /**
+     * Class-specific extras, keyed by feature. Currently only "animalCompanion" (Rangers & Druids).
+     * @var array{animalCompanion?: array{name: string, species: string}}
+     */
+    #[ORM\Column(type: 'json')]
+    private array $classFeatures = [];
 
     /**
      * @param array<value-of<StarKindredStatEnum>, int> $baseStats
@@ -284,6 +292,32 @@ class StarKindredCharacter
     public function getEpilogue(): ?string
     {
         return $this->epilogue;
+    }
+
+    /**
+     * @return array{animalCompanion?: array{name: string, species: string}}
+     */
+    public function getClassFeatures(): array
+    {
+        return $this->classFeatures;
+    }
+
+    public function getAnimalCompanion(): ?StarKindredAnimalCompanion
+    {
+        return isset($this->classFeatures['animalCompanion'])
+            ? StarKindredAnimalCompanion::fromArray($this->classFeatures['animalCompanion'])
+            : null;
+    }
+
+    public function gainAnimalCompanion(StarKindredAnimalCompanion $companion): void
+    {
+        if(!$this->characterClass->hasAnimalCompanion())
+            throw new \LogicException($this->characterClass->value . 's do not get animal companions.');
+
+        if($this->getAnimalCompanion() !== null)
+            throw new \LogicException('This character already has an animal companion.');
+
+        $this->classFeatures['animalCompanion'] = $companion->toArray();
     }
 
     public function retire(\DateTimeImmutable $retiredOn, string $epilogue): void

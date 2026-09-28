@@ -12,6 +12,41 @@ markdown {
   margin-bottom: 1em;
 }
 
+.outcome {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: var(--bold-weight);
+  margin: 0 0 0.67em;
+
+  .flourish {
+    font-weight: var(--normal-weight);
+    opacity: 0.6;
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+
+  .mark {
+    flex: none;
+    width: 1em;
+    text-align: center;
+    font-size: 1.5em;
+    color: #c22;
+  }
+
+  &.success .mark {
+    color: #2a2;
+  }
+
+  markdown {
+    margin-bottom: 0;
+  }
+}
+
 .progress {
   padding-left: 1.25em;
 }

@@ -15,11 +15,10 @@ namespace App\Service\StarKindred;
 
 use App\Entity\Pet;
 use App\Entity\StarKindredCharacter;
+use App\Entity\StarKindredDailyPlay;
 use App\Entity\User;
-use App\Entity\UserQuest;
 use App\Exceptions\PSPFormValidationException;
 use App\Exceptions\PSPInvalidOperationException;
-use App\Functions\UserQuestRepository;
 use App\Enum\LocationEnum;
 use App\Enum\StarKindredClassEnum;
 use App\Enum\StarKindredDifficultyEnum;
@@ -29,9 +28,13 @@ use App\Enum\StarKindredStatEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
 use App\Functions\ArrayFunctions;
+use App\Functions\GrammarFunctions;
+use App\Model\PetShelterPet;
 use App\Model\StarKindred\StarKindredAdventure;
 use App\Model\StarKindred\StarKindredAdventureResult;
+use App\Model\StarKindred\StarKindredAnimalCompanion;
 use App\Model\StarKindred\StarKindredCharacterProgress;
+use App\Model\StarKindred\StarKindredCheckResult;
 use App\Service\Clock;
 use App\Service\HattierService;
 use App\Service\InventoryService;
@@ -57,25 +60,37 @@ class StarKindredAdventureService
     {
     }
 
-    public function hasPlayedToday(User $user): bool
+    /**
+     * Null if the user hasn't played yet today.
+     */
+    public function findTodaysPlay(User $user): ?StarKindredDailyPlay
     {
-        return $this->getPlayedQuest($user)->getValue() === $this->clock->now->format('Y-m-d');
+        $play = $this->em->getRepository(StarKindredDailyPlay::class)->findOneBy([ 'user' => $user ]);
+
+        return $play?->isOn($this->clock->now) ? $play : null;
     }
 
     /**
+     * @param string|null $adventureId Null when retiring adventurers, instead of going on an adventure
      * @throws PSPInvalidOperationException
      */
-    public function markPlayedToday(User $user): void
+    private function markPlayedToday(User $user, ?string $adventureId): StarKindredDailyPlay
     {
-        if($this->hasPlayedToday($user))
+        $play = $this->em->getRepository(StarKindredDailyPlay::class)->findOneBy([ 'user' => $user ]);
+
+        if($play === null)
+        {
+            $play = new StarKindredDailyPlay($user, $this->clock->now, $adventureId);
+            $this->em->persist($play);
+            return $play;
+        }
+
+        if($play->isOn($this->clock->now))
             throw new PSPInvalidOperationException('There\'s only time for one ★Kindred adventure per day. THEM\'S JUST THE RULES.');
 
-        $this->getPlayedQuest($user)->setValue($this->clock->now->format('Y-m-d'));
-    }
+        $play->replay($this->clock->now, $adventureId);
 
-    private function getPlayedQuest(User $user): UserQuest
-    {
-        return UserQuestRepository::findOrCreate($this->em, $user, 'Played ★Kindred', $this->clock->now->modify('-1 day')->format('Y-m-d'));
+        return $play;
     }
 
     public static function findActiveCharacter(EntityManagerInterface $em, Pet $pet): ?StarKindredCharacter
@@ -183,10 +198,13 @@ class StarKindredAdventureService
         if(array_any($party, fn(StarKindredCharacter $c) => $c->isMaxLevel()))
             throw new PSPInvalidOperationException('Level ' . StarKindredCharacter::MaxLevel . ' adventurers have nothing left to prove! The only adventure left for them is retirement.');
 
+        $play = $this->markPlayedToday($user, $adventure->id);
+
         $target = $difficulty->targetPerCharacter() * count($party);
         $encountersWon = 0;
 
-        $text = '# ' . $adventure->title . "\n\n" . $adventure->summary . "\n\n";
+        $checks = [];
+        $text = '';
 
         foreach($adventure->encounters as $encounter)
         {
@@ -197,8 +215,11 @@ class StarKindredAdventureService
 
             $won = $total >= $target;
 
-            $text .= "**{$encounter->title}** ({$encounter->skill->value}: rolled {$total} vs. {$target})\\\n";
-            $text .= ($won ? $encounter->success : $encounter->failure) . "\n\n";
+            $checks[] = new StarKindredCheckResult(
+                $won,
+                "**{$encounter->title}** ({$encounter->skill->value}: rolled {$total} vs. {$target})\\\n" .
+                ($won ? $encounter->success : $encounter->failure)
+            );
 
             if($won)
                 $encountersWon++;
@@ -210,9 +231,11 @@ class StarKindredAdventureService
 
         if($victory)
         {
-            $text .= "**Victory!**\n\n";
+            $rewards = $adventure->getRewardsFor($difficulty);
 
-            foreach($adventure->getRewardsFor($difficulty) as $reward)
+            $play->setRewardsWon(count($rewards));
+
+            foreach($rewards as $reward)
             {
                 if($reward->item)
                 {
@@ -231,7 +254,7 @@ class StarKindredAdventureService
         }
         else
         {
-            $text .= "**Defeat...** The party retreats to regroup, a little wiser for the experience.\n\n";
+            $text .= "The party retreats to regroup, a little wiser for the experience.\n\n";
         }
 
         $this->userStatsService->incrementStat($user, UserStat::WentOnAStarKindredAdventure);
@@ -240,18 +263,27 @@ class StarKindredAdventureService
             ? $difficulty->victoryExperience()
             : $difficulty->defeatExperience($encountersWon);
 
-        $progress = array_map(
-            function(StarKindredCharacter $character) use($experience, $victory) {
-                $character->recordAdventure($victory);
-                $levelsGained = $character->gainExperience($experience);
+        $progress = [];
+        $milestones = [];
 
-                return new StarKindredCharacterProgress(
-                    $character->getId(), $character->getName(), $character->getPet()->getName(),
-                    $experience, $levelsGained, $character->getLevel(), false
-                );
-            },
-            $party
-        );
+        foreach($party as $character)
+        {
+            $character->recordAdventure($victory);
+            $levelsGained = $character->gainExperience($experience);
+
+            $progress[] = new StarKindredCharacterProgress(
+                $character->getId(), $character->getName(), $character->getPet()->getName(),
+                $experience, $levelsGained, $character->getLevel(), false
+            );
+
+            if($levelsGained > 0)
+            {
+                $milestone = $this->maybeGainAnimalCompanion($user, $character);
+
+                if($milestone !== null)
+                    $milestones[] = $milestone;
+            }
+        }
 
         if(count($loot) > 0)
             $text .= '(You award your pets ' . self::describeLoot($loot) . '.)';
@@ -261,7 +293,40 @@ class StarKindredAdventureService
 
         $this->receiveLoot($user, $loot);
 
-        return new StarKindredAdventureResult($victory, $text, $loot, $progress);
+        return new StarKindredAdventureResult($victory, $adventure->title, $checks, $text, $loot, $progress, $milestones);
+    }
+
+    /**
+     * @return string|null A message for the player (Markdown), if the character gained an animal companion
+     */
+    private function maybeGainAnimalCompanion(User $user, StarKindredCharacter $character): ?string
+    {
+        $class = $character->getCharacterClass();
+
+        if(
+            !$class->hasAnimalCompanion() ||
+            $character->getLevel() < StarKindredAnimalCompanion::GainedAtLevel ||
+            $character->getAnimalCompanion() !== null
+        )
+            return null;
+
+        $figurine = $this->rng->rngNextFromArray(array_keys(self::AnimalCompanionFigurines));
+        $species = self::AnimalCompanionFigurines[$figurine];
+        $companion = new StarKindredAnimalCompanion($this->rng->rngNextFromArray(PetShelterPet::PetNames), $species);
+
+        $character->gainAnimalCompanion($companion);
+
+        $this->inventoryService->receiveItem(
+            $figurine, $user, $user,
+            "This {$species} represents {$companion->name}, the animal companion of {$character->getName()}, {$character->getPet()->getName()}'s ★Kindred {$class->value}.",
+            LocationEnum::Home
+        );
+
+        return
+            "{$character->getName()}, as a level-" . StarKindredAnimalCompanion::GainedAtLevel . " {$class->value}, gets an animal companion! " .
+            'They chose ' . GrammarFunctions::indefiniteArticle($species) . " {$species} named {$companion->name}. " .
+            '(You award your pets ' . GrammarFunctions::indefiniteArticle($figurine) . " {$figurine}, to commemorate the event!)"
+        ;
     }
 
     /**
@@ -272,8 +337,10 @@ class StarKindredAdventureService
         if(array_any($party, fn(StarKindredCharacter $c) => !$c->isMaxLevel()))
             throw new PSPInvalidOperationException('Only level ' . StarKindredCharacter::MaxLevel . ' adventurers may retire, and they must all retire together.');
 
+        $this->markPlayedToday($user, null);
+
         $loot = [];
-        $text = "# The Final Adventure\n\nOne last journey together: a victory lap through every land the party ever saw, ending in a grand feast held in their honor.\n\n";
+        $text = '';
 
         foreach($party as $character)
         {
@@ -300,7 +367,7 @@ class StarKindredAdventureService
             $party
         );
 
-        return new StarKindredAdventureResult(true, $text, $loot, $progress);
+        return new StarKindredAdventureResult(true, 'The Final Adventure', [], $text, $loot, $progress, []);
     }
 
     private function generateEpilogue(StarKindredCharacter $character): string
@@ -368,13 +435,15 @@ class StarKindredAdventureService
             $this->inventoryService->receiveItem($item, $user, $user, $user->getName() . ' gave this to their pets during a game of ★Kindred.', LocationEnum::Home);
     }
 
-    // "Roy" Plushy is a special event item; Phoenix Plushy is a quest item
-    public const array RecruitFigures = [
-        'Bulbun Plushy',
-        'Peacock Plushy',
-        'Rainbow Dolphin Plushy',
-        'Sneqo Plushy',
-        'Catmouse Figurine',
-        'Tentacat Figurine',
+    /**
+     * Item name => companion species. ("Roy" Plushy is a special event item; Phoenix Plushy is a quest item.)
+     */
+    public const array AnimalCompanionFigurines = [
+        'Bulbun Plushy' => 'Bulbun',
+        'Peacock Plushy' => 'Peacock',
+        'Rainbow Dolphin Plushy' => 'Rainbow Dolphin',
+        'Sneqo Plushy' => 'Sneqo',
+        'Catmouse Figurine' => 'Catmouse',
+        'Tentacat Figurine' => 'Tentacat',
     ];
 }

@@ -138,15 +138,11 @@ final class StarKindredDailyAdventures
         $treasures = array_values($theme->treasures());
         $rng->rngNextShuffle($treasures);
 
-        $veteranReward = $rng->rngNextInt(1, 4) === 1
-            ? StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $rng->rngNextFromArray(StarKindredAdventureService::RecruitFigures), 1)
-            : StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $theme->prize(), 2);
-
         $aura = $theme->aura();
 
         return [
             StarKindredReward::item(StarKindredDifficultyEnum::Novice, $rng->rngNextFromArray($theme->lootTable()), 1),
-            $veteranReward,
+            StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $theme->prize(), 2),
             $aura
                 ? StarKindredReward::aura(StarKindredDifficultyEnum::Hero, $aura)
                 : StarKindredReward::item(StarKindredDifficultyEnum::Hero, $treasures[1], 1),

@@ -45,6 +45,9 @@ final class StarKindredCharacterSheet
             'createdOn' => $c->getCreatedOn()->format('c'),
             'retiredOn' => $c->getRetiredOn()?->format('c'),
             'epilogue' => $c->getEpilogue(),
+            // passed as a plain array: (object) would be emptied by group-based normalization. when there are
+            // no features, this serializes as [] rather than {}; either way, missing keys read as undefined
+            'classFeatures' => $c->getClassFeatures(),
             'stats' => array_map(
                 fn(StarKindredStatEnum $stat) => [
                     'name' => $stat->value,

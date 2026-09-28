@@ -37,7 +37,7 @@ class ValidateStarKindredRewardsTest extends KernelTestCase
         $em = self::getContainer()->get(EntityManagerInterface::class);
 
         $itemNames = [
-            ...StarKindredAdventureService::RecruitFigures,
+            ...array_keys(StarKindredAdventureService::AnimalCompanionFigurines),
             ...StarKindredAdventureService::RetirementRewardsPerAdventurer,
         ];
 

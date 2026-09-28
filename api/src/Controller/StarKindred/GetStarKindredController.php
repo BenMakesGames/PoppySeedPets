@@ -75,9 +75,14 @@ class GetStarKindredController
 
         $rewardMapper = new RewardMapper($em, $user, $rewards);
 
+        $todaysPlay = $starKindred->findTodaysPlay($user);
+
         return $responseService->success(
             [
-                'canPlayToday' => !$starKindred->hasPlayedToday($user),
+                'todaysPlay' => $todaysPlay === null ? null : [
+                    'adventureId' => $todaysPlay->getAdventureId(),
+                    'rewardsWon' => $todaysPlay->getRewardsWon(),
+                ],
                 'maxPartySize' => StarKindredAdventureService::MaxPartySize,
                 'maxAdventurers' => StarKindredAdventureService::MaxAdventurers,
                 'maxLevel' => StarKindredCharacter::MaxLevel,

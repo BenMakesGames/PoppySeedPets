@@ -54,8 +54,6 @@ class RetireController
 
         $party = $starKindred->findParty($user, $request->characters);
 
-        $starKindred->markPlayedToday($user);
-
         $result = $starKindred->retire($user, $party);
 
         $em->flush();

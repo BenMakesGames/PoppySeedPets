@@ -14,20 +14,25 @@
     {
       <p>Choose up to {{ status.maxPartySize }} adventurers, and a difficulty. Harder adventures give more rewards and experience, but every adventurer raises the bar for the whole party.</p>
       <div class="difficulties" role="radiogroup" aria-label="Difficulty">
-        @for(d of status.difficulties; track d.name)
+        @for(d of status.difficulties; track d.name; let i = $index)
         {
-          <button type="button" role="radio" [class.checked]="d === difficulty" [attr.aria-checked]="d === difficulty ? 'true' : 'false'" (click)="doSetDifficulty(d)">
-            {{ d.name }}<br><small>{{ d.victoryExperience }} XP</small>
-          </button>
+          <div class="difficulty" [class.earned]="i <= tier">
+            <button type="button" role="radio" [class.checked]="d === difficulty" [attr.aria-checked]="d === difficulty ? 'true' : 'false'" (click)="doSetDifficulty(d)">
+              {{ d.name }}<br><small>{{ d.victoryExperience }} XP</small>
+            </button>
+            @if(rewardFor(d); as reward)
+            {
+              <div class="reward">
+                <app-star-kindred-reward [reward]="reward" />
+                @if(i <= tier)
+                {
+                  <span class="sr-only">(earned on victory)</span>
+                }
+              </div>
+            }
+          </div>
         }
       </div>
-      <p class="rewards-heading"><b>Victory on {{ difficulty.name }} earns:</b></p>
-      <ul class="rewards">
-        @for(reward of rewards; track reward.difficulty)
-        {
-          <li><app-star-kindred-reward [reward]="reward" /></li>
-        }
-      </ul>
     }
     @else
     {
