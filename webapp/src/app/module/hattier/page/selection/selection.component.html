@@ -27,10 +27,10 @@
           }
           <li><a routerLink="/hattier/collection" class="button">"Can you show me details about the styles I've found?"</a></li>
         </ul>
-        <div style="padding-top:1rem">
+        <div class="pets">
           @for(pet of pets; track pet.id)
           {
-            <app-pet-customer [pet]="pet" (select)="doSelectPet(pet)" />
+            <app-pet-customer [pet]="pet" (zhuzhUp)="doZhuzhUp(pet)" (changeFit)="doChangeFit(pet)" />
           }
         </div>
       </section>

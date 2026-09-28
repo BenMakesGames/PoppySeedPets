@@ -7,10 +7,32 @@
  *
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
  */
+// a grid host stretches .pet to fill the host, so pets in a grid row share a height
+:host
+{
+  display: grid;
+}
+
 .pet
 {
   display: grid;
   grid-template-columns: 1in auto;
   align-items: end;
   gap: 1rem;
+}
+
+// name & hat at the top, buttons at the bottom, so they line up across a grid row
+.details
+{
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+.buttons
+{
+  margin-top: auto;
+  font-size: 90%;
+
+  @media (min-width: 400px) { font-size: 100%; }
 }

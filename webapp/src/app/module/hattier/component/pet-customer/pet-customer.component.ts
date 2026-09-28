@@ -19,12 +19,6 @@ import { MyPetSerializationGroup } from "../../../../model/my-pet/my-pet.seriali
 export class PetCustomerComponent {
 
   @Input() pet: MyPetSerializationGroup;
-  @Input() buttonText = 'Enter Dressing Room';
-
-  @Output() select = new EventEmitter();
-
-  doSelect()
-  {
-    this.select.emit();
-  }
+  @Output() zhuzhUp = new EventEmitter<void>();
+  @Output() changeFit = new EventEmitter<void>();
 }
