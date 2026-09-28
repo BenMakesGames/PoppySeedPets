@@ -107,6 +107,7 @@ final class StarKindredDailyAdventures
                     strtr($text['title'], $tokens),
                     strtr($text['success'], $tokens),
                     strtr($text['failure'], $tokens),
+                    StarKindredThemeEnum::isUndeadFoe($tokens['{foe}']) && str_contains(implode($text), '{foe}'),
                 );
             },
             $encounterSkills
@@ -120,7 +121,7 @@ final class StarKindredDailyAdventures
         // hash everything a player sees, so ANY change to the adventure (ex: from a deploy) changes its id
         $id = substr(hash('sha256', json_encode([
             $date->format('Y-m-d'), $index, $theme->value, $title, $summary,
-            array_map(fn(StarKindredEncounter $e) => [ $e->skill->value, $e->title, $e->success, $e->failure ], $encounters),
+            array_map(fn(StarKindredEncounter $e) => [ $e->skill->value, $e->title, $e->success, $e->failure, $e->againstUndead ], $encounters),
             array_map(fn(StarKindredReward $r) => [ $r->difficulty->value, $r->item, $r->quantity, $r->aura ], $rewards),
         ], JSON_THROW_ON_ERROR)), 0, 16);
 
@@ -129,24 +130,25 @@ final class StarKindredDailyAdventures
 
     /**
      * Four tiers of increasing value, awarded cumulatively by difficulty. A setting's hat styling is
-     * always the Hero reward, so Demigod always offers something a player can collect again.
+     * only ever a Hero reward, so Demigod always offers something a player can collect again.
      *
      * @return StarKindredReward[]
      */
     private static function generateRewards(IRandom $rng, StarKindredThemeEnum $theme): array
     {
-        $treasures = array_values($theme->treasures());
-        $rng->rngNextShuffle($treasures);
+        $prizes = $theme->prizes();
+        $prize = $rng->rngNextFromArray(array_keys($prizes));
 
-        $aura = $theme->aura();
+        $heroOptions = [
+            ...array_map(fn(string $item) => StarKindredReward::item(StarKindredDifficultyEnum::Hero, $item, 1), $theme->heroTreasures()),
+            ...array_map(fn(string $aura) => StarKindredReward::aura(StarKindredDifficultyEnum::Hero, $aura), $theme->auras()),
+        ];
 
         return [
             StarKindredReward::item(StarKindredDifficultyEnum::Novice, $rng->rngNextFromArray($theme->lootTable()), 1),
-            StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $theme->prize(), 2),
-            $aura
-                ? StarKindredReward::aura(StarKindredDifficultyEnum::Hero, $aura)
-                : StarKindredReward::item(StarKindredDifficultyEnum::Hero, $treasures[1], 1),
-            StarKindredReward::item(StarKindredDifficultyEnum::Demigod, $treasures[0], 1),
+            StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $prize, $prizes[$prize]),
+            $rng->rngNextFromArray($heroOptions),
+            StarKindredReward::item(StarKindredDifficultyEnum::Demigod, $rng->rngNextFromArray($theme->treasures()), 1),
         ];
     }
 }

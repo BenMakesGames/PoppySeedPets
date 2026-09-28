@@ -23,7 +23,9 @@ use App\Enum\LocationEnum;
 use App\Enum\StarKindredClassEnum;
 use App\Enum\StarKindredDifficultyEnum;
 use App\Enum\StarKindredRaceEnum;
+use App\Enum\StarKindredSchoolOfMagicEnum;
 use App\Enum\StarKindredSexEnum;
+use App\Enum\StarKindredSkillEnum;
 use App\Enum\StarKindredStatEnum;
 use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
@@ -166,6 +168,11 @@ class StarKindredAdventureService
 
         $class = $this->rng->rngNextFromArray(StarKindredClassEnum::cases());
 
+        $chosenSkill = $this->rng->rngNextFromArray(array_values(array_filter(
+            StarKindredSkillEnum::cases(),
+            fn(StarKindredSkillEnum $skill) => !in_array($skill, $class->classSkills(), true)
+        )));
+
         $stats = [];
 
         foreach(StarKindredStatEnum::cases() as $stat)
@@ -183,7 +190,10 @@ class StarKindredAdventureService
         $name = StarKindredNames::roll($this->rng, $race, $sex);
         $portrait = StarKindredPortraits::roll($this->rng, $race, $sex);
 
-        $character = new StarKindredCharacter($pet, $name, $race, $class, $portrait, $stats, $this->clock->now);
+        $character = new StarKindredCharacter($pet, $name, $race, $class, $portrait, $chosenSkill, $stats, $this->clock->now);
+
+        // level-1 Bards start with a song; no need to announce it, since it's on the new character's sheet
+        $this->learnSongs($character);
 
         $this->em->persist($character);
 
@@ -210,7 +220,7 @@ class StarKindredAdventureService
         {
             $total = ArrayFunctions::sum(
                 $party,
-                fn(StarKindredCharacter $c) => $this->rng->rngNextInt(1, 20) + $c->getSkill($encounter->skill)
+                fn(StarKindredCharacter $c) => $this->rng->rngNextInt(1, 20) + $c->getEncounterBonus($encounter)
             );
 
             $won = $total >= $target;
@@ -278,10 +288,15 @@ class StarKindredAdventureService
 
             if($levelsGained > 0)
             {
-                $milestone = $this->maybeGainAnimalCompanion($user, $character);
-
-                if($milestone !== null)
-                    $milestones[] = $milestone;
+                $milestones = [
+                    ...$milestones,
+                    ...array_filter([
+                        $this->maybeGainAnimalCompanion($user, $character),
+                        $this->maybeChooseSchoolOfMagic($character),
+                        $this->maybeLearnToBanishUndead($character, $levelsGained),
+                    ]),
+                    ...$this->learnSongs($character),
+                ];
             }
         }
 
@@ -318,7 +333,7 @@ class StarKindredAdventureService
 
         $this->inventoryService->receiveItem(
             $figurine, $user, $user,
-            "This {$species} represents {$companion->name}, the animal companion of {$character->getName()}, {$character->getPet()->getName()}'s ★Kindred {$class->value}.",
+            "This {$species} represents {$companion->name}, the animal companion of {$character->getName()} ({$character->getPet()->getName()}'s ★Kindred {$class->value}).",
             LocationEnum::Home
         );
 
@@ -326,6 +341,83 @@ class StarKindredAdventureService
             "{$character->getName()}, as a level-" . StarKindredAnimalCompanion::GainedAtLevel . " {$class->value}, gets an animal companion! " .
             'They chose ' . GrammarFunctions::indefiniteArticle($species) . " {$species} named {$companion->name}. " .
             '(You award your pets ' . GrammarFunctions::indefiniteArticle($figurine) . " {$figurine}, to commemorate the event!)"
+        ;
+    }
+
+    /**
+     * Banish Undead is derived from class & level, so there's nothing to store; just announce it.
+     * @return string|null A message for the player (Markdown), if the character just learned to Banish Undead
+     */
+    private function maybeLearnToBanishUndead(StarKindredCharacter $character, int $levelsGained): ?string
+    {
+        $levelBefore = $character->getLevel() - $levelsGained;
+
+        if(!$character->canBanishUndead() || $levelBefore >= StarKindredCharacter::BanishUndeadLevel)
+            return null;
+
+        return
+            "{$character->getName()}, as a level-" . StarKindredCharacter::BanishUndeadLevel . " {$character->getCharacterClass()->value}, learns to Banish Undead! " .
+            '(+' . StarKindredCharacter::BanishUndeadBonus . ' against the undead.)'
+        ;
+    }
+
+    /**
+     * Teaches the character every song it's reached the level for (possibly several, after a big level-up).
+     * @return string[] A message for the player (Markdown) per song learned
+     */
+    private function learnSongs(StarKindredCharacter $character): array
+    {
+        $messages = [];
+
+        while($character->getSongsToLearn() > 0)
+        {
+            $options = $character->getLearnableSongs();
+
+            // can't happen with today's skills & song levels, but if it ever does, there's simply nothing new to learn
+            if(count($options) === 0)
+                break;
+
+            $skill = $this->rng->rngNextFromArray($options);
+
+            $character->learnSong($skill);
+
+            $messages[] =
+                "{$character->getName()} learns a new song: a song of {$skill->value}! " .
+                '(+' . StarKindredCharacter::SongBonus . " to {$skill->value}.)"
+            ;
+        }
+
+        return $messages;
+    }
+
+    /**
+     * @return string|null A message for the player (Markdown), if the character specialized in a school of magic
+     */
+    private function maybeChooseSchoolOfMagic(StarKindredCharacter $character): ?string
+    {
+        if(
+            $character->getCharacterClass() !== StarKindredClassEnum::Wizard ||
+            $character->getLevel() < StarKindredSchoolOfMagicEnum::ChosenAtLevel ||
+            $character->getSchoolOfMagic() !== null
+        )
+            return null;
+
+        $options = array_values(array_filter(
+            StarKindredSchoolOfMagicEnum::cases(),
+            fn(StarKindredSchoolOfMagicEnum $school) => !$character->isTrainedSkill($school->skill())
+        ));
+
+        // can't happen with today's class & school skills, but if it ever does, there's simply nothing new to learn
+        if(count($options) === 0)
+            return null;
+
+        $school = $this->rng->rngNextFromArray($options);
+
+        $character->chooseSchoolOfMagic($school);
+
+        return
+            "{$character->getName()}, as a level-" . StarKindredSchoolOfMagicEnum::ChosenAtLevel . ' Wizard, specializes in a school of magic: ' .
+            "{$school->value}! ({$school->skill()->value} is now a trained skill.)"
         ;
     }
 

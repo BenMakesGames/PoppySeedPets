@@ -56,6 +56,11 @@ final readonly class StarKindredAdventure
         return $skills;
     }
 
+    public function hasUndeadEncounters(): bool
+    {
+        return array_any($this->encounters, fn(StarKindredEncounter $e) => $e->againstUndead);
+    }
+
     /**
      * @return StarKindredReward[]
      */

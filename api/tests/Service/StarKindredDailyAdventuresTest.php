@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Service;
 
 use App\Enum\StarKindredDifficultyEnum;
+use App\Enum\StarKindredThemeEnum;
 use App\Model\StarKindred\StarKindredAdventure;
 use App\Model\StarKindred\StarKindredReward;
 use App\Service\StarKindred\StarKindredDailyAdventures;
@@ -59,6 +60,25 @@ class StarKindredDailyAdventuresTest extends TestCase
         }
     }
 
+    public function testUndeadFoesExist(): void
+    {
+        $allFoes = array_merge(...array_map(fn(StarKindredThemeEnum $t) => $t->foes(), StarKindredThemeEnum::cases()));
+
+        foreach(StarKindredThemeEnum::UndeadFoes as $foe)
+            self::assertContains($foe, $allFoes, "\"{$foe}\" is listed as undead, but no theme has it as a foe. (Typo?)");
+    }
+
+    public function testEveryRewardTierHasOptions(): void
+    {
+        foreach(StarKindredThemeEnum::cases() as $theme)
+        {
+            self::assertNotEmpty($theme->lootTable(), "{$theme->value} has no Novice rewards.");
+            self::assertNotEmpty($theme->prizes(), "{$theme->value} has no Veteran rewards.");
+            self::assertNotEmpty([ ...$theme->heroTreasures(), ...$theme->auras() ], "{$theme->value} has no Hero rewards.");
+            self::assertNotEmpty($theme->treasures(), "{$theme->value} has no Demigod rewards.");
+        }
+    }
+
     private static function assertRewardsAreWellFormed(StarKindredAdventure $adventure): void
     {
         self::assertSame(
@@ -77,8 +97,12 @@ class StarKindredDailyAdventuresTest extends TestCase
                 self::assertGreaterThan(0, $reward->quantity);
         }
 
-        if($adventure->theme->aura())
-            self::assertSame($adventure->theme->aura(), $adventure->rewards[StarKindredDifficultyEnum::Hero->tier()]->aura);
+        $hero = $adventure->rewards[StarKindredDifficultyEnum::Hero->tier()];
+
+        if($hero->aura)
+            self::assertContains($hero->aura, $adventure->theme->auras());
+        else
+            self::assertContains($hero->item, $adventure->theme->heroTreasures());
 
         self::assertCount(3, $adventure->getRewardsFor(StarKindredDifficultyEnum::Hero), 'Rewards are cumulative.');
     }

@@ -47,7 +47,10 @@ final class StarKindredCharacterSheet
             'epilogue' => $c->getEpilogue(),
             // passed as a plain array: (object) would be emptied by group-based normalization. when there are
             // no features, this serializes as [] rather than {}; either way, missing keys read as undefined
-            'classFeatures' => $c->getClassFeatures(),
+            'classFeatures' => [
+                ...$c->getClassFeatures(),
+                ...($c->canBanishUndead() ? [ 'banishUndead' => StarKindredCharacter::BanishUndeadBonus ] : []),
+            ],
             'stats' => array_map(
                 fn(StarKindredStatEnum $stat) => [
                     'name' => $stat->value,
@@ -66,7 +69,12 @@ final class StarKindredCharacterSheet
                     'name' => $skill->value,
                     'stat' => $skill->stat()->value,
                     'value' => $c->getSkill($skill),
-                    'isClassSkill' => $c->isClassSkill($skill),
+                    'training' => match(true) {
+                        $c->isClassSkill($skill) => 'class',
+                        $skill === $c->getChosenSkill() => 'chosen',
+                        $skill === $c->getSchoolOfMagic()?->skill() => 'schoolOfMagic',
+                        default => null,
+                    },
                 ],
                 StarKindredSkillEnum::cases()
             ),

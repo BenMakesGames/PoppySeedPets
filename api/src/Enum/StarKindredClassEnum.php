@@ -57,23 +57,29 @@ enum StarKindredClassEnum: string
         return $this === self::Ranger || $this === self::Druid;
     }
 
+    public function canBanishUndead(): bool
+    {
+        return $this === self::Cleric || $this === self::Paladin;
+    }
+
     /**
-     * Class skills improve by a full point every level; all other skills, by half a point.
+     * Trained skills (these, plus the one the pet chose at character creation) improve by a full point every
+     * level; all other skills, by half a point.
      * @return StarKindredSkillEnum[]
      */
     public function classSkills(): array
     {
         return match($this)
         {
-            self::Fighter => [ StarKindredSkillEnum::Athletics, StarKindredSkillEnum::Combat, StarKindredSkillEnum::Endurance, StarKindredSkillEnum::Survival ],
-            self::Rogue => [ StarKindredSkillEnum::Stealth, StarKindredSkillEnum::Acrobatics, StarKindredSkillEnum::Perception, StarKindredSkillEnum::Persuasion ],
-            self::Wizard => [ StarKindredSkillEnum::Arcana, StarKindredSkillEnum::Lore, StarKindredSkillEnum::Perception, StarKindredSkillEnum::Persuasion ],
-            self::Cleric => [ StarKindredSkillEnum::Arcana, StarKindredSkillEnum::Lore, StarKindredSkillEnum::Endurance, StarKindredSkillEnum::Persuasion ],
-            self::Ranger => [ StarKindredSkillEnum::Survival, StarKindredSkillEnum::Perception, StarKindredSkillEnum::Stealth, StarKindredSkillEnum::Combat ],
-            self::Bard => [ StarKindredSkillEnum::Persuasion, StarKindredSkillEnum::Lore, StarKindredSkillEnum::Acrobatics, StarKindredSkillEnum::Perception ],
-            self::Paladin => [ StarKindredSkillEnum::Combat, StarKindredSkillEnum::Persuasion, StarKindredSkillEnum::Endurance, StarKindredSkillEnum::Athletics ],
-            self::Druid => [ StarKindredSkillEnum::Survival, StarKindredSkillEnum::Arcana, StarKindredSkillEnum::Endurance, StarKindredSkillEnum::Athletics ],
-            self::Monk => [ StarKindredSkillEnum::Acrobatics, StarKindredSkillEnum::Athletics, StarKindredSkillEnum::Stealth, StarKindredSkillEnum::Endurance ],
+            self::Fighter => [ StarKindredSkillEnum::Combat, StarKindredSkillEnum::Athletics ],
+            self::Rogue => [ StarKindredSkillEnum::Stealth, StarKindredSkillEnum::Acrobatics ],
+            self::Wizard => [ StarKindredSkillEnum::Arcana, StarKindredSkillEnum::Lore ],
+            self::Cleric => [ StarKindredSkillEnum::Lore, StarKindredSkillEnum::Persuasion ],
+            self::Ranger => [ StarKindredSkillEnum::Survival, StarKindredSkillEnum::Perception ],
+            self::Bard => [ StarKindredSkillEnum::Persuasion, StarKindredSkillEnum::Acrobatics ],
+            self::Paladin => [ StarKindredSkillEnum::Combat, StarKindredSkillEnum::Endurance ],
+            self::Druid => [ StarKindredSkillEnum::Survival, StarKindredSkillEnum::Arcana ],
+            self::Monk => [ StarKindredSkillEnum::Acrobatics, StarKindredSkillEnum::Athletics ],
         };
     }
 

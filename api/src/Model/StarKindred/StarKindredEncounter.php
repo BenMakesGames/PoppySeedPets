@@ -22,6 +22,8 @@ final readonly class StarKindredEncounter
         public string $title,
         public string $success,
         public string $failure,
+        /** True if the encounter features the adventure's foe, and that foe is undead. */
+        public bool $againstUndead,
     )
     {
     }

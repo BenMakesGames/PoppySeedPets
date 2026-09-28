@@ -58,6 +58,10 @@
                   {
                     <span>{{ skill }} {{ skillValue(character, skill) >= 0 ? '+' : '' }}{{ skillValue(character, skill) }}</span>
                   }
+                  @if(adventure.hasUndeadEncounters && character.classFeatures.banishUndead; as bonus)
+                  {
+                    <span>Banish Undead +{{ bonus }}</span>
+                  }
                 </span>
               }
             </button>

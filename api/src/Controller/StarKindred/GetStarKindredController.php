@@ -92,8 +92,9 @@ class GetStarKindredController
                         'theme' => $a->theme->value,
                         'title' => $a->title,
                         'summary' => $a->summary,
-                        'encounters' => array_map(fn(StarKindredEncounter $e) => [ 'title' => $e->title, 'skill' => $e->skill->value ], $a->encounters),
+                        'encounters' => array_map(fn(StarKindredEncounter $e) => [ 'title' => $e->title, 'skill' => $e->skill->value, 'againstUndead' => $e->againstUndead ], $a->encounters),
                         'skillsTested' => array_map(fn($s) => $s->value, $a->getSkillsTested()),
+                        'hasUndeadEncounters' => $a->hasUndeadEncounters(),
                         'rewards' => array_map($rewardMapper->map(...), $a->rewards),
                     ],
                     $adventures

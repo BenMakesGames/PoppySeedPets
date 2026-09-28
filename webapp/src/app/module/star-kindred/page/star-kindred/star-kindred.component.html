@@ -33,6 +33,10 @@
             {
               <span class="skill">{{ skill }}</span>
             }
+            @if(adventure.hasUndeadEncounters)
+            {
+              <span class="skill"><i class="fa-solid fa-skull" aria-hidden="true"></i> Undead</span>
+            }
           </p>
           <ul class="rewards" aria-label="Rewards">
             @for(reward of adventure.rewards; track reward.difficulty; let i = $index)

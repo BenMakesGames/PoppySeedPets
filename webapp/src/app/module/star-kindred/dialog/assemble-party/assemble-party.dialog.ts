@@ -79,10 +79,15 @@ export class AssemblePartyDialog {
   {
     if(!this.adventure) return;
 
+    // one row per distinct kind of check; checks against the undead get their own row, since Banish Undead applies
+    const checks = this.adventure.encounters.filter((e, i, all) =>
+      all.findIndex(o => o.skill === e.skill && o.againstUndead === e.againstUndead) === i
+    );
+
     // the target scales with party size, so compare the party's total bonus to the total target
-    this.skillOdds = this.adventure.skillsTested.map(skill => ({
-      skill: skill,
-      averageRoll: Math.round(this.selected.reduce((total, c) => total + 10.5 + this.skillValue(c, skill), 0)),
+    this.skillOdds = checks.map(check => ({
+      skill: check.againstUndead ? `${check.skill} vs. undead` : check.skill,
+      averageRoll: Math.round(this.selected.reduce((total, c) => total + 10.5 + this.encounterBonus(c, check), 0)),
       target: this.difficulty.targetPerAdventurer * this.selected.length,
     }));
   }
@@ -101,6 +106,13 @@ export class AssemblePartyDialog {
   skillValue(character: StarKindredCharacter, skill: string): number
   {
     return character.skills.find(s => s.name === skill)?.value ?? 0;
+  }
+
+  // mirrors StarKindredCharacter::getEncounterBonus
+  private encounterBonus(character: StarKindredCharacter, encounter: StarKindredAdventure['encounters'][number]): number
+  {
+    return this.skillValue(character, encounter.skill) +
+      (encounter.againstUndead ? character.classFeatures.banishUndead ?? 0 : 0);
   }
 
   doCancel()

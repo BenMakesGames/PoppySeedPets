@@ -26,10 +26,11 @@ export interface StarKindredCharacter
   createdOn: string;
   retiredOn: string|null;
   epilogue: string|null;
-  /** class-specific extras; animalCompanion is for Rangers & Druids. (arrives as [] when there are none) */
-  classFeatures: { animalCompanion?: { name: string, species: string } };
+  /** class-specific extras; animalCompanion is for Rangers & Druids; schoolOfMagic, for Wizards; banishUndead (the bonus vs. undead), for Clerics & Paladins; songs (the skills they boost), for Bards. (arrives as [] when there are none) */
+  classFeatures: { animalCompanion?: { name: string, species: string }, schoolOfMagic?: string, banishUndead?: number, songs?: string[] };
   stats: { name: string, value: number, modifier: number, growth: 'primary'|'secondary'|null }[];
-  skills: { name: string, stat: string, value: number, isClassSkill: boolean }[];
+  /** training: "class" skills come from the character's class; the "chosen" one, the pet picked at creation; "schoolOfMagic", a Wizard's specialty */
+  skills: { name: string, stat: string, value: number, training: 'class'|'chosen'|'schoolOfMagic'|null }[];
 }
 
 export interface StarKindredReward
@@ -45,7 +46,8 @@ export interface StarKindredAdventure
   theme: string;
   title: string;
   summary: string;
-  encounters: { title: string, skill: string }[];
+  encounters: { title: string, skill: string, againstUndead: boolean }[];
+  hasUndeadEncounters: boolean;
   skillsTested: string[];
   rewards: StarKindredReward[];
 }

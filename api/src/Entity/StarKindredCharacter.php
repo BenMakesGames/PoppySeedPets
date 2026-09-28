@@ -15,9 +15,11 @@ namespace App\Entity;
 
 use App\Enum\StarKindredClassEnum;
 use App\Enum\StarKindredRaceEnum;
+use App\Enum\StarKindredSchoolOfMagicEnum;
 use App\Enum\StarKindredSkillEnum;
 use App\Enum\StarKindredStatEnum;
 use App\Model\StarKindred\StarKindredAnimalCompanion;
+use App\Model\StarKindred\StarKindredEncounter;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -31,6 +33,15 @@ use Doctrine\ORM\Mapping as ORM;
 class StarKindredCharacter
 {
     public const int MaxLevel = 20;
+
+    // Clerics & Paladins; derived from class & level, so not stored in $classFeatures
+    public const int BanishUndeadLevel = 2;
+    public const int BanishUndeadBonus = 4;
+
+    // Bards learn a song at each of these levels; each song is for a different skill (never Stealth), and
+    // grants a bonus to it
+    public const array SongLevels = [ 1, 6, 11, 16 ];
+    public const int SongBonus = 1;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -56,6 +67,12 @@ class StarKindredCharacter
      */
     #[ORM\Column(type: 'string', length: 30)]
     private string $portrait;
+
+    /**
+     * A trained skill the pet picked for itself at creation, on top of its class skills.
+     */
+    #[ORM\Column(type: 'string', length: 20, enumType: StarKindredSkillEnum::class)]
+    private StarKindredSkillEnum $chosenSkill;
 
     #[ORM\Column(type: 'integer')]
     private int $level = 1;
@@ -101,8 +118,8 @@ class StarKindredCharacter
     private ?string $epilogue = null;
 
     /**
-     * Class-specific extras, keyed by feature. Currently only "animalCompanion" (Rangers & Druids).
-     * @var array{animalCompanion?: array{name: string, species: string}}
+     * Class-specific extras, keyed by feature: "animalCompanion" (Rangers & Druids); "schoolOfMagic" (Wizards); "songs" (Bards).
+     * @var array{animalCompanion?: array{name: string, species: string}, schoolOfMagic?: value-of<StarKindredSchoolOfMagicEnum>, songs?: list<value-of<StarKindredSkillEnum>>}
      */
     #[ORM\Column(type: 'json')]
     private array $classFeatures = [];
@@ -112,14 +129,18 @@ class StarKindredCharacter
      */
     public function __construct(
         Pet $pet, string $name, StarKindredRaceEnum $race, StarKindredClassEnum $characterClass, string $portrait,
-        array $baseStats, \DateTimeImmutable $createdOn
+        StarKindredSkillEnum $chosenSkill, array $baseStats, \DateTimeImmutable $createdOn
     )
     {
+        if(in_array($chosenSkill, $characterClass->classSkills(), true))
+            throw new \InvalidArgumentException("{$chosenSkill->value} is already a {$characterClass->value} class skill.");
+
         $this->pet = $pet;
         $this->name = $name;
         $this->race = $race;
         $this->characterClass = $characterClass;
         $this->portrait = $portrait;
+        $this->chosenSkill = $chosenSkill;
         $this->strength = $baseStats[StarKindredStatEnum::Strength->value];
         $this->dexterity = $baseStats[StarKindredStatEnum::Dexterity->value];
         $this->constitution = $baseStats[StarKindredStatEnum::Constitution->value];
@@ -247,13 +268,43 @@ class StarKindredCharacter
         return in_array($skill, $this->characterClass->classSkills(), true);
     }
 
+    public function getChosenSkill(): StarKindredSkillEnum
+    {
+        return $this->chosenSkill;
+    }
+
+    public function isTrainedSkill(StarKindredSkillEnum $skill): bool
+    {
+        return $skill === $this->chosenSkill || $this->isClassSkill($skill) || $skill === $this->getSchoolOfMagic()?->skill();
+    }
+
     public function getSkill(StarKindredSkillEnum $skill): int
     {
-        $training = $this->isClassSkill($skill)
+        $training = $this->isTrainedSkill($skill)
             ? $this->level + 2
             : intdiv($this->level, 2);
 
-        return $this->getStatModifier($skill->stat()) + $training;
+        $songBonus = in_array($skill, $this->getSongs(), true) ? self::SongBonus : 0;
+
+        return $this->getStatModifier($skill->stat()) + $training + $songBonus;
+    }
+
+    public function canBanishUndead(): bool
+    {
+        return $this->characterClass->canBanishUndead() && $this->level >= self::BanishUndeadLevel;
+    }
+
+    /**
+     * The character's full bonus to an encounter's roll: its skill, plus any class features that apply.
+     */
+    public function getEncounterBonus(StarKindredEncounter $encounter): int
+    {
+        $bonus = $this->getSkill($encounter->skill);
+
+        if($encounter->againstUndead && $this->canBanishUndead())
+            $bonus += self::BanishUndeadBonus;
+
+        return $bonus;
     }
 
     public function getAdventuresCompleted(): int
@@ -295,7 +346,7 @@ class StarKindredCharacter
     }
 
     /**
-     * @return array{animalCompanion?: array{name: string, species: string}}
+     * @return array{animalCompanion?: array{name: string, species: string}, schoolOfMagic?: value-of<StarKindredSchoolOfMagicEnum>, songs?: list<value-of<StarKindredSkillEnum>>}
      */
     public function getClassFeatures(): array
     {
@@ -318,6 +369,76 @@ class StarKindredCharacter
             throw new \LogicException('This character already has an animal companion.');
 
         $this->classFeatures['animalCompanion'] = $companion->toArray();
+    }
+
+    public function getSchoolOfMagic(): ?StarKindredSchoolOfMagicEnum
+    {
+        return isset($this->classFeatures['schoolOfMagic'])
+            ? StarKindredSchoolOfMagicEnum::from($this->classFeatures['schoolOfMagic'])
+            : null;
+    }
+
+    public function chooseSchoolOfMagic(StarKindredSchoolOfMagicEnum $school): void
+    {
+        if($this->characterClass !== StarKindredClassEnum::Wizard)
+            throw new \LogicException($this->characterClass->value . 's do not specialize in schools of magic.');
+
+        if($this->getSchoolOfMagic() !== null)
+            throw new \LogicException('This character has already specialized in a school of magic.');
+
+        if($this->isTrainedSkill($school->skill()))
+            throw new \LogicException("{$school->skill()->value} is already a trained skill for this character.");
+
+        $this->classFeatures['schoolOfMagic'] = $school->value;
+    }
+
+    /**
+     * @return StarKindredSkillEnum[] The skills the character's songs are for, in the order they were learned
+     */
+    public function getSongs(): array
+    {
+        return array_map(
+            fn(string $skill) => StarKindredSkillEnum::from($skill),
+            $this->classFeatures['songs'] ?? []
+        );
+    }
+
+    /**
+     * @return StarKindredSkillEnum[] The skills the character could learn a song for
+     */
+    public function getLearnableSongs(): array
+    {
+        if($this->characterClass !== StarKindredClassEnum::Bard)
+            return [];
+
+        return array_values(array_filter(
+            StarKindredSkillEnum::cases(),
+            fn(StarKindredSkillEnum $skill) => $skill !== StarKindredSkillEnum::Stealth && !in_array($skill, $this->getSongs(), true)
+        ));
+    }
+
+    /**
+     * The number of songs the character has reached the level for, but not yet learned.
+     */
+    public function getSongsToLearn(): int
+    {
+        if($this->characterClass !== StarKindredClassEnum::Bard)
+            return 0;
+
+        $songsEarned = count(array_filter(self::SongLevels, fn(int $level) => $this->level >= $level));
+
+        return $songsEarned - count($this->getSongs());
+    }
+
+    public function learnSong(StarKindredSkillEnum $skill): void
+    {
+        if($this->getSongsToLearn() <= 0)
+            throw new \LogicException('This character has no songs to learn.');
+
+        if(!in_array($skill, $this->getLearnableSongs(), true))
+            throw new \LogicException("This character cannot learn a song for {$skill->value}.");
+
+        $this->classFeatures['songs'] = [ ...($this->classFeatures['songs'] ?? []), $skill->value ];
     }
 
     public function retire(\DateTimeImmutable $retiredOn, string $epilogue): void

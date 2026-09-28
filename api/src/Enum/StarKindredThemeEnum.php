@@ -65,6 +65,19 @@ enum StarKindredThemeEnum: string
     }
 
     /**
+     * Foes Clerics & Paladins can Banish. Every name here must appear in some theme's foes() (see StarKindredDailyAdventuresTest).
+     */
+    public const array UndeadFoes = [
+        'Spectral Sailors', 'Drowned Crew', 'Frost Wraiths', 'Restless Dead', 'Bone Knights', 'Wailing Banshees',
+        'Restless Animal Spirits',
+    ];
+
+    public static function isUndeadFoe(string $foe): bool
+    {
+        return in_array($foe, self::UndeadFoes, true);
+    }
+
+    /**
      * @return string[]
      */
     public function foes(): array
@@ -118,24 +131,26 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * Usually the Veteran reward (as a stack of 2).
+     * The Veteran reward is one of these, as a stack of the given quantity.
+     * @return array<string, int> item name => quantity
      */
-    public function prize(): string
+    public function prizes(): array
     {
         return match($this)
         {
-            self::Shipwreck => 'Seaweed',
-            self::Beach => 'Sand Dollar',
-            self::Forest, self::UmbralFields => 'Nature Box',
-            self::Mine => 'Gold Ore',
-            self::UndergroundLake => 'Fish Bag',
-            self::MagicTower, self::Graveyard => 'Quintessence',
-            self::DragonLair, self::HauntedWoods, self::HuntingGrounds => 'Monster Box',
-            self::TheDeep => 'Liquid-hot Magma',
-            self::TreasureVault => 'Gold Bar',
-            self::BanditCamp => 'White Cloth',
-            self::FairyMarket => 'Music Note',
-            self::Quarry => 'Rock',
+            self::Shipwreck => [ 'Seaweed' => 4, 'Enchanted Compass' => 1 ],
+            self::Beach => [ 'Sand Dollar' => 2, 'Fish Bag' => 1, 'Rainbow' => 1 ],
+            self::Forest => [ 'Nature Box' => 1, 'Wrapped Sword' => 1 ],
+            self::UmbralFields => [ 'Nature Box' => 2 ],
+            self::Mine => [ 'Box of Ores' => 1, 'Dark Matter' => 2 ],
+            self::UndergroundLake => [ 'Fish Bag' => 2 ],
+            self::MagicTower, self::Graveyard => [ 'Quintessence' => 2 ],
+            self::DragonLair, self::HauntedWoods, self::HuntingGrounds => [ 'Monster Box' => 2 ],
+            self::TheDeep => [ 'Liquid-hot Magma' => 2 ],
+            self::TreasureVault => [ 'Gold Bar' => 2 ],
+            self::BanditCamp => [ 'White Cloth' => 2 ],
+            self::FairyMarket => [ 'Music Note' => 2 ],
+            self::Quarry => [ 'Rock' => 2 ],
         };
     }
 
@@ -147,10 +162,10 @@ enum StarKindredThemeEnum: string
     {
         return match($this)
         {
-            self::Shipwreck => [ 'Seaweed', 'Silica Grounds', 'Crooked Stick', 'String', 'Rock', 'Rusty Rapier', 'Plastic Bottle', 'Canned Food', 'Gold Bar', 'Compass', 'Fish Stew', 'Quintessence' ],
-            self::Beach => [ 'Scales', 'Fish', 'Coconut', 'Really Big Leaf', 'Naner', 'Silica Grounds', 'Crooked Stick', 'Seaweed' ],
-            self::Forest => [ 'Wheat', 'Rice', 'Orange', 'Naner', 'Red', 'Fluff', 'Crooked Stick', 'Coconut', 'Blackberries', 'Blueberries', 'Sweet Beet', 'Magic Leaf' ],
-            self::Mine => [ 'Gold Ore', 'Gold Ore', 'Silver Ore', 'Iron Ore', 'Rock', 'Silica Grounds', 'Gypsum' ],
+            self::Shipwreck => [ 'Seaweed', 'Silica Grounds', 'Crooked Stick', 'String', 'Rock', 'Plastic Bottle', 'Canned Food', 'Gold Bar', 'Fish Stew', 'Quintessence', 'Paper Boat' ],
+            self::Beach => [ 'Scales', 'Fish', 'Coconut', 'Really Big Leaf', 'Naner', 'Silica Grounds', 'Crooked Stick', 'Seaweed', 'Feathers' ],
+            self::Forest => [ 'Orange', 'Naner', 'Red', 'Fluff', 'Crooked Stick', 'Blackberries', 'Blueberries', 'Sweet Beet' ],
+            self::Mine => [ 'Gold Ore', 'Silver Ore', 'Iron Ore', 'Iron Ore', 'Rock', 'Silica Grounds', 'Gypsum' ],
             self::UndergroundLake => [ 'Toadstool', 'Toadstool', 'Rock', 'Chanterelle', 'Chanterelle', 'Everice', 'Everice', 'Fish Bones', 'Cobweb', 'Quintessence' ],
             self::MagicTower => [ 'Quintessence', 'Tiny Scroll of Resources', 'Crystal Ball', 'Silver Bar', 'Glass', 'Mikronium', 'Megalium', 'Gold Tuning Fork', 'Quinacridone Magenta Dye', 'White Cloth', 'Viscaria', 'Wolf\'s Bane', 'Witch-hazel', 'Liquid-hot Magma' ],
             self::UmbralFields => [ 'Purple Corn', 'Purple Corn', 'Tentacle', 'Quinacridone Magenta Dye', 'Quintessence' ],
@@ -167,17 +182,17 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * The Demigod reward is one of these (and the Hero reward, too, if the setting has no hat styling).
+     * The Demigod reward is one of these.
      * @return string[]
      */
     public function treasures(): array
     {
         return match($this)
         {
-            self::Shipwreck => [ 'Ceremonial Trident', 'Secret Seashell', 'Rusted, Busted Mechanism', 'Scroll of the Sea', 'Black Flag', 'Paper Boat' ],
-            self::Beach => [ 'Fish Bag', 'Rainbow', 'Secret Seashell', 'Paper Boat' ],
-            self::Forest => [ 'Wrapped Sword', 'Handicrafts Supply Box', 'Monster Box', 'Rainbow' ],
-            self::Mine => [ 'Box of Ores', 'Sand-covered... Something', 'Dark Matter', 'Toadstool' ],
+            self::Shipwreck => [ 'Secret Seashell', 'Scroll of the Sea' ],
+            self::Beach => [ 'Secret Seashell', 'Scroll of the Sea' ],
+            self::Forest => [ 'Monster Box', 'Raven\'s Beak' ],
+            self::Mine => [ 'Fierierstone', 'Very Strongbox' ],
             self::UndergroundLake => [ 'Ice "Mango"', 'Cup of Life', 'Fish Bag' ],
             self::MagicTower => [ 'Tower Chest', 'Scroll of Illusions', 'Scroll of Dice', 'Twilight Box' ],
             self::UmbralFields => [ 'Noetala Egg', 'Twilight Box', 'Quinacridone Magenta Dye' ],
@@ -194,21 +209,40 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * If set, this is always the Hero reward.
+     * The Hero reward is one of these or one of the setting's hat stylings (all equally likely).
+     * @return string[]
      */
-    public function aura(): ?string
+    public function heroTreasures(): array
     {
         return match($this)
         {
-            self::Shipwreck => 'with Anchor',
-            self::Beach => 'Lobster',
-            self::Mine, self::Quarry => 'with Cave Mushrooms',
-            self::UndergroundLake => 'Sea Prince\'s',
-            self::MagicTower, self::FairyMarket => 'Amethyst',
-            self::DragonLair, self::TreasureVault => 'of Tishpak',
-            self::Graveyard, self::HauntedWoods => 'Bandaged',
-            self::TheDeep, self::UmbralFields, self::HuntingGrounds => 'with Monster Skull',
-            self::Forest, self::BanditCamp => null,
+            self::Shipwreck => [ 'Rusted, Busted Mechanism', 'Ceremonial Trident' ],
+            self::Forest => [ 'Magic Leaf', 'Monster Box' ],
+            self::BanditCamp => [ 'Wrapped Sword', 'Piece of Cetgueli\'s Map', 'Black Flag' ],
+            self::Mine => [ 'Sand-covered... Something', 'Blackonite' ],
+            self::Beach, self::UndergroundLake, self::MagicTower, self::UmbralFields,
+            self::DragonLair, self::Graveyard, self::TheDeep, self::TreasureVault,
+            self::FairyMarket, self::HauntedWoods, self::HuntingGrounds, self::Quarry => [],
+        };
+    }
+
+    /**
+     * Hat stylings the Hero reward may be (see heroTreasures).
+     * @return string[]
+     */
+    public function auras(): array
+    {
+        return match($this)
+        {
+            self::Shipwreck => [ 'with Anchor', 'Sea Prince\'s' ],
+            self::Beach => [ 'Lobster', 'with Anchor' ],
+            self::Mine, self::Quarry => [ 'with Cave Mushrooms' ],
+            self::UndergroundLake => [ 'Sea Prince\'s' ],
+            self::MagicTower, self::FairyMarket => [ 'Amethyst' ],
+            self::DragonLair, self::TreasureVault => [ 'of Tishpak' ],
+            self::Graveyard, self::HauntedWoods => [ 'Bandaged' ],
+            self::TheDeep, self::UmbralFields, self::HuntingGrounds => [ 'with Monster Skull' ],
+            self::Forest, self::BanditCamp => [],
         };
     }
 }

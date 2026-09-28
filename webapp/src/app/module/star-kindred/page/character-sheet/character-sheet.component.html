@@ -86,17 +86,25 @@
           </table>
         </section>
         <section>
-          <h3>Skills</h3>
+          <h3>Skills{{ character.class === 'Bard' ? '*' : '' }}</h3>
           <table>
             <tbody>
               @for(skill of character.skills; track skill.name)
               {
-                <tr [class.class-skill]="skill.isClassSkill">
+                <tr [class.trained-skill]="skill.training">
                   <th>
                     {{ skill.name }}
-                    @if(skill.isClassSkill)
+                    @if(skill.training === 'class')
                     {
                       <i class="fa-solid fa-star" title="{{ character.class }} class skill" aria-label="class skill"></i>
+                    }
+                    @else if(skill.training === 'chosen')
+                    {
+                      <i class="fa-regular fa-star" title="Chosen by {{ character.pet.name }}" aria-label="chosen skill"></i>
+                    }
+                    @else if(skill.training === 'schoolOfMagic')
+                    {
+                      <i class="fa-solid fa-wand-sparkles" title="{{ character.classFeatures.schoolOfMagic }} specialty" aria-label="school of magic skill"></i>
                     }
                   </th>
                   <td><small>{{ skill.stat }}</small></td>
@@ -105,6 +113,10 @@
               }
             </tbody>
           </table>
+          @if(character.class === 'Bard')
+          {
+            <p><small>* Includes bonuses from songs.</small></p>
+          }
         </section>
       </div>
 
@@ -116,6 +128,35 @@
             <dt>Name</dt><dd>{{ companion.name }}</dd>
             <dt>Species</dt><dd>{{ companion.species }}</dd>
           </dl>
+        </section>
+      }
+
+      @if(character.classFeatures.schoolOfMagic; as school)
+      {
+        <section class="class-feature">
+          <h4>School of Magic</h4>
+          <p>{{ school }}</p>
+        </section>
+      }
+
+      @if(character.classFeatures.banishUndead; as bonus)
+      {
+        <section class="class-feature">
+          <h4>Banish Undead</h4>
+          <p>+{{ bonus }} against the undead.</p>
+        </section>
+      }
+
+      @if(character.classFeatures.songs?.length)
+      {
+        <section class="class-feature">
+          <h4>Songs</h4>
+          <ul>
+            @for(song of character.classFeatures.songs; track song)
+            {
+              <li>Song of {{ song }} (+1 to {{ song }})</li>
+            }
+          </ul>
         </section>
       }
     </div>
