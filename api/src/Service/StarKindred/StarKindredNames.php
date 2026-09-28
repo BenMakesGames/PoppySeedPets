@@ -43,15 +43,27 @@ final class StarKindredNames
                 $rng->rngNextFromArray(self::HumanFamilyPrefixes) . $rng->rngNextFromArray(self::HumanFamilySuffixes),
             StarKindredRaceEnum::Elf => $rng->rngNextFromArray(self::ElfFamily),
             StarKindredRaceEnum::Dwarf => $rng->rngNextFromArray(self::DwarfFamily),
-            StarKindredRaceEnum::Gnome => $rng->rngNextFromArray(self::GnomeFamily),
+            StarKindredRaceEnum::Gnome => self::gnomePatronymic($rng->rngNextFromArray(self::GnomeMale), $sex),
             StarKindredRaceEnum::Goblin => $rng->rngNextFromArray(self::GoblinFamily),
             StarKindredRaceEnum::Beastkin => $rng->rngNextFromArray(self::BeastkinFamily),
             StarKindredRaceEnum::Emberkin => $rng->rngNextFromArray(self::EmberkinFamily),
             StarKindredRaceEnum::HighFae => $rng->rngNextFromArray(self::HighFaeFamily),
-            StarKindredRaceEnum::Nymph => $rng->rngNextFromArray(self::NymphFamily),
+            StarKindredRaceEnum::Nymph =>
+                'of the ' . $rng->rngNextFromArray(self::NymphFamilyAdjectives) . ' ' . $rng->rngNextFromArray(self::NymphFamilyPlaces),
         };
 
         return $rng->rngNextFromArray($givenNames) . ' ' . $familyName;
+    }
+
+    /**
+     * Scandinavian-style: "Cobble" -> "Cobblesson" / "Cobblesdotter". The genitive "s" is not doubled for names
+     * already ending in one ("Pockets" -> "Pocketsson"), as with Swedish "Anders" -> "Andersson".
+     */
+    private static function gnomePatronymic(string $fatherName, ?StarKindredSexEnum $sex): string
+    {
+        $genitive = str_ends_with($fatherName, 's') ? $fatherName : $fatherName . 's';
+
+        return $genitive . ($sex === StarKindredSexEnum::Female ? 'dotter' : 'son');
     }
 
     private const array HumanFemale = [
@@ -83,8 +95,10 @@ final class StarKindredNames
     ];
 
     private const array ElfFamily = [
-        'Brightleaf', 'Dawnwhisper', 'Evenstar', 'Leafwhisper', 'Moonbrook', 'Mistvale',
-        'Silverfrond', 'Starbloom', 'Sunmantle', 'Windsong',
+        'Brightleaf', 'Dawnwhisper', 'Evenstar', 'Leafwhisper', 'Mistwalker',
+        'Starbloom', 'Sunmantle', 'Windsong', 'Rimefeather', 'Frostpetal', 'Mothwing', 'Mustardseed',
+        'of Duskhollow', 'of Thornveil', 'of Willowmere', 'of Lanternwood', 'of Fernhaven', 'of Glimmerholt',
+        'of Thistledown', 'of Moonbrook', 'of Silverwood',
     ];
 
     private const array Dwarf = [
@@ -107,11 +121,6 @@ final class StarKindredNames
         'Tock', 'Widget',
     ];
 
-    private const array GnomeFamily = [
-        'Bramblecog', 'Cogsworth', 'Fiddlefen', 'Gearwhistle', 'Kettlebottom', 'Puddlejump', 'Sprocketwhistle',
-        'Tinkerton', 'Wizzlebang',
-    ];
-
     private const array GoblinFemale = [
         'Bix', 'Grelda', 'Kizza', 'Mogga', 'Nettle', 'Pip', 'Rikka', 'Snaggle', 'Tizzy', 'Vexa', 'Zilla',
     ];
@@ -121,8 +130,9 @@ final class StarKindredNames
     ];
 
     private const array GoblinFamily = [
-        'Bottlecap', 'Candlegrab', 'Coppercrook', 'Mudrunner', 'Quickfingers', 'Rustpocket', 'Sparkfizzle',
-        'Tinscrap', 'Wickerwhistle',
+        'Tears', 'Eats', 'Rends', 'Climbs', 'Crawls', 'Gnashes', 'Runs', 'Sprints', 'Swims', 'Fishes', 'Hunts',
+        'Prowls', 'Preys', 'Clings', 'Smashes', 'Kicks', 'Bites', 'Sweats', 'Rolls', 'Burns', 'Drowns', 'Stabs',
+        'Swears', 'Yells', 'Whispers', 'Sneaks', 'Screeches', 'Yawns', 'Snores', 'Tickles', 'Crushes',
     ];
 
     private const array Beastkin = [
@@ -161,12 +171,16 @@ final class StarKindredNames
     ];
 
     private const array Nymph = [
-        'Alder', 'Brook', 'Clover', 'Dew', 'Fern', 'Hazel', 'Iris', 'Laurel', 'Linden', 'Marsh', 'Reed', 'Sorrel',
-        'Willow',
+        'Alder', 'Ash', 'Aster', 'Bay', 'Brook', 'Clover', 'Dew', 'Fern', 'Hazel', 'Iris', 'Juniper', 'Lake', 'Laurel',
+        'Linden', 'Marsh', 'Reed', 'River', 'Sage', 'Sorrel', 'Willow',
     ];
 
-    private const array NymphFamily = [
-        'of the Hidden Spring', 'of the Misty Fen', 'of the Old Grove', 'of the Singing Falls',
-        'of the Still Pond', 'of the Whispering Reeds',
+    private const array NymphFamilyAdjectives = [
+        'Hidden', 'Misty', 'Moonlit', 'Old', 'Singing', 'Still', 'Sunlit', 'Whispering',
+    ];
+
+    private const array NymphFamilyPlaces = [
+        'Bank', 'Beach', 'Bluff', 'Bog', 'Dell', 'Falls', 'Fen', 'Grove', 'Hollow', 'Marsh', 'Mudflat', 'Peak', 'Pond',
+        'Run', 'Spit', 'Spring', 'Spur', 'Tarn', 'Valley',
     ];
 }

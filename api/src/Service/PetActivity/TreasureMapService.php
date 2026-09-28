@@ -29,6 +29,7 @@ use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
 use App\Functions\AdventureMath;
 use App\Functions\ArrayFunctions;
+use App\Functions\CalendarFunctions;
 use App\Functions\EquipmentFunctions;
 use App\Functions\GrammarFunctions;
 use App\Functions\InventoryModifierFunctions;
@@ -42,6 +43,7 @@ use App\Functions\UserQuestRepository;
 use App\Functions\UserUnlockedFeatureHelpers;
 use App\Model\ComputedPetSkills;
 use App\Model\PetChanges;
+use App\Service\Clock;
 use App\Service\FieldGuideService;
 use App\Service\HouseSimService;
 use App\Service\InventoryService;
@@ -59,7 +61,8 @@ class TreasureMapService
         private readonly PetExperienceService $petExperienceService,
         private readonly IRandom $rng,
         private readonly HouseSimService $houseSimService,
-        private readonly FieldGuideService $fieldGuideService
+        private readonly FieldGuideService $fieldGuideService,
+        private readonly Clock $clock
     )
     {
     }
@@ -100,6 +103,58 @@ class TreasureMapService
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 90), PetActivityStatEnum::GATHER, true);
 
             PetBadgeHelpers::awardBadge($this->em, $pet, PetBadgeEnum::FoundCetguelisTreasure, $activityLog);
+        }
+
+        $activityLog
+            ->setChanges($changes->compare($pet))
+            ->addInterestingness(PetActivityLogInterestingness::RareActivity)
+        ;
+
+        if(AdventureMath::petAttractsBug($this->rng, $pet, 5))
+            $this->inventoryService->petAttractsRandomBug($pet);
+    }
+
+    // like Cetgueli's Treasure Map, but harder to follow (and more rewarding for the effort)
+    public function doFadedTreasureMap(ComputedPetSkills $petWithSkills): void
+    {
+        $pet = $petWithSkills->getPet();
+        $changes = new PetChanges($pet);
+
+        $followMapCheck = $this->rng->rngNextInt(1, 10 + $petWithSkills->getPerception()->getTotal() + $pet->getSkills()->getNature() + $petWithSkills->getIntelligence()->getTotal());
+
+        if($followMapCheck < 20)
+        {
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% tried to follow the Faded Treasure Map, but could hardly make out any of the landmarks, and kept getting lost. (They\'re sure they\'re making progress, though!)')
+                ->setIcon('icons/activity-logs/confused')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', PetActivityLogTagEnum::Adventure ]))
+            ;
+            $pet->increaseEsteem(-1);
+            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Nature ], $activityLog);
+
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 90), PetActivityStatEnum::GATHER, false);
+        }
+        else {
+            $prize = ItemRepository::findOneByName($this->em, $this->rng->rngNextFromArray([
+                CalendarFunctions::dayOfTheWeekCoin($this->clock->now),
+                'Hyperchromatic Prism',
+                'Magic Brush',
+                'Iridescent Hand Cannon',
+                'Elf Ears',
+            ]));
+
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% followed the Faded Treasure Map, and found ' . $prize->getNameWithArticle() . '! (Also, the map was lost, because video games.)')
+                ->setIcon('items/map/faded')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Gathering', PetActivityLogTagEnum::Adventure ]))
+            ;
+
+            $this->petExperienceService->gainExp($pet, 5, [ PetSkillEnum::Nature ], $activityLog);
+            $pet->increaseEsteem(5);
+
+            EquipmentFunctions::destroyPetTool($this->em, $pet);
+
+            $this->inventoryService->petCollectsItem($prize, $pet, $pet->getName() . ' found this by following a Faded Treasure Map!', $activityLog);
+
+            $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 90), PetActivityStatEnum::GATHER, true);
         }
 
         $activityLog

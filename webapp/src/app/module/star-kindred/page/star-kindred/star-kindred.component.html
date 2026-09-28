@@ -81,13 +81,13 @@
           <ul class="retirement-rewards">
             @for(reward of status.retirementRewards.perAdventurer; track reward.item?.name)
             {
-              <li><a [routerLink]="'/poppyopedia/item/' + reward.item!.name"><app-star-kindred-reward [reward]="reward" /></a> <small>(per adventurer)</small></li>
+              <li><a [routerLink]="'/poppyopedia/item/' + reward.item!.name"><app-star-kindred-reward [reward]="reward" note="(one per adventurer)" /></a></li>
             }
             <li><app-star-kindred-reward [reward]="status.retirementRewards.aura" /></li>
           </ul>
           @if(!play)
           {
-            <div class="buttons">
+            <div class="buttons centered">
               <button type="button" (click)="doChooseParty(null)">Retire Adventurers</button>
             </div>
           }
@@ -111,7 +111,7 @@
     }
     @if(status.characters.length < status.maxAdventurers)
     {
-      <div class="buttons">
+      <div class="buttons roll-character">
         <button type="button" (click)="doRollCharacter()">Roll a New Character</button>
       </div>
     }

@@ -49,7 +49,7 @@ class StarKindredAdventureService
     public const int MaxPartySize = 3;
     public const int MaxAdventurers = 10;
     public const string RetirementAura = 'StarKindred';
-    public const array RetirementRewardsPerAdventurer = [ 'Ruby Chest', 'Cup of Life' ];
+    public const array RetirementRewardsPerAdventurer = [ 'Faded Treasure Map' ];
 
     public function __construct(
         private readonly IRandom $rng,
@@ -158,13 +158,38 @@ class StarKindredAdventureService
         // is guaranteed to show them something new; after that, anything goes
         $charactersRolled = $this->userStatsService->getStatValue($pet->getOwner(), UserStat::RolledAStarKindredCharacter);
 
-        $race = $this->rng->rngNextFromArray(match($charactersRolled) {
+        $races = match($charactersRolled) {
             0 => StarKindredRaceEnum::familiar(),
             1 => StarKindredRaceEnum::unfamiliar(),
             default => StarKindredRaceEnum::cases(),
-        });
+        };
 
         $this->userStatsService->incrementStat($pet->getOwner(), UserStat::RolledAStarKindredCharacter);
+
+        // don't let the new character share a name or portrait with any of the player's other active characters
+        $otherCharacters = $this->em->getRepository(StarKindredCharacter::class)->createQueryBuilder('c')
+            ->select('c.name, c.portrait')
+            ->join('c.pet', 'p')
+            ->andWhere('p.owner = :user')
+            ->andWhere('c.retiredOn IS NULL')
+            ->setParameter('user', $pet->getOwner())
+            ->getQuery()
+            ->getArrayResult();
+
+        $takenNames = array_column($otherCharacters, 'name');
+        $takenPortraits = array_column($otherCharacters, 'portrait');
+
+        do
+        {
+            $race = $this->rng->rngNextFromArray($races);
+
+            // sex only picks the name & portrait; it isn't stored
+            $sex = $race->isAndrogynous() ? null : $this->rng->rngNextFromArray(StarKindredSexEnum::cases());
+
+            $name = StarKindredNames::roll($this->rng, $race, $sex);
+            $portrait = StarKindredPortraits::roll($this->rng, $race, $sex);
+        }
+        while(in_array($name, $takenNames, true) || in_array($portrait, $takenPortraits, true));
 
         $class = $this->rng->rngNextFromArray(StarKindredClassEnum::cases());
 
@@ -183,12 +208,6 @@ class StarKindredAdventureService
 
             $stats[$stat->value] = max(3, $dice[1] + $dice[2] + $dice[3] + ($race->statModifiers()[$stat->value] ?? 0));
         }
-
-        // sex only picks the name & portrait; it isn't stored
-        $sex = $race->isAndrogynous() ? null : $this->rng->rngNextFromArray(StarKindredSexEnum::cases());
-
-        $name = StarKindredNames::roll($this->rng, $race, $sex);
-        $portrait = StarKindredPortraits::roll($this->rng, $race, $sex);
 
         $character = new StarKindredCharacter($pet, $name, $race, $class, $portrait, $chosenSkill, $stats, $this->clock->now);
 

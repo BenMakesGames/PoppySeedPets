@@ -231,8 +231,8 @@ enum StarKindredThemeEnum: string
             self::HauntedWoods => [ 'Monster Box' => 1, 'Evilberries' => 2 ],
             self::HuntingGrounds => [ 'Monster Box' => 1 ],
             self::Quarry => [ 'Sand-covered... Something' => 1 ],
-            self::Beach, self::MagicTower, self::Graveyard,
-            self::FairyMarket => [],
+            self::FairyMarket => [ 'Gooderberry' => 1 ],
+            self::Beach, self::MagicTower, self::Graveyard => [],
         };
     }
 

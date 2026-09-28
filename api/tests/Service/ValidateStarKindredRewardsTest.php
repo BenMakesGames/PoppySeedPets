@@ -15,8 +15,10 @@ namespace Service;
 
 use App\Entity\Enchantment;
 use App\Entity\Item;
+use App\Enum\HolidayEnum;
 use App\Enum\StarKindredThemeEnum;
 use App\Service\StarKindred\StarKindredAdventureService;
+use App\Service\StarKindred\StarKindredDailyAdventures;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -47,6 +49,18 @@ class ValidateStarKindredRewardsTest extends KernelTestCase
         {
             $itemNames = [ ...$itemNames, ...array_keys($theme->prizes()), ...$theme->lootTable(), ...array_keys($theme->heroTreasures()), ...array_keys($theme->treasures()) ];
             $auraNames = [ ...$auraNames, ...$theme->auras() ];
+
+            foreach(HolidayEnum::cases() as $holiday)
+            {
+                foreach(StarKindredDailyAdventures::holidayRewardOptions($holiday, $theme) as $holidayReward)
+                {
+                    if($holidayReward->item !== null)
+                        $itemNames[] = $holidayReward->item;
+
+                    if($holidayReward->aura !== null)
+                        $auraNames[] = $holidayReward->aura;
+                }
+            }
         }
 
         foreach(array_unique($itemNames) as $itemName)

@@ -22,6 +22,9 @@ export class RewardComponent {
   // lets a layout put the icon and the label in different places (ex: separate table rows)
   @Input() part: 'icon'|'label'|'both' = 'both';
 
+  // shown under an item's name (ex: "(per adventurer)")
+  @Input() note: string|null = null;
+
   // alt text, for when the icon is shown without its label
   get label(): string
   {

@@ -25,6 +25,7 @@ small {
   display: block;
   opacity: 0.8;
   font-style: italic;
+  color: rgb(var(--color-text-on-content-background));
 }
 
 :host {

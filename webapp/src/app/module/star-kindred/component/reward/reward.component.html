@@ -26,7 +26,13 @@
 {
   @if(reward.item)
   {
-    <span>{{ reward.item.quantity > 1 ? reward.item.quantity + '× ' : '' }}{{ reward.item.name }}</span>
+    <span>
+      {{ reward.item.quantity > 1 ? reward.item.quantity + '× ' : '' }}{{ reward.item.name }}
+      @if(note)
+      {
+        <small>{{ note }}</small>
+      }
+    </span>
   }
   @else if(reward.aura)
   {

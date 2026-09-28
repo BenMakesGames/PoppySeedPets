@@ -18,6 +18,20 @@ use App\Model\ChineseCalendarInfo;
 
 final class CalendarFunctions
 {
+    public static function dayOfTheWeekCoin(\DateTimeInterface $dt): string
+    {
+        return match ((int)$dt->format('w'))
+        {
+            0 => 'Sunday Coin',
+            1 => 'Monday Coin',
+            2 => 'Tuesday Coin',
+            3 => 'Wednesday Coin',
+            4 => 'Thursday Coin',
+            5 => 'Friday Coin',
+            6 => 'Saturday Coin',
+        };
+    }
+
     public static function isJelephantDay(\DateTimeInterface $dt): bool
     {
         return $dt->format('nd') === '812';
@@ -88,7 +102,7 @@ final class CalendarFunctions
         $monthAndDay = (int)$dt->format('nd');
 
         // if it's not November, just get outta' here
-        if($monthAndDay < 1122 || $monthAndDay >= 1200)
+        if($monthAndDay < 1121 || $monthAndDay >= 1200)
             return false;
 
         $year = $dt->format('Y');

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Service;
 
+use App\Enum\HolidayEnum;
 use App\Enum\StarKindredDifficultyEnum;
 use App\Enum\StarKindredThemeEnum;
 use App\Model\StarKindred\StarKindredAdventure;
@@ -99,11 +100,40 @@ class StarKindredDailyAdventuresTest extends TestCase
 
         $hero = $adventure->rewards[StarKindredDifficultyEnum::Hero->tier()];
 
+        $holidayRewards = array_merge(...array_map(fn(HolidayEnum $h) => StarKindredDailyAdventures::holidayRewardOptions($h, $adventure->theme), HolidayEnum::cases()));
+
+        if(in_array($hero, $holidayRewards))
+            return;
+
         if($hero->aura)
             self::assertContains($hero->aura, $adventure->theme->auras());
         else
             self::assertSame($adventure->theme->heroTreasures()[$hero->item] ?? null, $hero->quantity);
 
         self::assertCount(3, $adventure->getRewardsFor(StarKindredDifficultyEnum::Hero), 'Rewards are cumulative.');
+    }
+
+    public function testHolidaysForceTheFirstAdventuresSetting(): void
+    {
+        $expected = [
+            '2026-02-14' => [ StarKindredThemeEnum::FairyMarket, null ],
+            '2026-03-14' => [ StarKindredThemeEnum::FairyMarket, null ],
+            '2026-07-22' => [ StarKindredThemeEnum::FairyMarket, null ],
+            '2026-09-19' => [ StarKindredThemeEnum::Shipwreck, 'Drowned Crew' ],
+            '2026-10-29' => [ StarKindredThemeEnum::Shipwreck, 'Drowned Crew' ],
+            '2026-10-30' => [ StarKindredThemeEnum::HauntedWoods, null ],
+            '2026-10-31' => [ StarKindredThemeEnum::Graveyard, null ],
+        ];
+
+        foreach($expected as $date => [ $theme, $foe ])
+        {
+            [ $first, $second ] = StarKindredDailyAdventures::forDate(new \DateTimeImmutable($date . ' 12:00:00'));
+
+            self::assertSame($theme, $first->theme, "Wrong setting on {$date}.");
+            self::assertNotSame($theme, $second->theme, "Only the first adventure's setting is forced on {$date}.");
+
+            if($foe)
+                self::assertStringContainsString($foe, $first->summary . implode(array_map(fn($e) => $e->title . $e->success . $e->failure, $first->encounters)), "Wrong foe on {$date}.");
+        }
     }
 }

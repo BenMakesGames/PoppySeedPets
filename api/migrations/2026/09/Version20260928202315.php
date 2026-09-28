@@ -16,26 +16,28 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
-final class Version20260928002131 extends AbstractMigration
+final class Version20260928202315 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '★Kindred: class features (ex: Ranger & Druid animal companions)';
+        return 'add Elf Ears';
     }
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE star_kindred_character ADD class_features JSON NOT NULL');
-        $this->addSql('UPDATE star_kindred_character SET class_features = \'[]\'');
+        $this->addSql(<<<EOSQL
+        -- hat
+        INSERT INTO item_hat (`id`, `head_x`, `head_y`, `head_angle`, `head_scale`, `head_angle_fixed`) VALUES (317,0.505,0.5,13,0.66,0) ON DUPLICATE KEY UPDATE `id` = `id`;
+        
+        -- the item itself!
+        INSERT INTO item (`id`, `name`, `description`, `image`, `use_actions`, `tool_id`, `food_id`, `fertilizer`, `plant_id`, `hat_id`, `fuel`, `recycle_value`, `enchants_id`, `spice_id`, `treasure_id`, `is_bug`, `hollow_earth_tile_card_id`, `cannot_be_thrown_out`, `museum_points`) VALUES (1530,"Elf Ears",NULL,"hat/elf-ears",NULL,NULL,NULL,0,NULL,317,0,0,NULL,NULL,NULL,0,NULL,0,10) ON DUPLICATE KEY UPDATE `id` = `id`;
+        
+        -- grammar
+        INSERT INTO item_grammar (`id`, `item_id`, `article`) VALUES (1610,1530,"some") ON DUPLICATE KEY UPDATE `id` = `id`;
+        EOSQL);
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE star_kindred_character DROP class_features');
     }
 }
