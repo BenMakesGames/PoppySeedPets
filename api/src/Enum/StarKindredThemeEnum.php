@@ -147,12 +147,13 @@ enum StarKindredThemeEnum: string
             self::MagicTower => [ 'Quintessence' => 2, 'Scroll of Resources' => 1 ],
             self::Graveyard => [ 'Quintessence' => 2, 'Silver Keyblade' => 1 ],
             self::DragonLair => [ 'Monster Box' => 1, 'Striped Microcline' => 1, 'Key Ring' => 1 ],
-            self::HauntedWoods, self::HuntingGrounds => [ 'Monster Box' => 2 ],
+            self::HauntedWoods => [ 'Dark Scales' => 2, 'Regular-sized Pumpkin' => 1 ],
+            self::HuntingGrounds => [ 'Blunderbuss' => 1 ],
             self::TheDeep => [ 'Liquid-hot Magma' => 2, 'Box of Ores' => 1 ],
             self::TreasureVault => [ 'Scroll of Resources' => 1, 'Scroll of Tell Samarzhoustian Delights' => 1, 'Gold Ring' => 1 ],
-            self::BanditCamp => [ 'White Cloth' => 2 ],
-            self::FairyMarket => [ 'Music Note' => 2 ],
-            self::Quarry => [ 'Rock' => 2 ],
+            self::BanditCamp => [ 'White Cloth' => 2, 'Gold Bar' => 1, 'Wrapped Sword' => 1, 'Farmer\'s Scroll' => 1 ],
+            self::FairyMarket => [ 'Musical Scales' => 1, 'Wings' => 1, 'Scroll of Fruit' => 1, 'Rainbow' => 1 ],
+            self::Quarry => [ 'Box of Ores' => 1 ],
         };
     }
 
@@ -175,9 +176,9 @@ enum StarKindredThemeEnum: string
             self::Graveyard => [ 'Rock', 'Filthy Cloth', 'Grandparoot', 'Stereotypical Bone', 'Cobweb' ],
             self::TheDeep => [ 'Liquid-hot Magma', 'Liquid-hot Magma', 'Iron Ore', 'Silver Ore', 'Gold Ore', 'Striped Microcline', 'Tentacle', 'Talon', 'Scales', 'Dark Matter', 'Gravitational Waves', 'Quintessence', 'Rib' ],
             self::TreasureVault => [ 'Gold Bar', 'Gold Bar', 'Silver Bar', 'Silver Bar', 'Silver Bar', 'Gold Key', 'Silver Key', 'Gold Triangle', 'Silver Colander', 'Tiny Scroll of Resources', '"Gold" Idol' ],
-            self::BanditCamp => [ 'White Cloth', 'Stereotypical Torch', 'Gold Bar', 'Fish Stew', 'Takoyaki', 'Kilju', 'Grilled Fish', 'Onigiri', 'Potato' ],
-            self::FairyMarket => [ 'Quintessence', 'Jar of Fireflies', 'World\'s Best Sugar Cookie', 'Wings', 'Music Note', 'Pink Fairy Floss', 'Coriander Flower', 'Moon Pearl' ],
-            self::HauntedWoods => [ 'Crooked Stick', 'Quintessence', 'Quintessence', 'Talon', 'Dark Scales', 'Music Note', 'Feathers' ],
+            self::BanditCamp => [ 'White Cloth', 'Stereotypical Torch', 'Silver Bar', 'Fish Stew', 'Kilju', 'Grilled Fish', 'Potato' ],
+            self::FairyMarket => [ 'Quintessence', 'Jar of Fireflies', 'World\'s Best Sugar Cookie', 'Music Note', 'Pink Fairy Floss', 'Coriander Flower', 'Moon Pearl' ],
+            self::HauntedWoods => [ 'Crooked Stick', 'Quintessence', 'Talon', 'Feathers', 'Cobweb' ],
             self::HuntingGrounds => [ 'Feathers', 'Fluff', 'Talon', 'Scales', 'Egg', 'Fish' ],
             self::Quarry => [ 'Rock', 'Rock', 'Silica Grounds', 'Limestone', 'Limestone', 'Iron Ore', 'Gypsum' ],
         };
@@ -202,11 +203,11 @@ enum StarKindredThemeEnum: string
             self::Graveyard => [ 'Ruby Chest' => 1, 'Renaming Scroll' => 1 ],
             self::TheDeep => [ 'Monster Box' => 2, 'Fierierstone' => 1 ],
             self::TreasureVault => [ 'Ruby Chest' => 1, 'Piece of Cetgueli\'s Map' => 2, 'Major Scroll of Riches' => 1 ],
-            self::BanditCamp => [ 'Wrapped Sword' => 1, 'Piece of Cetgueli\'s Map' => 1, 'Black Flag' => 1 ],
-            self::FairyMarket => [ 'Glowing Protojelly' => 1, 'Magpie Pouch' => 1, 'Espophone' => 1, 'Rainbow' => 1 ],
-            self::HauntedWoods => [ 'Monster-summoning Scroll' => 1, 'Twilight Box' => 1, 'Cup of Life' => 1 ],
-            self::HuntingGrounds => [ 'Handicrafts Supply Box' => 1, 'Stereotypical Bone' => 1, 'Monster Box' => 1 ],
-            self::Quarry => [ 'Box of Ores' => 1, 'Sand-covered... Something' => 1, 'Dino Skull' => 1 ],
+            self::BanditCamp => [ 'Key Ring' => 3 ],
+            self::FairyMarket => [ 'Rainbow Toad Legs' => 2, 'Rainbow Wings' => 2 ],
+            self::HauntedWoods => [ 'Monster-summoning Scroll' => 1, 'Cup of Life' => 1 ],
+            self::HuntingGrounds => [ 'Monster Box' => 2 ],
+            self::Quarry => [ 'Ruby Chest' => 1 ],
         };
     }
 
@@ -220,15 +221,18 @@ enum StarKindredThemeEnum: string
         {
             self::Shipwreck => [ 'Rusted, Busted Mechanism' => 1, 'Ceremonial Trident' => 1 ],
             self::Forest => [ 'Magic Leaf' => 1, 'Monster Box' => 1 ],
-            self::BanditCamp => [ 'Wrapped Sword' => 1, 'Piece of Cetgueli\'s Map' => 1, 'Black Flag' => 1 ],
+            self::BanditCamp => [ 'Piece of Cetgueli\'s Map' => 1, 'Gold Chest' => 1 ],
             self::Mine => [ 'Sand-covered... Something' => 1, 'Blackonite' => 1 ],
             self::UndergroundLake => [ 'Quintessence' => 5 ],
             self::UmbralFields => [ 'Gold Chest' => 1 ],
             self::DragonLair => [ 'Dragon Tongue' => 1 ],
             self::TheDeep => [ 'Firestone' => 1 ],
             self::TreasureVault => [ 'Gold Chest' => 1, 'Minor Scroll of Riches' => 1 ],
+            self::HauntedWoods => [ 'Monster Box' => 1, 'Evilberries' => 2 ],
+            self::HuntingGrounds => [ 'Monster Box' => 1 ],
+            self::Quarry => [ 'Sand-covered... Something' => 1 ],
             self::Beach, self::MagicTower, self::Graveyard,
-            self::FairyMarket, self::HauntedWoods, self::HuntingGrounds, self::Quarry => [],
+            self::FairyMarket => [],
         };
     }
 
