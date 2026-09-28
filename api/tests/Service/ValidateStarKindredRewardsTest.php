@@ -45,7 +45,7 @@ class ValidateStarKindredRewardsTest extends KernelTestCase
 
         foreach(StarKindredThemeEnum::cases() as $theme)
         {
-            $itemNames = [ ...$itemNames, ...array_keys($theme->prizes()), ...$theme->lootTable(), ...array_keys($theme->heroTreasures()), ...$theme->treasures() ];
+            $itemNames = [ ...$itemNames, ...array_keys($theme->prizes()), ...$theme->lootTable(), ...array_keys($theme->heroTreasures()), ...array_keys($theme->treasures()) ];
             $auraNames = [ ...$auraNames, ...$theme->auras() ];
         }
 

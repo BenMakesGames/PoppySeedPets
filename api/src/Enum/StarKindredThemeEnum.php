@@ -145,11 +145,11 @@ enum StarKindredThemeEnum: string
             self::Mine => [ 'Box of Ores' => 1, 'Dark Matter' => 2, 'Liquid-hot Magma' => 2 ],
             self::UndergroundLake => [ 'Fish Bag' => 1, 'Dark Matter' => 2 ],
             self::MagicTower => [ 'Quintessence' => 2, 'Scroll of Resources' => 1 ],
-            self::Graveyard => [ 'Quintessence' => 2 ],
+            self::Graveyard => [ 'Quintessence' => 2, 'Silver Keyblade' => 1 ],
             self::DragonLair => [ 'Monster Box' => 1, 'Striped Microcline' => 1, 'Key Ring' => 1 ],
             self::HauntedWoods, self::HuntingGrounds => [ 'Monster Box' => 2 ],
-            self::TheDeep => [ 'Liquid-hot Magma' => 2 ],
-            self::TreasureVault => [ 'Gold Bar' => 2 ],
+            self::TheDeep => [ 'Liquid-hot Magma' => 2, 'Box of Ores' => 1 ],
+            self::TreasureVault => [ 'Scroll of Resources' => 1, 'Scroll of Tell Samarzhoustian Delights' => 1, 'Gold Ring' => 1 ],
             self::BanditCamp => [ 'White Cloth' => 2 ],
             self::FairyMarket => [ 'Music Note' => 2 ],
             self::Quarry => [ 'Rock' => 2 ],
@@ -172,9 +172,9 @@ enum StarKindredThemeEnum: string
             self::MagicTower => [ 'Quintessence', 'Tiny Scroll of Resources', 'Crystal Ball', 'Silver Bar', 'Glass', 'Gold Tuning Fork', 'Quinacridone Magenta Dye', 'White Cloth', 'Viscaria', 'Wolf\'s Bane', 'Witch-hazel' ],
             self::UmbralFields => [ 'Purple Corn', 'Purple Corn', 'Tentacle', 'Quinacridone Magenta Dye', 'Rock' ],
             self::DragonLair => [ 'Talon', 'Scales', 'Gold Bar', 'Silver Bar', 'Silver Bar', 'Silver Colander', 'Liquid-hot Magma', 'Burnt Log', 'Gold Triangle' ],
-            self::Graveyard => [ 'Rock', 'Quintessence', 'Quintessence', 'Filthy Cloth', 'Grandparoot', 'Stereotypical Bone', 'Cobweb' ],
-            self::TheDeep => [ 'Liquid-hot Magma', 'Liquid-hot Magma', 'Iron Ore', 'Silver Ore', 'Gold Ore', 'Striped Microcline', 'Tentacle', 'Talon', 'Scales', 'Dark Matter', 'Gravitational Waves', 'Quintessence' ],
-            self::TreasureVault => [ 'Gold Bar', 'Gold Bar', 'Gold Bar', 'Silver Bar', 'Silver Bar', 'Gold Key', 'Silver Key', 'Gold Triangle', 'Silver Colander', 'Scroll of Resources', 'Tiny Scroll of Resources', 'Firestone', '"Gold" Idol', 'Rib', 'Scroll of Tell Samarzhoustian Delights', 'Gold Ring' ],
+            self::Graveyard => [ 'Rock', 'Filthy Cloth', 'Grandparoot', 'Stereotypical Bone', 'Cobweb' ],
+            self::TheDeep => [ 'Liquid-hot Magma', 'Liquid-hot Magma', 'Iron Ore', 'Silver Ore', 'Gold Ore', 'Striped Microcline', 'Tentacle', 'Talon', 'Scales', 'Dark Matter', 'Gravitational Waves', 'Quintessence', 'Rib' ],
+            self::TreasureVault => [ 'Gold Bar', 'Gold Bar', 'Silver Bar', 'Silver Bar', 'Silver Bar', 'Gold Key', 'Silver Key', 'Gold Triangle', 'Silver Colander', 'Tiny Scroll of Resources', '"Gold" Idol' ],
             self::BanditCamp => [ 'White Cloth', 'Stereotypical Torch', 'Gold Bar', 'Fish Stew', 'Takoyaki', 'Kilju', 'Grilled Fish', 'Onigiri', 'Potato' ],
             self::FairyMarket => [ 'Quintessence', 'Jar of Fireflies', 'World\'s Best Sugar Cookie', 'Wings', 'Music Note', 'Pink Fairy Floss', 'Coriander Flower', 'Moon Pearl' ],
             self::HauntedWoods => [ 'Crooked Stick', 'Quintessence', 'Quintessence', 'Talon', 'Dark Scales', 'Music Note', 'Feathers' ],
@@ -184,29 +184,29 @@ enum StarKindredThemeEnum: string
     }
 
     /**
-     * The Demigod reward is one of these.
-     * @return string[]
+     * The Demigod reward is one of these, as a stack of the given quantity.
+     * @return array<string, int> item name => quantity
      */
     public function treasures(): array
     {
         return match($this)
         {
-            self::Shipwreck => [ 'Secret Seashell', 'Scroll of the Sea' ],
-            self::Beach => [ 'Secret Seashell', 'Scroll of the Sea' ],
-            self::Forest => [ 'Very Strongbox', 'Raven\'s Beak' ],
-            self::Mine => [ 'Fierierstone', 'Ruby Chest' ],
-            self::UndergroundLake => [ 'Ice "Mango"', 'Cup of Life' ],
-            self::MagicTower => [ 'Tower Chest', 'Scroll of Illusions', 'Scroll of Dice', 'Warping Wand' ],
-            self::UmbralFields => [ 'Ruby Chest', 'Ceremony of Shadows' ],
-            self::DragonLair => [ 'Gold Baabble', 'Ruby Chest' ],
-            self::Graveyard => [ 'Blackonite', 'Dino Skull', 'Stereotypical Bone' ],
-            self::TheDeep => [ 'Firestone', 'Monster Box', 'Box of Ores' ],
-            self::TreasureVault => [ 'Gold Chest', 'Ruby Chest', 'Piece of Cetgueli\'s Map' ],
-            self::BanditCamp => [ 'Wrapped Sword', 'Piece of Cetgueli\'s Map', 'Black Flag' ],
-            self::FairyMarket => [ 'Glowing Protojelly', 'Magpie Pouch', 'Espophone', 'Rainbow' ],
-            self::HauntedWoods => [ 'Monster-summoning Scroll', 'Twilight Box', 'Cup of Life' ],
-            self::HuntingGrounds => [ 'Handicrafts Supply Box', 'Stereotypical Bone', 'Monster Box' ],
-            self::Quarry => [ 'Box of Ores', 'Sand-covered... Something', 'Dino Skull' ],
+            self::Shipwreck => [ 'Secret Seashell' => 1, 'Scroll of the Sea' => 1 ],
+            self::Beach => [ 'Secret Seashell' => 1, 'Scroll of the Sea' => 1 ],
+            self::Forest => [ 'Very Strongbox' => 1, 'Raven\'s Beak' => 1 ],
+            self::Mine => [ 'Fierierstone' => 1, 'Ruby Chest' => 1 ],
+            self::UndergroundLake => [ 'Ice "Mango"' => 1, 'Cup of Life' => 1 ],
+            self::MagicTower => [ 'Tower Chest' => 1, 'Scroll of Illusions' => 1, 'Scroll of Dice' => 1, 'Warping Wand' => 1 ],
+            self::UmbralFields => [ 'Ruby Chest' => 1, 'Ceremony of Shadows' => 1 ],
+            self::DragonLair => [ 'Gold Baabble' => 1, 'Ruby Chest' => 1 ],
+            self::Graveyard => [ 'Ruby Chest' => 1, 'Renaming Scroll' => 1 ],
+            self::TheDeep => [ 'Monster Box' => 2, 'Fierierstone' => 1 ],
+            self::TreasureVault => [ 'Ruby Chest' => 1, 'Piece of Cetgueli\'s Map' => 2, 'Major Scroll of Riches' => 1 ],
+            self::BanditCamp => [ 'Wrapped Sword' => 1, 'Piece of Cetgueli\'s Map' => 1, 'Black Flag' => 1 ],
+            self::FairyMarket => [ 'Glowing Protojelly' => 1, 'Magpie Pouch' => 1, 'Espophone' => 1, 'Rainbow' => 1 ],
+            self::HauntedWoods => [ 'Monster-summoning Scroll' => 1, 'Twilight Box' => 1, 'Cup of Life' => 1 ],
+            self::HuntingGrounds => [ 'Handicrafts Supply Box' => 1, 'Stereotypical Bone' => 1, 'Monster Box' => 1 ],
+            self::Quarry => [ 'Box of Ores' => 1, 'Sand-covered... Something' => 1, 'Dino Skull' => 1 ],
         };
     }
 
@@ -225,8 +225,9 @@ enum StarKindredThemeEnum: string
             self::UndergroundLake => [ 'Quintessence' => 5 ],
             self::UmbralFields => [ 'Gold Chest' => 1 ],
             self::DragonLair => [ 'Dragon Tongue' => 1 ],
-            self::Beach, self::MagicTower,
-            self::Graveyard, self::TheDeep, self::TreasureVault,
+            self::TheDeep => [ 'Firestone' => 1 ],
+            self::TreasureVault => [ 'Gold Chest' => 1, 'Minor Scroll of Riches' => 1 ],
+            self::Beach, self::MagicTower, self::Graveyard,
             self::FairyMarket, self::HauntedWoods, self::HuntingGrounds, self::Quarry => [],
         };
     }

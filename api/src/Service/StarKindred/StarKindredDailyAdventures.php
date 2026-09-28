@@ -139,6 +139,9 @@ final class StarKindredDailyAdventures
         $prizes = $theme->prizes();
         $prize = $rng->rngNextFromArray(array_keys($prizes));
 
+        $treasures = $theme->treasures();
+        $treasure = $rng->rngNextFromArray(array_keys($treasures));
+
         $heroOptions = [
             ...array_map(fn(string $item, int $quantity) => StarKindredReward::item(StarKindredDifficultyEnum::Hero, $item, $quantity), array_keys($theme->heroTreasures()), $theme->heroTreasures()),
             ...array_map(fn(string $aura) => StarKindredReward::aura(StarKindredDifficultyEnum::Hero, $aura), $theme->auras()),
@@ -148,7 +151,7 @@ final class StarKindredDailyAdventures
             StarKindredReward::item(StarKindredDifficultyEnum::Novice, $rng->rngNextFromArray($theme->lootTable()), 1),
             StarKindredReward::item(StarKindredDifficultyEnum::Veteran, $prize, $prizes[$prize]),
             $rng->rngNextFromArray($heroOptions),
-            StarKindredReward::item(StarKindredDifficultyEnum::Demigod, $rng->rngNextFromArray($theme->treasures()), 1),
+            StarKindredReward::item(StarKindredDifficultyEnum::Demigod, $treasure, $treasures[$treasure]),
         ];
     }
 }
