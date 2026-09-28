@@ -131,6 +131,10 @@ class Inventory
 
     public function changeItem(Item $item): self
     {
+        // a hat fit is tailored to a specific hat item's image
+        if($item !== $this->item)
+            $this->getWearer()?->setHatFit(null);
+
         $this->item = $item;
 
         $this->fullItemName = InventoryModifierFunctions::getNameWithModifiers($this);

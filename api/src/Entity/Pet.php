@@ -202,6 +202,10 @@ class Pet
     #[Groups([SerializationGroupEnum::MY_PET, 'userPublicProfile', 'petPublicProfile', 'hollowEarth', 'petGroupDetails', 'helperPet'])]
     private ?Inventory $hat = null;
 
+    #[ORM\OneToOne(targetEntity: PetHatFit::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?PetHatFit $hatFit = null;
+
     #[ORM\Column(type: 'string', length: 30)]
     #[Groups([SerializationGroupEnum::MY_PET, 'petPublicProfile'])]
     private string $costume = '';
@@ -1390,7 +1394,26 @@ class Pet
 
     public function setHat(?Inventory $hat): self
     {
+        // a hat fit is for one specific hat; it doesn't survive a change of hat
+        if($hat !== $this->hat)
+            $this->hatFit = null;
+
         $this->hat = $hat;
+
+        return $this;
+    }
+
+    public function getHatFit(): ?PetHatFit
+    {
+        return $this->hatFit;
+    }
+
+    public function setHatFit(?PetHatFit $hatFit): self
+    {
+        if($hatFit !== null && $this->hat === null)
+            throw new \LogicException('Cannot fit a hat onto a pet that isn\'t wearing one.');
+
+        $this->hatFit = $hatFit;
 
         return $this;
     }
