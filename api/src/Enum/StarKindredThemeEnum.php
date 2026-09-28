@@ -143,7 +143,7 @@ enum StarKindredThemeEnum: string
             self::Forest => [ 'Nature Box' => 1, 'Wrapped Sword' => 1 ],
             self::UmbralFields => [ 'Nature Box' => 2 ],
             self::Mine => [ 'Box of Ores' => 1, 'Dark Matter' => 2 ],
-            self::UndergroundLake => [ 'Fish Bag' => 2 ],
+            self::UndergroundLake => [ 'Fish Bag' => 1, 'Dark Matter' => 2 ],
             self::MagicTower, self::Graveyard => [ 'Quintessence' => 2 ],
             self::DragonLair, self::HauntedWoods, self::HuntingGrounds => [ 'Monster Box' => 2 ],
             self::TheDeep => [ 'Liquid-hot Magma' => 2 ],
@@ -166,7 +166,7 @@ enum StarKindredThemeEnum: string
             self::Beach => [ 'Scales', 'Fish', 'Coconut', 'Really Big Leaf', 'Naner', 'Silica Grounds', 'Crooked Stick', 'Seaweed', 'Feathers' ],
             self::Forest => [ 'Orange', 'Naner', 'Red', 'Fluff', 'Crooked Stick', 'Blackberries', 'Blueberries', 'Sweet Beet' ],
             self::Mine => [ 'Gold Ore', 'Silver Ore', 'Iron Ore', 'Iron Ore', 'Rock', 'Silica Grounds', 'Gypsum' ],
-            self::UndergroundLake => [ 'Toadstool', 'Toadstool', 'Rock', 'Chanterelle', 'Chanterelle', 'Everice', 'Everice', 'Fish Bones', 'Cobweb', 'Quintessence' ],
+            self::UndergroundLake => [ 'Toadstool', 'Rock', 'Chanterelle', 'Everice', 'Fish Bones', 'Cobweb', 'Snail Shell' ],
             self::MagicTower => [ 'Quintessence', 'Tiny Scroll of Resources', 'Crystal Ball', 'Silver Bar', 'Glass', 'Mikronium', 'Megalium', 'Gold Tuning Fork', 'Quinacridone Magenta Dye', 'White Cloth', 'Viscaria', 'Wolf\'s Bane', 'Witch-hazel', 'Liquid-hot Magma' ],
             self::UmbralFields => [ 'Purple Corn', 'Purple Corn', 'Tentacle', 'Quinacridone Magenta Dye', 'Quintessence' ],
             self::DragonLair => [ 'Talon', 'Scales', 'Gold Bar', 'Gold Bar', 'Gold Bar', 'Silver Bar', 'Silver Bar', 'Dino Skull', 'Gold Key', 'Silver Colander', 'Liquid-hot Magma', 'Dragon Tongue', 'Striped Microcline', 'Burnt Log' ],
@@ -191,9 +191,9 @@ enum StarKindredThemeEnum: string
         {
             self::Shipwreck => [ 'Secret Seashell', 'Scroll of the Sea' ],
             self::Beach => [ 'Secret Seashell', 'Scroll of the Sea' ],
-            self::Forest => [ 'Monster Box', 'Raven\'s Beak' ],
-            self::Mine => [ 'Fierierstone', 'Very Strongbox' ],
-            self::UndergroundLake => [ 'Ice "Mango"', 'Cup of Life', 'Fish Bag' ],
+            self::Forest => [ 'Very Strongbox', 'Raven\'s Beak' ],
+            self::Mine => [ 'Fierierstone', 'Ruby Chest' ],
+            self::UndergroundLake => [ 'Ice "Mango"', 'Cup of Life' ],
             self::MagicTower => [ 'Tower Chest', 'Scroll of Illusions', 'Scroll of Dice', 'Twilight Box' ],
             self::UmbralFields => [ 'Noetala Egg', 'Twilight Box', 'Quinacridone Magenta Dye' ],
             self::DragonLair => [ 'Gold Chest', 'Ruby Chest', 'Monster Box' ],
@@ -210,17 +210,18 @@ enum StarKindredThemeEnum: string
 
     /**
      * The Hero reward is one of these or one of the setting's hat stylings (all equally likely).
-     * @return string[]
+     * @return array<string, int> item name => quantity
      */
     public function heroTreasures(): array
     {
         return match($this)
         {
-            self::Shipwreck => [ 'Rusted, Busted Mechanism', 'Ceremonial Trident' ],
-            self::Forest => [ 'Magic Leaf', 'Monster Box' ],
-            self::BanditCamp => [ 'Wrapped Sword', 'Piece of Cetgueli\'s Map', 'Black Flag' ],
-            self::Mine => [ 'Sand-covered... Something', 'Blackonite' ],
-            self::Beach, self::UndergroundLake, self::MagicTower, self::UmbralFields,
+            self::Shipwreck => [ 'Rusted, Busted Mechanism' => 1, 'Ceremonial Trident' => 1 ],
+            self::Forest => [ 'Magic Leaf' => 1, 'Monster Box' => 1 ],
+            self::BanditCamp => [ 'Wrapped Sword' => 1, 'Piece of Cetgueli\'s Map' => 1, 'Black Flag' => 1 ],
+            self::Mine => [ 'Sand-covered... Something' => 1, 'Blackonite' => 1 ],
+            self::UndergroundLake => [ 'Quintessence' => 5 ],
+            self::Beach, self::MagicTower, self::UmbralFields,
             self::DragonLair, self::Graveyard, self::TheDeep, self::TreasureVault,
             self::FairyMarket, self::HauntedWoods, self::HuntingGrounds, self::Quarry => [],
         };
@@ -237,12 +238,11 @@ enum StarKindredThemeEnum: string
             self::Shipwreck => [ 'with Anchor', 'Sea Prince\'s' ],
             self::Beach => [ 'Lobster', 'with Anchor' ],
             self::Mine, self::Quarry => [ 'with Cave Mushrooms' ],
-            self::UndergroundLake => [ 'Sea Prince\'s' ],
             self::MagicTower, self::FairyMarket => [ 'Amethyst' ],
             self::DragonLair, self::TreasureVault => [ 'of Tishpak' ],
             self::Graveyard, self::HauntedWoods => [ 'Bandaged' ],
             self::TheDeep, self::UmbralFields, self::HuntingGrounds => [ 'with Monster Skull' ],
-            self::Forest, self::BanditCamp => [],
+            self::Forest, self::BanditCamp, self::UndergroundLake => [],
         };
     }
 }

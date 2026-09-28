@@ -140,7 +140,7 @@ final class StarKindredDailyAdventures
         $prize = $rng->rngNextFromArray(array_keys($prizes));
 
         $heroOptions = [
-            ...array_map(fn(string $item) => StarKindredReward::item(StarKindredDifficultyEnum::Hero, $item, 1), $theme->heroTreasures()),
+            ...array_map(fn(string $item, int $quantity) => StarKindredReward::item(StarKindredDifficultyEnum::Hero, $item, $quantity), array_keys($theme->heroTreasures()), $theme->heroTreasures()),
             ...array_map(fn(string $aura) => StarKindredReward::aura(StarKindredDifficultyEnum::Hero, $aura), $theme->auras()),
         ];
 

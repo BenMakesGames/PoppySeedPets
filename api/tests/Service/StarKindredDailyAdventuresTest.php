@@ -102,7 +102,7 @@ class StarKindredDailyAdventuresTest extends TestCase
         if($hero->aura)
             self::assertContains($hero->aura, $adventure->theme->auras());
         else
-            self::assertContains($hero->item, $adventure->theme->heroTreasures());
+            self::assertSame($adventure->theme->heroTreasures()[$hero->item] ?? null, $hero->quantity);
 
         self::assertCount(3, $adventure->getRewardsFor(StarKindredDifficultyEnum::Hero), 'Rewards are cumulative.');
     }
