@@ -31,8 +31,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route("/hattier")]
 class FitHatController
 {
-    public const int MoneysCost = 100;
-    public const int RecyclingCost = 50;
+    public const int MoneysCost = 50;
+    public const int RecyclingCost = 25;
 
     #[Route("/fit", methods: ["POST"])]
     #[IsGranted("IS_AUTHENTICATED_FULLY")]

@@ -51,8 +51,8 @@ export class FittingRoomComponent implements OnInit, OnDestroy {
   pageMeta = { title: 'The Hattier - Fitting Room' };
 
   // keep in sync with FitHatController on the API
-  readonly moneysCost = 100;
-  readonly recyclingCost = 50;
+  readonly moneysCost = 50;
+  readonly recyclingCost = 25;
 
   paramSubscription = Subscription.EMPTY;
   petSubscription = Subscription.EMPTY;
