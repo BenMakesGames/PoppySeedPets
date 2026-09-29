@@ -17,22 +17,15 @@ import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 })
 export class AskToRestartDialog {
 
-  constructor(private dialogRef: MatDialogRef<AskToRestartDialog>) {
-  }
-
   doUpdateToLatest()
   {
     document.location.reload();
   }
 
-  doAskMeLater()
-  {
-    this.dialogRef.close();
-  }
-
   public static open(matDialog: MatDialog): MatDialogRef<AskToRestartDialog>
   {
-    return matDialog.open(AskToRestartDialog);
+    // the old webapp may not work with the new API, so the player must reload
+    return matDialog.open(AskToRestartDialog, { disableClose: true });
   }
 
 }

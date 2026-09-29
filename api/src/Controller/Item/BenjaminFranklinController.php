@@ -57,9 +57,15 @@ class BenjaminFranklinController
 
         $reloadPets = $inventory->getHolder() || $inventory->getWearer();
 
+        $remainsComment = 'The remains of a Benjamin Franklin.';
+
+        if($rng->rngNextInt(1, 10) === 1)
+            $remainsComment .= ' (The kite; not the person.)';
+
         $inventory
             ->changeItem($fluff)
             ->setSpice($burnt)
+            ->addComment($remainsComment)
             ->setModifiedOn()
         ;
 
