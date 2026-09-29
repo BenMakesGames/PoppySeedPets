@@ -24,17 +24,23 @@ final class StarKindredNames
         if($race->isAndrogynous() !== ($sex === null))
             throw new \InvalidArgumentException('Androgynous races must not have a sex; all other races must.');
 
-        $givenNames = match($race)
+        $givenName = match($race)
         {
-            StarKindredRaceEnum::Human => $sex === StarKindredSexEnum::Female ? self::HumanFemale : self::HumanMale,
-            StarKindredRaceEnum::Elf => $sex === StarKindredSexEnum::Female ? self::ElfFemale : self::ElfMale,
-            StarKindredRaceEnum::Gnome => $sex === StarKindredSexEnum::Female ? self::GnomeFemale : self::GnomeMale,
-            StarKindredRaceEnum::Goblin => $sex === StarKindredSexEnum::Female ? self::GoblinFemale : self::GoblinMale,
-            StarKindredRaceEnum::Emberkin => $sex === StarKindredSexEnum::Female ? self::EmberkinFemale : self::EmberkinMale,
-            StarKindredRaceEnum::HighFae => $sex === StarKindredSexEnum::Female ? self::HighFaeFemale : self::HighFaeMale,
-            StarKindredRaceEnum::Dwarf => self::Dwarf,
-            StarKindredRaceEnum::Beastkin => self::Beastkin,
-            StarKindredRaceEnum::Nymph => self::Nymph,
+            StarKindredRaceEnum::Human =>
+                $rng->rngNextFromArray($sex === StarKindredSexEnum::Female ? self::HumanFemale : self::HumanMale),
+            StarKindredRaceEnum::Elf =>
+                $rng->rngNextFromArray($sex === StarKindredSexEnum::Female ? self::ElfFemale : self::ElfMale),
+            StarKindredRaceEnum::Gnome =>
+                $rng->rngNextFromArray($sex === StarKindredSexEnum::Female ? self::GnomeFemale : self::GnomeMale),
+            StarKindredRaceEnum::Goblin =>
+                $rng->rngNextFromArray($sex === StarKindredSexEnum::Female ? self::GoblinFemale : self::GoblinMale),
+            StarKindredRaceEnum::HighFae =>
+                $rng->rngNextFromArray($sex === StarKindredSexEnum::Female ? self::HighFaeFemale : self::HighFaeMale),
+            StarKindredRaceEnum::Emberkin =>
+                $rng->rngNextFromArray(self::EmberkinDragons) . '-' . $rng->rngNextFromArray(self::EmberkinDragonSuffixes),
+            StarKindredRaceEnum::Dwarf => $rng->rngNextFromArray(self::Dwarf),
+            StarKindredRaceEnum::Beastkin => $rng->rngNextFromArray(self::Beastkin),
+            StarKindredRaceEnum::Nymph => $rng->rngNextFromArray(self::Nymph),
         };
 
         $familyName = match($race)
@@ -42,17 +48,22 @@ final class StarKindredNames
             StarKindredRaceEnum::Human =>
                 $rng->rngNextFromArray(self::HumanFamilyPrefixes) . $rng->rngNextFromArray(self::HumanFamilySuffixes),
             StarKindredRaceEnum::Elf => $rng->rngNextFromArray(self::ElfFamily),
-            StarKindredRaceEnum::Dwarf => $rng->rngNextFromArray(self::DwarfFamily),
+            StarKindredRaceEnum::Dwarf => self::toRomanNumerals($rng->rngNextInt(50, 150)),
             StarKindredRaceEnum::Gnome => self::gnomePatronymic($rng->rngNextFromArray(self::GnomeMale), $sex),
             StarKindredRaceEnum::Goblin => $rng->rngNextFromArray(self::GoblinFamily),
             StarKindredRaceEnum::Beastkin => $rng->rngNextFromArray(self::BeastkinFamily),
-            StarKindredRaceEnum::Emberkin => $rng->rngNextFromArray(self::EmberkinFamily),
+            StarKindredRaceEnum::Emberkin => null, // Emberkin go by a single name, taken from a great dragon
             StarKindredRaceEnum::HighFae => $rng->rngNextFromArray(self::HighFaeFamily),
             StarKindredRaceEnum::Nymph =>
                 'of the ' . $rng->rngNextFromArray(self::NymphFamilyAdjectives) . ' ' . $rng->rngNextFromArray(self::NymphFamilyPlaces),
         };
 
-        return $rng->rngNextFromArray($givenNames) . ' ' . $familyName;
+        if($familyName === null)
+            return $givenName;
+
+        $separator = $race === StarKindredRaceEnum::Beastkin ? ', ' : ' ';
+
+        return $givenName . $separator . $familyName;
     }
 
     /**
@@ -64,6 +75,33 @@ final class StarKindredNames
         $genitive = str_ends_with($fatherName, 's') ? $fatherName : $fatherName . 's';
 
         return $genitive . ($sex === StarKindredSexEnum::Female ? 'dotter' : 'son');
+    }
+
+    /**
+     * Dwarves are named after an ancestor, and numbered: "Brakka CXIV" is the 114th Brakka of their line.
+     */
+    private static function toRomanNumerals(int $number): string
+    {
+        if($number < 1)
+            throw new \InvalidArgumentException('Roman numerals cannot represent numbers less than 1.');
+
+        $numerals = [
+            'M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90,
+            'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1,
+        ];
+
+        $result = '';
+
+        foreach($numerals as $numeral => $value)
+        {
+            while($number >= $value)
+            {
+                $result .= $numeral;
+                $number -= $value;
+            }
+        }
+
+        return $result;
     }
 
     private const array HumanFemale = [
@@ -106,11 +144,6 @@ final class StarKindredNames
         'Rurik', 'Sigrun', 'Thora', 'Ulfa', 'Yngvar',
     ];
 
-    private const array DwarfFamily = [
-        'Anvilsong', 'Coalbraid', 'Deepdelver', 'Fireforge', 'Gemcutter', 'Goldvein', 'Granitehold',
-        'Lanternmine', 'Orebinder', 'Stonebraid', 'Tunnelwright',
-    ];
-
     private const array GnomeFemale = [
         'Bibbet', 'Clementine', 'Dottie', 'Fizzy', 'Lulabelle', 'Minnow', 'Penny', 'Posy', 'Tilly', 'Trinket',
         'Wimbly', 'Zinnia',
@@ -136,25 +169,22 @@ final class StarKindredNames
     ];
 
     private const array Beastkin = [
-        'Ash', 'Bramble', 'Fang', 'Flint', 'Grey', 'Hollow', 'Kestrel', 'Moss', 'Rook', 'Rowan', 'Sable',
-        'Thistle', 'Tor',
+        'Ash', 'Bramble', 'Crag', 'Fang', 'Fisher', 'Flint', 'Grey', 'Hollow', 'Kestrel', 'Moss', 'River', 'Rook',
+        'Rowan', 'Sable', 'Thistle', 'Tibia', 'Tor',
     ];
 
     private const array BeastkinFamily = [
-        'Brightpelt', 'Farwander', 'Longstride', 'of the Deep Pines', 'of the High Moors', 'of the Red Cliffs',
-        'Stormhowl', 'Swiftclaw', 'Thornhide',
+        'the Fast', 'the Bright', 'the Fierce', 'the Calm', 'the Steady', 'the Reliable', 'the Tough', 'the Loud',
+        'the Crazed', 'the Lost', 'the Restless',
     ];
 
-    private const array EmberkinFemale = [
-        'Aitne', 'Brisa', 'Cindra', 'Ignia', 'Kaela', 'Pyra', 'Seraphine', 'Solenne', 'Vesta', 'Zhara',
+    private const array EmberkinDragons = [
+        'Typhon', 'Kulshedra', 'Saraph', 'Aitvaras', 'Smok', 'Tarasque', 'Zhulong', 'Zmeya', 'Srvara', 'Mušḫuššu',
+        'Bašmu', 'Mizuchi', 'Jörmungandr',
     ];
 
-    private const array EmberkinMale = [
-        'Aidan', 'Brand', 'Cyrus', 'Ignar', 'Kaldor', 'Pyros', 'Soren', 'Tavish', 'Vulcan', 'Zephyr',
-    ];
-
-    private const array EmberkinFamily = [
-        'Ashbright', 'Candleheart', 'Emberly', 'Flameborn', 'Hearthstone', 'Kilnborn', 'Smolderwick', 'Sunforge',
+    private const array EmberkinDragonSuffixes = [
+        'fire', 'eyes', 'wing', 'claw', 'tooth', 'bite', 'glint',
     ];
 
     private const array HighFaeFemale = [

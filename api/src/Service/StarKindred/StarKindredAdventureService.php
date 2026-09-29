@@ -543,7 +543,7 @@ class StarKindredAdventureService
     private function receiveLoot(User $user, array $loot): void
     {
         foreach($loot as $item)
-            $this->inventoryService->receiveItem($item, $user, $user, $user->getName() . ' gave this to their pets during a game of ★Kindred.', LocationEnum::Home);
+            $this->inventoryService->receiveItem($item, $user, $user, $user->getName() . ' gave this to their pets during a game of ★Kindred.', LocationEnum::Home, lockedToOwner: true);
     }
 
     /**
