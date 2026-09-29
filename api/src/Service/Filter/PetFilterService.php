@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Service\Filter;
 
 use App\Entity\Pet;
+use App\Entity\StarKindredCharacter;
 use App\Exceptions\PSPFormValidationException;
 use App\Functions\StringFunctions;
 use App\Functions\ULID;
@@ -54,6 +55,7 @@ class PetFilterService implements FilterServiceInterface
                 'toolOrHat' => $this->filterToolOrHat(...),
                 'isPregnant' => $this->filterIsPregnant(...),
                 'badge' => $this->filterBadge(...),
+                'hasStarKindredCharacter' => $this->filterHasStarKindredCharacter(...),
             ],
             [
                 'nameExactMatch'
@@ -137,6 +139,19 @@ class PetFilterService implements FilterServiceInterface
             ->andWhere('merits.id=:meritId')
             ->setParameter('meritId', (int)$value)
         ;
+    }
+
+    /**
+     * "Has a character" means an active (un-retired) ★Kindred character.
+     */
+    public function filterHasStarKindredCharacter(QueryBuilder $qb, mixed $value): void
+    {
+        $activeCharacter = 'SELECT 1 FROM ' . StarKindredCharacter::class . ' skc WHERE skc.pet = p AND skc.retiredOn IS NULL';
+
+        if(!StringFunctions::isTruthy($value))
+            $qb->andWhere('NOT EXISTS (' . $activeCharacter . ')');
+        else
+            $qb->andWhere('EXISTS (' . $activeCharacter . ')');
     }
 
     public function filterIsPregnant(QueryBuilder $qb, mixed $value): void

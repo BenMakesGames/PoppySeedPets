@@ -944,6 +944,26 @@ final class BadgeHelpers
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Tiny Rocketship'), 1);
                 break;
 
+            case BadgeEnum::STAR_KINDRED_VICTORIES_10:
+                $progress = [ 'target' => 10, 'current' => self::getStatTotal($user, [ UserStat::WonAStarKindredAdventure ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Handicrafts Supply Box'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_DEMIGOD_VICTORY_1:
+                $progress = [ 'target' => 1, 'current' => self::getStatTotal($user, [ UserStat::WonADemigodStarKindredAdventure ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Ruby Chest'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_RETIRED_1:
+                $progress = [ 'target' => 1, 'current' => self::getStatTotal($user, [ UserStat::RetiredAStarKindredAdventurer ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Gold Chest'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_RETIRED_10:
+                $progress = [ 'target' => 10, 'current' => self::getStatTotal($user, [ UserStat::RetiredAStarKindredAdventurer ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Cup of Life'), 1);
+                break;
+
             default:
                 throw new \Exception('Oops! Badge not implemented! Ben was a bad programmer!');
         }

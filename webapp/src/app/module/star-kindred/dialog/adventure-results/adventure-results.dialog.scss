@@ -1,0 +1,52 @@
+/*
+ * This file is part of the Poppy Seed Pets Webapp.
+ *
+ * The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+ */
+markdown {
+  display: block;
+  margin-bottom: 1em;
+}
+
+.outcome {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: var(--bold-weight);
+  margin: 0 0 0.67em;
+
+  .flourish {
+    font-weight: var(--normal-weight);
+    opacity: 0.6;
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+
+  .mark {
+    flex: none;
+    width: 1em;
+    text-align: center;
+    font-size: 1.5em;
+    color: #c22;
+  }
+
+  &.success .mark {
+    color: #2a2;
+  }
+
+  markdown {
+    margin-bottom: 0;
+  }
+}
+
+.progress {
+  padding-left: 1.25em;
+}

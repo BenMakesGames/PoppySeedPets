@@ -71,7 +71,7 @@ const routes: Routes = [
   { path: 'fieldGuide', loadChildren: () => import('./module/field-guide/field-guide.module').then(m => m.FieldGuideModule), canActivate: [ MustHaveUnlockedFieldGuideGuard ] },
   { path: 'survey', loadChildren: () => import('./module/survey/survey.module').then(m => m.SurveyModule), canActivate: [ MustBeLoggedInGuard ] },
   { path: 'news', loadChildren: () => import('./module/news/news.module').then(m => m.NewsModule), canActivate: [ AnyGuard ] },
-  { path: 'stories', loadChildren: () => import('./module/stories/stories.module').then(m => m.StoriesModule), canActivate: [ MustBeLoggedInGuard ] },
+  { path: 'starKindred', loadChildren: () => import('./module/star-kindred/star-kindred.module').then(m => m.StarKindredModule), canActivate: [ MustBeLoggedInGuard ] },
   { path: 'achievements', loadChildren: () => import('./module/badges/badges.module').then(m => m.BadgesModule), canActivate: [ MustBeLoggedInGuard ] },
   { path: 'zoologist', loadChildren: () => import('./module/zoologist/zoologist.module').then(m => m.ZoologistModule), canActivate: [ MustHaveUnlockedZoologistGuard ] },
   { path: 'library', loadChildren: () => import('./module/library/library.module').then(m => m.LibraryModule), canActivate: [ MustHaveUnlockedLibraryGuard ] },
