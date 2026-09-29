@@ -117,14 +117,24 @@ class HouseSim implements IHouseSim
             $items
         );
 
+        // try each item in a random order, so every item is equally likely to be picked (when all are available)
         $rng->rngNextShuffle($items);
 
-        /** @var Inventory $itemToRemove */
-        $itemToRemove = array_find(
-            $this->inventory,
-            fn(Inventory $i) => in_array($i->getItem()->getName(), $items)
-        )
-            ?? throw new \Exception('Cannot use ' . ArrayFunctions::list_nice($items, ', ', ', or ') . '; none exist in your house!');
+        $itemToRemove = null;
+
+        foreach($items as $itemName)
+        {
+            $itemToRemove = array_find(
+                $this->inventory,
+                fn(Inventory $i) => $i->getItem()->getName() === $itemName
+            );
+
+            if($itemToRemove)
+                break;
+        }
+
+        if(!$itemToRemove)
+            throw new \Exception('Cannot use ' . ArrayFunctions::list_nice($items, ', ', ', or ') . '; none exist in your house!');
 
         $itemId = $itemToRemove->getItem()->getId();
 

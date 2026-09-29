@@ -18,7 +18,8 @@ import { MenuComponent } from './component/menu/menu.component';
 import { NavComponent } from './component/nav/nav.component';
 import { LoginComponent } from './component/login/login.component';
 import {FormsModule} from "@angular/forms";
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from "@angular/common/http";
+import { apiBuildInterceptor } from "./service/api-build.interceptor";
 import { LoginChoicesComponent } from './component/login-choices/login-choices.component';
 import {NoopAnimationsModule} from "@angular/platform-browser/animations";
 import { IconComponent } from './component/icon/icon.component';
@@ -121,7 +122,7 @@ Array.prototype.listNice = function(separator: string = ', ', lastSeparator = ',
     CurrentMoonPhaseComponent,
   ],
   providers: [
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withInterceptorsFromDi(), withInterceptors([ apiBuildInterceptor ])),
   ]
 })
 export class AppModule { }

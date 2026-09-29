@@ -269,7 +269,7 @@ class CraftingService implements IPetActivity
 
         if($this->houseSimService->hasInventory('Feathers'))
         {
-            if($this->houseSimService->hasInventory('Hunting Spear'))
+            if($this->houseSimService->hasInventory('Hunting Spear') && ($this->houseSimService->hasInventory('Glue') || $this->houseSimService->hasInventory('String')))
                 $possibilities[] = $this->createDecoratedSpear(...);
 
             if($this->houseSimService->hasInventory('Yellow Dye'))
@@ -287,7 +287,7 @@ class CraftingService implements IPetActivity
 
         if($this->houseSimService->hasInventory('Decorated Spear'))
         {
-            if($this->houseSimService->hasInventory('Dark Scales'))
+            if($this->houseSimService->hasInventory('Dark Scales') && ($this->houseSimService->hasInventory('Glue') || $this->houseSimService->hasInventory('String')))
                 $possibilities[] = $this->createNagatooth(...);
 
             if($this->houseSimService->hasInventory('Quintessence'))
@@ -333,7 +333,7 @@ class CraftingService implements IPetActivity
                 $possibilities[] = $this->createFarmersMultiTool(...);
         }
 
-        if($this->houseSimService->hasInventory('Garden Shovel') && $this->houseSimService->hasInventory('Fish Bones'))
+        if($this->houseSimService->hasInventory('Garden Shovel') && $this->houseSimService->hasInventory('Fish Bones') && ($this->houseSimService->hasInventory('Glue') || $this->houseSimService->hasInventory('String')))
             $possibilities[] = $this->createFishHeadShovel(...);
 
         if($this->houseSimService->hasInventory('White Flag'))
@@ -697,11 +697,12 @@ class CraftingService implements IPetActivity
         {
             $this->houseSimService->getState()->loseItem('Feathers', 1);
             $this->houseSimService->getState()->loseItem('Hunting Spear', 1);
+            $fastener = $this->houseSimService->getState()->loseOneOf($this->rng, [ 'Glue', 'String' ]);
             $pet->increaseEsteem(1);
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% created a Decorated Spear.')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Location_At_Home ]))
             ;
-            $this->inventoryService->petCollectsItem('Decorated Spear', $pet, $pet->getName() . ' decorated a Hunting Spear with Feathers to make this.', $activityLog);
+            $this->inventoryService->petCollectsItem('Decorated Spear', $pet, $pet->getName() . ' made this by ' . self::fasteningVerb($fastener) . ' Feathers onto a Hunting Spear.', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Crafts ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(15, 30), PetActivityStatEnum::CRAFT, true);
@@ -855,6 +856,7 @@ class CraftingService implements IPetActivity
         {
             $this->houseSimService->getState()->loseItem('Fish Bones', 1);
             $this->houseSimService->getState()->loseItem('Garden Shovel', 1);
+            $fastener = $this->houseSimService->getState()->loseOneOf($this->rng, [ 'Glue', 'String' ]);
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% created a Fish Head Shovel!')
                 ->setIcon('items/tool/shovel/fish-head')
@@ -862,7 +864,7 @@ class CraftingService implements IPetActivity
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Crafting, PetActivityLogTagEnum::Location_At_Home ]))
             ;
 
-            $this->inventoryService->petCollectsItem('Fish Head Shovel', $pet, $pet->getName() . ' created this by adorning a Garden Shovel with some Fish Bones.', $activityLog);
+            $this->inventoryService->petCollectsItem('Fish Head Shovel', $pet, $pet->getName() . ' created this by ' . self::fasteningVerb($fastener) . ' some Fish Bones onto a Garden Shovel.', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Crafts ], $activityLog);
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::CRAFT, true);
@@ -2197,6 +2199,7 @@ class CraftingService implements IPetActivity
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::CRAFT, true);
             $this->houseSimService->getState()->loseItem('Dark Scales', 1);
             $this->houseSimService->getState()->loseItem('Decorated Spear', 1);
+            $fastener = $this->houseSimService->getState()->loseOneOf($this->rng, [ 'Glue', 'String' ]);
             $pet->increaseEsteem(2);
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% further decorated a Decorated Spear; now it\'s a Nagatooth!')
                 ->addInterestingness(PetActivityLogInterestingness::HoHum + 15)
@@ -2205,7 +2208,7 @@ class CraftingService implements IPetActivity
                     PetActivityLogTagEnum::Location_At_Home,
                 ]))
             ;
-            $this->inventoryService->petCollectsItem('Nagatooth', $pet, $pet->getName() . ' made this by further decorating a Decorated Spear.', $activityLog);
+            $this->inventoryService->petCollectsItem('Nagatooth', $pet, $pet->getName() . ' made this by ' . self::fasteningVerb($fastener) . ' Dark Scales onto a Decorated Spear.', $activityLog);
 
             $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Crafts ], $activityLog);
         }
@@ -2997,5 +3000,15 @@ class CraftingService implements IPetActivity
         }
 
         return $activityLog;
+    }
+
+    private static function fasteningVerb(string $fastener): string
+    {
+        return match($fastener)
+        {
+            'Glue' => 'gluing',
+            'String' => 'tying',
+            default => throw new \InvalidArgumentException('Unknown fastener: ' . $fastener),
+        };
     }
 }
