@@ -20,6 +20,26 @@ enum StarKindredDifficultyEnum: string
     case Hero = 'Hero';
     case Demigod = 'Demigod';
 
+    public function target(int $partySize): int
+    {
+        return $this->baseTarget() + $this->targetPerCharacter() * $partySize;
+    }
+
+    /**
+     * Flat amount added to an encounter's target regardless of party size, so smaller parties
+     * (especially solo adventurers) have a harder time than larger ones.
+     */
+    public function baseTarget(): int
+    {
+        return match($this)
+        {
+            self::Novice => 0,
+            self::Veteran => 4,
+            self::Hero => 8,
+            self::Demigod => 12,
+        };
+    }
+
     /**
      * Each party member adds this much to an encounter's target, so difficulty scales with party size.
      */

@@ -109,6 +109,7 @@ class GetStarKindredController
                 'difficulties' => array_map(
                     fn(StarKindredDifficultyEnum $d) => [
                         'name' => $d->value,
+                        'baseTarget' => $d->baseTarget(),
                         'targetPerAdventurer' => $d->targetPerCharacter(),
                         'victoryExperience' => $d->victoryExperience(),
                     ],

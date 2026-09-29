@@ -88,7 +88,7 @@ export class AssemblePartyDialog {
     this.skillOdds = checks.map(check => ({
       skill: check.againstUndead ? `${check.skill} vs. undead` : check.skill,
       averageRoll: Math.round(this.selected.reduce((total, c) => total + 10.5 + this.encounterBonus(c, check), 0)),
-      target: this.difficulty.targetPerAdventurer * this.selected.length,
+      target: this.difficulty.baseTarget + this.difficulty.targetPerAdventurer * this.selected.length,
     }));
   }
 

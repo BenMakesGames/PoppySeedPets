@@ -229,7 +229,7 @@ class StarKindredAdventureService
 
         $play = $this->markPlayedToday($user, $adventure->id);
 
-        $target = $difficulty->targetPerCharacter() * count($party);
+        $target = $difficulty->target(count($party));
         $encountersWon = 0;
 
         $checks = [];

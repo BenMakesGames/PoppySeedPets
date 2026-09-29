@@ -55,6 +55,7 @@ export interface StarKindredAdventure
 export interface StarKindredDifficulty
 {
   name: string;
+  baseTarget: number;
   targetPerAdventurer: number;
   victoryExperience: number;
 }

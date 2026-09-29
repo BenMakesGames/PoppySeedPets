@@ -56,7 +56,7 @@
   list-style: none;
   padding-left: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15em), 1fr));
   gap: 0.5em;
 
   button {
@@ -80,6 +80,7 @@
 .character-skills {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0 1em;
   font-size: 85%;
   opacity: 0.85;
