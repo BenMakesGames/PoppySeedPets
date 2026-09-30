@@ -26,6 +26,7 @@ export interface MyInventorySerializationGroup
   lockedToOwner: boolean;
   enchantment: { effects: ToolItemGripSerializationGroup, name: string, isSuffix: boolean, aura: MyAuraSerializationGroup|null }|null;
   enchantmentHue: number|null;
+  enchantmentBrightness: number|null;
   spice: { effects: FoodSerializationGroup, name: string, isSuffix: boolean }|null;
   isUpgrade?: boolean;
 }

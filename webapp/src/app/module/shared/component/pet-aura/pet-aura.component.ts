@@ -7,7 +7,7 @@
  *
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
  */
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { MyAuraSerializationGroup } from "../../../../model/aura/my-aura.serialization-group";
 
 @Component({
@@ -19,6 +19,21 @@ import { MyAuraSerializationGroup } from "../../../../model/aura/my-aura.seriali
 export class PetAuraComponent {
   petScale = input<number>(1);
   aura = input.required<AuraInput>();
+
+  auraFilter = computed(() => auraFilter(this.aura().hue, this.aura().brightness));
+}
+
+export function auraFilter(hue: number|null, brightness: number|null): string
+{
+  const filters: string[] = [];
+
+  if(hue)
+    filters.push('hue-rotate(' + hue + 'deg)');
+
+  if(brightness !== null && brightness !== 100)
+    filters.push('brightness(' + brightness + '%)');
+
+  return filters.join(' ');
 }
 
 export interface AuraInput extends MyAuraSerializationGroup
@@ -30,4 +45,5 @@ export interface AuraInput extends MyAuraSerializationGroup
   centerX: number;
   centerY: number;
   hue: number|null;
+  brightness: number|null;
 }

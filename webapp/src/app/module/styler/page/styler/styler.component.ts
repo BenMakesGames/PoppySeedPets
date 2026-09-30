@@ -284,6 +284,7 @@ export class StylerComponent implements OnInit, OnDestroy {
       aura: null,
     },
     enchantmentHue: 0,
+    enchantmentBrightness: 100,
     spice: null,
   };
 

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Hattier;
 
+use App\Entity\InventoryEnchantment;
 use App\Entity\Pet;
 use App\Entity\UserUnlockedAura;
 use App\Enum\PetBadgeEnum;
@@ -47,6 +48,9 @@ class ApplyAuraController
     {
         $payWith = strtolower($request->payWith);
         $hue = $request->hue % 360;
+
+        if($request->brightness < InventoryEnchantment::MinBrightness || $request->brightness > InventoryEnchantment::MaxBrightness)
+            throw new PSPFormValidationException('Brightness must be between ' . InventoryEnchantment::MinBrightness . ' and ' . InventoryEnchantment::MaxBrightness . '.');
 
         if($request->pet <= 0 || $request->aura <= 0)
             throw new PSPInvalidOperationException('A pet and style must be selected.');
@@ -86,7 +90,7 @@ class ApplyAuraController
         else
             $transactionService->spendRecyclingPoints($user, 100, 'Bought the ' . $unlockedAura->getAura()->getAura()->getName() . ' style from the Hattier.', [ 'Hattier' ]);
 
-        $pet->getHat()->setEnchantment($unlockedAura->getAura(), $hue);
+        $pet->getHat()->setEnchantment($unlockedAura->getAura(), $hue, $request->brightness);
 
         PetBadgeHelpers::awardBadgeAndLog($em, $pet, PetBadgeEnum::TriedOnANewStyle, null);
 
@@ -103,6 +107,7 @@ class ApplyAuraRequest
         public int $aura = 0,
         public string $payWith = 'moneys',
         public int $hue = 0,
+        public int $brightness = 100,
     )
     {
     }

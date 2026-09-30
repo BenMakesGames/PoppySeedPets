@@ -36,11 +36,18 @@ class InventoryEnchantment
     #[ORM\Column(type: 'integer')]
     private int $hue = 0;
 
-    public function __construct(Inventory $inventory, Enchantment $enchantment, int $hue = 0)
+    public const int MinBrightness = 0;
+    public const int MaxBrightness = 200;
+
+    #[ORM\Column(type: 'integer', options: [ 'default' => 100 ])]
+    private int $brightness = 100;
+
+    public function __construct(Inventory $inventory, Enchantment $enchantment, int $hue = 0, int $brightness = 100)
     {
         $this->inventory = $inventory;
         $this->enchantment = $enchantment;
-        $this->hue = $hue;
+        $this->setHue($hue);
+        $this->setBrightness($brightness);
     }
 
     public function getInventory(): Inventory
@@ -80,6 +87,18 @@ class InventoryEnchantment
             $hue = $hue % 360;
 
         $this->hue = $hue;
+
+        return $this;
+    }
+
+    public function getBrightness(): int
+    {
+        return $this->brightness;
+    }
+
+    public function setBrightness(int $brightness): self
+    {
+        $this->brightness = max(self::MinBrightness, min(self::MaxBrightness, $brightness));
 
         return $this;
     }

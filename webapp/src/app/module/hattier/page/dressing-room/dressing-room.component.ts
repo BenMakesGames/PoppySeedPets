@@ -18,6 +18,7 @@ import { UserDataService } from "../../../../service/user-data.service";
 import { MyAccountSerializationGroup } from "../../../../model/my-account/my-account.serialization-group";
 import { AvailableStylesResponse } from '../../model/available-styles-response';
 import { HasSounds, SoundsService } from "../../../shared/service/sounds.service";
+import { auraFilter } from "../../../shared/component/pet-aura/pet-aura.component";
 
 @Component({
   templateUrl: './dressing-room.component.html',
@@ -50,6 +51,8 @@ export class DressingRoomComponent implements OnInit, OnDestroy {
 
   newHue = 0;
   oldHue = 0;
+  newBrightness = 100;
+  oldBrightness = 100;
 
   noStyle: UnlockedAuraSerializationGroup = {
     id: null,
@@ -119,16 +122,33 @@ export class DressingRoomComponent implements OnInit, OnDestroy {
     this.newHue = this.selectedPet.hat.enchantmentHue ?? 0;
     this.oldHue = this.newHue;
 
+    this.newBrightness = this.selectedPet.hat.enchantmentBrightness ?? 100;
+    this.oldBrightness = this.newBrightness;
+
     this.doUpdateStyle();
   }
 
-  public doUpdateHue()
+  get noChanges(): boolean
+  {
+    return (this.selectedStyleId === null || this.selectedStyleId === this.initialStyleId) &&
+      this.newHue === this.oldHue &&
+      this.newBrightness === this.oldBrightness
+    ;
+  }
+
+  get previewFilter(): string
+  {
+    return auraFilter(this.newHue, this.newBrightness);
+  }
+
+  public doUpdateColor()
   {
     this.previewPet = {
       ...this.previewPet,
       hat: {
         ...this.previewPet.hat,
-        enchantmentHue: this.newHue
+        enchantmentHue: this.newHue,
+        enchantmentBrightness: this.newBrightness
       }
     };
   }
@@ -158,6 +178,7 @@ export class DressingRoomComponent implements OnInit, OnDestroy {
       pet: this.selectedPet.id,
       aura: this.selectedStyle.id,
       hue: this.newHue,
+      brightness: this.newBrightness,
       payWith: payWith
     };
 
@@ -211,7 +232,8 @@ export class DressingRoomComponent implements OnInit, OnDestroy {
       hat: {
         ...this.selectedPet.hat,
         enchantment: this.selectedStyle,
-        enchantmentHue: this.newHue
+        enchantmentHue: this.newHue,
+        enchantmentBrightness: this.newBrightness
       }
     };
   }

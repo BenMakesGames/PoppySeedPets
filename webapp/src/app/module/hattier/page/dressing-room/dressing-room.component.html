@@ -48,7 +48,7 @@
                 <span>{{ s.name }}</span>
                 @if(s.aura)
                 {
-                  <img [src]="'/assets/images/auras/' + s.aura.image + '.svg'" alt="" [style.filter]="'hue-rotate(' + newHue + 'deg)'" />
+                  <img [src]="'/assets/images/auras/' + s.aura.image + '.svg'" alt="" [style.filter]="previewFilter" />
                 }
                 @else
                 {
@@ -58,13 +58,15 @@
             }
           </div>
           <div class="buy-buttons">
-            <div class="hue-range-container">
+            <div class="color-range-container">
               <label for="auraHue">Hue</label>
-              <input id="auraHue" type="range" min="0" max="359" [(ngModel)]="newHue" (input)="doUpdateHue()" />
+              <input id="auraHue" type="range" min="0" max="359" [(ngModel)]="newHue" (input)="doUpdateColor()" />
+              <label for="auraBrightness">Brightness</label>
+              <input id="auraBrightness" type="range" min="0" max="200" [(ngModel)]="newBrightness" (input)="doUpdateColor()" />
             </div>
             <div class="buttons centered">
-              <button type="button" (click)="doBuy('moneys')" [class.disabled]="((selectedStyleId === null || selectedStyleId === initialStyleId) && newHue === oldHue) || user.moneys < 200">Buy (<app-moneys [amount]="200" />)</button>
-              <button type="button" (click)="doBuy('recycling')" [class.disabled]="((selectedStyleId === null || selectedStyleId === initialStyleId) && newHue === oldHue) || user.recyclePoints < 100">Buy (<app-recycling-points [amount]="100" />)</button>
+              <button type="button" (click)="doBuy('moneys')" [class.disabled]="noChanges || user.moneys < 200">Buy (<app-moneys [amount]="200" />)</button>
+              <button type="button" (click)="doBuy('recycling')" [class.disabled]="noChanges || user.recyclePoints < 100">Buy (<app-recycling-points [amount]="100" />)</button>
               <a routerLink="/hattier">Never mind...</a>
             </div>
           </div>

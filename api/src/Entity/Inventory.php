@@ -331,16 +331,17 @@ class Inventory
         return $this->enchantmentData?->getEnchantment();
     }
 
-    public function setEnchantment(?Enchantment $enchantment, int $hue = 0): self
+    public function setEnchantment(?Enchantment $enchantment, int $hue = 0, int $brightness = 100): self
     {
         if ($enchantment === null) {
             $this->enchantmentData = null;
         } else {
             if ($this->enchantmentData === null) {
-                $this->enchantmentData = new InventoryEnchantment($this, $enchantment, $hue);
+                $this->enchantmentData = new InventoryEnchantment($this, $enchantment, $hue, $brightness);
             } else {
                 $this->enchantmentData->setEnchantment($enchantment);
                 $this->enchantmentData->setHue($hue);
+                $this->enchantmentData->setBrightness($brightness);
             }
         }
 
@@ -358,6 +359,12 @@ class Inventory
     public function getEnchantmentHue(): ?int
     {
         return $this->enchantmentData?->getHue();
+    }
+
+    #[Groups(["myInventory", "itemEncyclopedia", "marketItem", "fireplaceFuel", "greenhouseFertilizer", "myPet", "fireplaceMantle", "dragonTreasure", "userPublicProfile", "petPublicProfile", "hollowEarth", "petGroupDetails"])]
+    public function getEnchantmentBrightness(): ?int
+    {
+        return $this->enchantmentData?->getBrightness();
     }
 
     public function providesLight(): bool

@@ -242,10 +242,10 @@ export class PetAppearanceComponent implements OnChanges, OnInit, OnDestroy {
     if(!this.disableAura)
     {
       if(this.pet.hat?.enchantment?.aura)
-        this.auras.push({ ...this.pet.hat.enchantment.aura, hue: this.pet.hat.enchantmentHue });
+        this.auras.push({ ...this.pet.hat.enchantment.aura, hue: this.pet.hat.enchantmentHue, brightness: this.pet.hat.enchantmentBrightness });
 
       if(this.pet.tool?.enchantment?.aura)
-        this.auras.push({ ...this.pet.tool.enchantment.aura, hue:this.pet.tool.enchantmentHue });
+        this.auras.push({ ...this.pet.tool.enchantment.aura, hue: this.pet.tool.enchantmentHue, brightness: this.pet.tool.enchantmentBrightness });
     }
 
     if(this.overrideLunchboxIndex !== null)
