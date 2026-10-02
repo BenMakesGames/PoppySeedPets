@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Controller\Weather;
 
 use App\Attributes\DoesNotRequireHouseHours;
+use App\Service\Clock;
 use App\Service\ResponseService;
 use App\Service\WeatherService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,7 +26,7 @@ class GetForecastController
     #[DoesNotRequireHouseHours]
     #[Route("", methods: ["GET"])]
     public function getForecast(
-        ResponseService $responseService, WeatherService $weatherService
+        ResponseService $responseService, WeatherService $weatherService, Clock $clock
     ): JsonResponse
     {
         $data = [
@@ -37,6 +38,8 @@ class GetForecastController
                 ],
                 $weatherService->getWeatherForecast()
             ),
+            // lets the client schedule its next fetch without trusting its own clock
+            'secondsUntilNextDay' => $clock->now->modify('tomorrow')->getTimestamp() - $clock->now->getTimestamp(),
         ];
 
         return $responseService->success($data);
