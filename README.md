@@ -2,6 +2,21 @@
 
 This is the source code for Poppy Seed Pets. It is available under the [GPL 3.0 license](COPYING).
 
+## Quickstart
+
+You only need [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed — Docker handles PHP, Node, Composer, MySQL, and Redis for you.
+
+1. Clone this repo.
+2. Drop your `proprietary-assets/` folder at the repo root (game images & fonts — the only thing not bundled with the repo).
+3. Run `docker compose up`.
+4. Open <https://localhost:4200> in your browser and accept the dev-certificate warning.
+
+The first boot takes a few minutes (installing PHP and Node dependencies). Subsequent boots take about 15 seconds. Edits to PHP and TypeScript files hot-reload — no rebuild needed.
+
+For the long form (native install, prod notes, troubleshooting), see [docs/Installing and Running.md](docs/Installing%20and%20Running.md).
+
+## More
+
 More info about this project can be found in the `docs/` directory:
 
 * [How to Contribute](docs/how%20to/How%20to%20Contribute.md)

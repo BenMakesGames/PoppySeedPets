@@ -13,15 +13,10 @@ declare(strict_types=1);
 
 namespace App\Controller\Greenhouse;
 
-use App\Entity\Inventory;
-use App\Entity\User;
-use App\Enum\LocationEnum;
 use App\Enum\SerializationGroupEnum;
 use App\Exceptions\PSPNotUnlockedException;
-use App\Functions\ItemRepository;
 use App\Service\GreenhouseService;
 use App\Service\ResponseService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -35,13 +30,12 @@ class GetGreenhouseController
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
     public function getGreenhouse(
         ResponseService $responseService, GreenhouseService $greenhouseService,
-        NormalizerInterface $normalizer, EntityManagerInterface $em,
-        UserAccessor $userAccessor
+        NormalizerInterface $normalizer, UserAccessor $userAccessor
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
 
-        $greenhouse = $user->getGreenhouse()
+        $user->getGreenhouse()
             ?? throw new PSPNotUnlockedException('Greenhouse');
 
         $greenhouseService->maybeAssignPollinators($user);
@@ -50,21 +44,6 @@ class GetGreenhouseController
             'groups' => [ SerializationGroupEnum::GREENHOUSE_PLANT, SerializationGroupEnum::MY_GREENHOUSE, SerializationGroupEnum::HELPER_PET ]
         ]);
 
-        if($greenhouse->getHasBirdBath())
-        {
-            $data['hasBubblegum'] = self::hasItemInBirdbath($em, $user, 'Bubblegum');
-            $data['hasOil'] = self::hasItemInBirdbath($em, $user, 'Oil');
-        }
-
         return $responseService->success($data);
-    }
-
-    private static function hasItemInBirdbath(EntityManagerInterface $em, User $user, string $itemName): bool
-    {
-        return $em->getRepository(Inventory::class)->count([
-            'owner' => $user->getId(),
-            'location' => LocationEnum::BirdBath,
-            'item' => ItemRepository::getIdByName($em, $itemName)
-        ]) > 0;
     }
 }

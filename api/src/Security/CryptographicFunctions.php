@@ -28,8 +28,12 @@ final class CryptographicFunctions
      */
     public static function generateSecureRandomString(int $length, string $allowedCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string
     {
-        $result = '';
         $allowedCharactersCount = strlen($allowedCharacters);
+
+        if($allowedCharactersCount < 1)
+            throw new \InvalidArgumentException('$allowedCharacters must not be empty.');
+
+        $result = '';
 
         for ($i = 0; $i < $length; $i++)
             $result .= $allowedCharacters[random_int(0, $allowedCharactersCount - 1)];

@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Ulid;
 use App\Service\UserAccessor;
 
 #[Route("/zoologist")]
@@ -76,14 +77,14 @@ class GetPetsOfUndiscoveredSpeciesController
                     ':offset' => $page * 20,
                 ]
             )
-            ->mapResults(fn($petId, $petName, $petColorA, $petColorB, $petScale, $speciesId, $speciesName, $speciesImage) => [
+            ->mapResults(fn(int $petId, string $petName, string $petColorA, string $petColorB, int $petScale, string $speciesId, string $speciesName, string $speciesImage) => [
                 'id' => $petId,
                 'name' => $petName,
                 'colorA' => $petColorA,
                 'colorB' => $petColorB,
                 'scale' => $petScale,
                 'species' => [
-                    'id' => $speciesId,
+                    'id' => Ulid::fromBinary($speciesId)->toBase32(),
                     'name' => $speciesName,
                     'image' => $speciesImage,
                 ],

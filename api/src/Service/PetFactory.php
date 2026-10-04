@@ -21,6 +21,7 @@ use App\Entity\PetSpecies;
 use App\Entity\User;
 use App\Enum\FlavorEnum;
 use App\Enum\MeritEnum;
+use App\Functions\PetColorFunctions;
 use App\Functions\MeritRepository;
 use App\Model\PetShelterPet;
 use Doctrine\ORM\EntityManagerInterface;
@@ -101,18 +102,27 @@ class PetFactory
             ->getSingleScalarResult()
         ;
 
-        /** @var Pet $basePet */
-        $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
-            ->andWhere('p.birthDate<:today')
-            ->setParameter('today', $now)
-            ->setMaxResults(1)
-            ->setFirstResult($this->rng->rngNextInt(0, $petCount - 1))
-            ->getQuery()
-            ->getSingleResult()
-        ;
+        if($petCount == 0)
+        {
+            $colors = PetColorFunctions::generateRandomPetColors($this->rng);
+            $colorA = $colors->colorA;
+            $colorB = $colors->colorB;
+        }
+        else
+        {
+            /** @var Pet $basePet */
+            $basePet = $this->em->getRepository(Pet::class)->createQueryBuilder('p')
+                ->andWhere('p.birthDate<:today')
+                ->setParameter('today', $now)
+                ->setMaxResults(1)
+                ->setFirstResult($this->rng->rngNextInt(0, $petCount - 1))
+                ->getQuery()
+                ->getSingleResult()
+            ;
 
-        $colorA = $this->rng->rngNextTweakedColor($basePet->getColorA());
-        $colorB = $this->rng->rngNextTweakedColor($basePet->getColorB());
+            $colorA = $this->rng->rngNextTweakedColor($basePet->getColorA());
+            $colorB = $this->rng->rngNextTweakedColor($basePet->getColorB());
+        }
 
         $isSagaJelling = $petSpecies->getName() === 'Sága Jelling';
 

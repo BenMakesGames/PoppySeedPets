@@ -37,6 +37,7 @@ class GetEventCalendarController
 
             $currentYear = 0;
             $currentMonth = 0;
+            /** @var array<int, array{year: number, months: array<int, array{month: number, dayOfWeek: number, date: string, events: array<int, array{title: string, start: string, end: string}>}>}> $years */
             $years = [];
             $oneDay = \DateInterval::createFromDateString('1 day');
 

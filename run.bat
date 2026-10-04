@@ -1,17 +1,13 @@
 @echo off
-REM ============================================================
-REM run.bat — Starts both dev servers in separate windows.
-REM   API (Symfony) at https://localhost:8000
-REM   SPA (Angular) at https://localhost:4200
-REM ============================================================
-echo Starting PoppySeedPets API and SPA...
 
-REM Start the Symfony API server in a new window
-start "PoppySeedPets API" cmd /k "cd /d %~dp0api && symfony serve"
+docker --version >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo Docker doesn't appear to be installed, or isn't on your PATH.
+    echo Get Docker Desktop here: https://www.docker.com/products/docker-desktop/
+    echo.
+    pause
+    exit /b 1
+)
 
-REM Start the Angular SPA dev server in a new window
-start "PoppySeedPets SPA" cmd /k "cd /d %~dp0webapp && ng serve"
-
-echo Both servers are starting in separate windows.
-echo   API:  http://localhost:8000
-echo   SPA:  http://localhost:4200
+docker compose up --build

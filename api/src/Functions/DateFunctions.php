@@ -14,24 +14,25 @@ declare(strict_types=1);
 namespace App\Functions;
 
 use App\Enum\MoonPhaseEnum;
+use App\Enum\MoonNameEnum;
 
 final class DateFunctions
 {
     public const float MoonCycleLength = 29.53058868;
 
     public const array FullMoonNames = [
-        1 => 'Wolf',
-        2 => 'Snow',
-        3 => 'Worm',
-        4 => 'Pink',
-        5 => 'Flower',
-        6 => 'Strawberry',
-        7 => 'Buck',
-        8 => 'Sturgeon',
-        9 => 'Corn',
-        10 => 'Hunter\'s',
-        11 => 'Beaver',
-        12 => 'Cold'
+        1 => MoonNameEnum::WolfMoon,
+        2 => MoonNameEnum::SnowMoon,
+        3 => MoonNameEnum::WormMoon,
+        4 => MoonNameEnum::PinkMoon,
+        5 => MoonNameEnum::FlowerMoon,
+        6 => MoonNameEnum::StrawberryMoon,
+        7 => MoonNameEnum::BuckMoon,
+        8 => MoonNameEnum::SturgeonMoon,
+        9 => MoonNameEnum::CornMoon,
+        10 => MoonNameEnum::HuntersMoon,
+        11 => MoonNameEnum::BeaverMoon,
+        12 => MoonNameEnum::ColdMoon
     ];
 
     // adapted from https://github.com/BenMakesGames/PsyPets/blob/a22ba399c051f2a8ea38e9e0f48369f9606fd557/commons/moonphase.php
@@ -166,10 +167,15 @@ final class DateFunctions
 
     public static function isCornMoon(\DateTimeImmutable $dt): bool
     {
-        return DateFunctions::getFullMoonName($dt) === 'Corn';
+        return self::isSpecificMoon($dt, MoonNameEnum::CornMoon);
     }
 
-    public static function getFullMoonName(\DateTimeImmutable $dt): ?string
+    public static function isSpecificMoon(\DateTimeImmutable $dt, MoonNameEnum $moonName): bool
+    {
+        return DateFunctions::getFullMoonName($dt) === $moonName;
+    }
+
+    public static function getFullMoonName(\DateTimeImmutable $dt): ?MoonNameEnum
     {
         if(self::moonPhase($dt) !== MoonPhaseEnum::FullMoon)
             return null;
@@ -189,7 +195,7 @@ final class DateFunctions
         if($exactFullMoonDay == $fullMoonDaysThatMonth[0])
             return self::FullMoonNames[$fullMoonMonth];
         else
-            return 'Blue';
+            return MoonNameEnum::BlueMoon;
     }
 
     public static function moonStrength(\DateTimeInterface $dt): int

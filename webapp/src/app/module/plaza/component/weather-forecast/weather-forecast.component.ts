@@ -37,8 +37,12 @@ export class WeatherForecastComponent implements OnInit, OnDestroy {
   {
     this.weatherSubscription = this.weatherService.weather.subscribe({
       next: w => {
-        this.today = w?.find(w => new Date().toISOString().startsWith(w.date)) || null;
-        this.forecast = w?.filter(w => !(new Date().toISOString().startsWith(w.date))) || [];
+        const todayKey = new Date().toISOString().substring(0, 10);
+
+        // `date` is a YYYY-MM-DD string, so lexicographic comparison is chronological:
+        // pluck today's entry, and keep only strictly-future days (dropping any stale past-days).
+        this.today = w?.find(entry => entry.date === todayKey) || null;
+        this.forecast = w?.filter(entry => entry.date > todayKey) || [];
       }
     });
 

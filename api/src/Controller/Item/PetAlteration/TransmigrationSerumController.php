@@ -20,6 +20,7 @@ use App\Entity\PetSpecies;
 use App\Exceptions\PSPFormValidationException;
 use App\Exceptions\PSPInvalidOperationException;
 use App\Exceptions\PSPPetNotFoundException;
+use App\Functions\ULID;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,12 +49,14 @@ class TransmigrationSerumController
         if(!$pet || $pet->getOwner()->getId() !== $user->getId())
             throw new PSPPetNotFoundException();
 
-        $speciesId = $request->request->getInt('species', 0);
+        $speciesIdRaw = $request->request->getString('species', '');
 
-        if($speciesId === 0)
+        if($speciesIdRaw === '')
             throw new PSPInvalidOperationException('A species to transmigrate to was not selected.');
 
-        if($speciesId === $pet->getSpecies()->getId())
+        $speciesId = ULID::fromUserInput($speciesIdRaw, 'species');
+
+        if($speciesId->equals($pet->getSpecies()->getId()))
             throw new PSPInvalidOperationException('That\'s ' . $pet->getName() . '\'s current species! No sense in wasting the serum!');
 
         $newSpecies = $em->getRepository(PetSpecies::class)->find($speciesId);

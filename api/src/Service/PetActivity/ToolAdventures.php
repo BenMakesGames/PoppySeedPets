@@ -98,6 +98,10 @@ class ToolAdventures
                 $this->treasureMapService->doUseDiffieHKey($pet);
                 return true;
 
+            case 'Faded Treasure Map':
+                $this->treasureMapService->doFadedTreasureMap($petWithSkills);
+                return true;
+
             case 'Fimbulvetr':
                 if($this->rng->rngNextInt(1, 20) == 1)
                 {

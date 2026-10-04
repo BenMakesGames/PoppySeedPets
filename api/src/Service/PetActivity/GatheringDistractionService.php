@@ -39,7 +39,10 @@ class GatheringDistractionService
     {
     }
 
-    public function adventure(ComputedPetSkills $petWithSkills, DistractionLocationEnum $location, string $whileDoingDescription): PetActivityLog
+    /**
+     * @param string[] $tags
+     */
+    public function adventure(ComputedPetSkills $petWithSkills, DistractionLocationEnum $location, array $tags, string $whileDoingDescription): PetActivityLog
     {
         $pet = $petWithSkills->getPet();
 
@@ -54,7 +57,7 @@ class GatheringDistractionService
 
         $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, $description)
             ->addInterestingness(PetActivityLogInterestingness::UncommonActivity)
-            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ PetActivityLogTagEnum::Gathering ]))
+            ->addTags(PetActivityLogTagHelpers::findByNames($this->em, $tags))
         ;
 
         $this->petExperienceService->gainExp($pet, 1, $distraction['skills'], $activityLog);
@@ -71,11 +74,12 @@ class GatheringDistractionService
         if(
             ($location === DistractionLocationEnum::Woods && !$anyRain) ||
             ($location === DistractionLocationEnum::InTown && !$anyRain) ||
-            $location === DistractionLocationEnum::Underground
+            $location === DistractionLocationEnum::Underground ||
+            $location === DistractionLocationEnum::AtHome
         )
         {
             $distractions[] = [
-                'description' => 'they saw a spider making a crazy-huge web! They watched for a while before returning home.',
+                'description' => 'they saw a spider making a crazy-huge web! They watched for a while' . ($location === DistractionLocationEnum::AtHome ? '...' : ' before returning home.'),
                 'skills' => [ PetSkillEnum::Nature, PetSkillEnum::Crafts ],
             ];
         }
@@ -216,7 +220,7 @@ class GatheringDistractionService
             ];
         }
 
-        if($location === DistractionLocationEnum::Woods || $location === DistractionLocationEnum::Underground)
+        if($location === DistractionLocationEnum::Woods || $location === DistractionLocationEnum::Underground || $location === DistractionLocationEnum::AtHome)
         {
             if($location === DistractionLocationEnum::Woods)
             {
@@ -225,6 +229,8 @@ class GatheringDistractionService
                 else
                     $description = 'they caught a glimpse of a shadowy figure moving amidst the trees!';
             }
+            else if($location === DistractionLocationEnum::AtHome)
+                $description = 'they caught a glimpse of a shadowy figure moving outside the window!';
             else
                 $description = 'they caught a glimpse of a shadowy figure moving through the tunnels!';
 
@@ -289,6 +295,38 @@ class GatheringDistractionService
             $distractions[] = [
                 'description' => $description,
                 'skills' => [ PetSkillEnum::Nature ],
+            ];
+        }
+
+        if($location === DistractionLocationEnum::AtHome && $anyRain)
+        {
+            $distractions[] = [
+                'description' => 'they saw water drip-drop one at a time through a hole in the ceiling. (Someone should patch that up!)',
+                'skills' => [ PetSkillEnum::Nature ],
+            ];
+        }
+
+        if($location === DistractionLocationEnum::AtHome)
+        {
+            $distractions[] = [
+                'description' => 'they saw an army of ants traveling with bits of sugar across the kitchen floor. They watched for a while...',
+                'skills' => [ PetSkillEnum::Nature ],
+            ];
+        }
+
+        if($location === DistractionLocationEnum::AtHome)
+        {
+            $distractions[] = [
+                'description' => 'they spotted a faulty light blink on-and-off at a steady rate. They watched for a while...',
+                'skills' => [ PetSkillEnum::Arcana ],
+            ];
+        }
+
+        if($location === DistractionLocationEnum::AtHome)
+        {
+            $distractions[] = [
+                'description' => 'they saw a fruit fly fly into a spider\'s web! They watched as it got helplessly cocooned...(RIP.)',
+                'skills' => [ PetSkillEnum::Nature, PetSkillEnum::Brawl ],
             ];
         }
 

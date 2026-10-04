@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="32" height="32" version="1.1" viewBox="0 0 8.4667 8.4667" xmlns="http://www.w3.org/2000/svg">
+ <g fill="#abcfd8" stroke="#72afbd" stroke-linecap="round" stroke-linejoin="round" stroke-width=".26458">
+  <path d="m2.8046 3.8232 0.66146 0.79375 0.27781-0.92604z" style="paint-order:markers fill stroke"/>
+  <path d="m4.5244 3.7174-0.26458 0.7276 0.70115-0.25135z" style="paint-order:markers fill stroke"/>
+  <path d="m4.1804 3.8894-0.42333 0.38365 0.71438 0.039687z" style="paint-order:markers fill stroke"/>
+  <path d="m5.0535 3.5719-0.42333 0.38365 0.71438 0.039687z" style="paint-order:markers fill stroke"/>
+  <path d="m3.2559 2.9994-0.3088 0.6916 0.69091-0.23755z" style="paint-order:markers fill stroke"/>
+  <path d="m3.4793 3.6645 0.27781 0.67469 0.48948-0.5424z" style="paint-order:markers fill stroke"/>
+  <path d="m4.3602 3.6666-0.60935-0.40135-0.81526 0.6831z" style="paint-order:markers fill stroke"/>
+  <path d="m4.8032 2.975-0.74453-0.56105-0.29095 0.92014z" style="paint-order:markers fill stroke"/>
+  <path d="m3.519 2.8178 0.27781 0.67469 0.48948-0.5424z" style="paint-order:markers fill stroke"/>
+  <path d="m5.5101 3.1906-0.6095 0.40112 0.62563 0.37732z" style="paint-order:markers fill stroke"/>
+  <path d="m4.2413 2.9858 0.7146 0.59871 0.4174-0.59963z" style="paint-order:markers fill stroke"/>
+  <path d="m3.9592 3.2997 1.0383 0.65168 0.26544-0.49482z" style="paint-order:markers fill stroke"/>
+ </g>
+ <path d="m2.6635 3.9864c1.1614 0.49759 2.1597 0.37524 3.0868-0.017639l-1.3935 3.3337z" fill="#fafbeb" stroke="#cccdbe" stroke-linecap="round" stroke-linejoin="round" stroke-width=".26458" style="paint-order:markers fill stroke"/>
+ <path d="m3.003 4.8992c1.1614 0.49759 1.7364-0.0084 2.6635-0.40128 0 0-0.36503 0.75641-0.57025 1.0214-0.36254 0.46806-1.2333 0.97624-1.2333 0.97624z" fill="#fafbeb" stroke="#cccdbe" stroke-linecap="round" stroke-linejoin="round" stroke-width=".26458" style="paint-order:markers fill stroke"/>
+ <path d="m6.2234 2.7041-0.52434 0.15953-0.40033-0.37432 0.12401-0.53386 0.52434-0.15953 0.40033 0.37432z" fill="#abcfd8" fill-opacity=".66667"/>
+ <path d="m6.4018 4.1438-0.18853-0.066741-0.036768-0.19683 0.15176-0.13009 0.18853 0.066742 0.036768 0.19683z" fill="#3cafcc" fill-opacity=".20267" stroke-width=".36499"/>
+ <g fill-opacity=".66667">
+  <path d="m4.4946 2.3591-0.1828-0.14969 0.031592-0.23108 0.2144-0.081389 0.1828 0.14969-0.031592 0.23108z" fill="#abc1d8" stroke-width=".42493"/>
+  <path d="m2.9391 2.5664-0.055485-0.30803 0.23812-0.19692 0.29361 0.11111 0.055485 0.30803-0.23812 0.19692z" fill="#abcfd8" stroke-width=".56917"/>
+  <path d="m2.0681 2.9077 0.25968-0.17472 0.27608 0.13878 0.016402 0.3135-0.25968 0.17472-0.27608-0.13878z" fill="#4bb5d5" stroke-width=".56917"/>
+  <g>
+   <circle cx="2.2649" cy="3.9847" r=".10858" fill="#60c1da"/>
+   <circle cx="6.0882" cy="3.2836" r=".10858" fill="#98d7e7"/>
+   <circle cx="5.2018" cy="1.6829" r=".10858" fill="#a5dcea"/>
+   <circle cx="2.4634" cy="2.3046" r=".10858" fill="#77b3c3"/>
+  </g>
+ </g>
+ <circle cx="3.826" cy="2.04" r=".10858" fill="#60c1da" fill-opacity=".2"/>
+</svg>

@@ -34,6 +34,7 @@ class IndexController
                 'erinmclaughlin',
                 'GrimmestSnarl',
                 'nibkind',
+                'Vermidia',
             ],
             'artists' => [
                 'Aileen MacKay',
@@ -44,12 +45,13 @@ class IndexController
                 'Moopyloots',
                 'Mothnox',
                 'Vermidia',
+                'Wild Flemima',
             ],
             'thanks' => [
                 'Hector Lee',
                 'Katie Stanonik',
                 'Mothnox',
-                'Verdale',
+                'Vermidia',
                 'pericarditis',
                 'Shirley Farrow',
                 'All my friends in college',

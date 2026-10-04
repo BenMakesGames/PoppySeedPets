@@ -15,6 +15,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Enum\UnlockableFeatureEnum;
+use App\Enum\MoonNameEnum;
 use App\Functions\CalendarFunctions;
 use App\Functions\DateFunctions;
 use App\Functions\ItemRepository;
@@ -34,12 +35,11 @@ class FloristService
     public function getInventory(User $user): array
     {
         $flowerbomb = ItemRepository::findOneByName($this->em, 'Flowerbomb');
-        $fullMoonName = DateFunctions::getFullMoonName($this->clock->now);
 
         $inventory = [
             [
                 'item' => [ 'name' => $flowerbomb->getName(), 'image' => $flowerbomb->getImage() ],
-                'cost' => ($fullMoonName === 'Flower' || CalendarFunctions::isAprilFools($this->clock->now)) ? 75 : 150,
+                'cost' => (DateFunctions::isSpecificMoon($this->clock->now, MoonNameEnum::FlowerMoon) || CalendarFunctions::isAprilFools($this->clock->now)) ? 75 : 150,
             ]
         ];
 

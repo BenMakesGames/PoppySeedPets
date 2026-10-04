@@ -11,6 +11,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { SelectionComponent } from './page/selection/selection.component';
 import { DressingRoomComponent } from './page/dressing-room/dressing-room.component';
+import { FittingRoomComponent } from './page/fitting-room/fitting-room.component';
 import { HattierRoutingModule } from "./hattier-routing.module";
 import { PetCustomerComponent } from './component/pet-customer/pet-customer.component';
 import { FormsModule } from "@angular/forms";
@@ -32,6 +33,7 @@ import { ItemNameWithBonusComponent } from "../shared/component/item-name-with-b
   declarations: [
     SelectionComponent,
     DressingRoomComponent,
+    FittingRoomComponent,
     PetCustomerComponent,
     CollectionComponent,
     IllusionistComponent,

@@ -17,6 +17,7 @@ use App\Entity\PetSpecies;
 use App\Enum\PetSpeciesName;
 use App\Exceptions\PSPNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Uid\Ulid;
 
 final class PetSpeciesRepository
 {
@@ -43,16 +44,16 @@ final class PetSpeciesRepository
         return $species;
     }
 
-    public static function findOneById(EntityManagerInterface $em, int $speciesId): PetSpecies
+    public static function findOneById(EntityManagerInterface $em, Ulid $speciesId): PetSpecies
     {
         $item = $em->getRepository(PetSpecies::class)->createQueryBuilder('i')
             ->where('i.id=:id')
             ->setParameter('id', $speciesId)
             ->getQuery()
-            ->enableResultCache(24 * 60 * 60, CacheHelpers::getCacheItemName('PetSpeciesRepository_FindOneById_' . $speciesId))
+            ->enableResultCache(24 * 60 * 60, CacheHelpers::getCacheItemName('PetSpeciesRepository_FindOneById_' . $speciesId->toBase32()))
             ->getOneOrNullResult();
 
-        if(!$item) throw new PSPNotFoundException('There is no species #' . $speciesId . '.');
+        if(!$item) throw new PSPNotFoundException('There is no species #' . $speciesId->toBase32() . '.');
 
         return $item;
     }

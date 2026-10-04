@@ -964,6 +964,38 @@ export const BADGE_INFO: { [key:string]: BadgeInfo } = {
     group: 'Adventure',
     order: 609,
   },
+  'StarKindredVictories10': {
+    title: 'Tales Worth Telling',
+    description: 'Win 10 ★Kindred adventures.',
+    image: 'items/book/star-kindred',
+    color: 'radial-gradient(circle at 50% 30%, #fff6b0 0%, #6a5acd 60%, #191970 100%)',
+    group: 'Adventure',
+    order: 610,
+  },
+  'StarKindredDemigodVictory1': {
+    title: 'Touched by the Divine',
+    description: 'Win a ★Kindred adventure on Demigod difficulty.',
+    image: 'items/book/star-kindred',
+    color: 'radial-gradient(circle at 50% 30%, #fff 0%, #ffd700 45%, #b8860b 100%)',
+    group: 'Adventure',
+    order: 611,
+  },
+  'StarKindredRetired1': {
+    title: 'Happily Ever After',
+    description: 'Retire a level-20 ★Kindred adventurer.',
+    image: 'items/book/star-kindred',
+    color: 'linear-gradient(160deg, #ffe0f0 0%, #c9a0ff 50%, #5b3a8c 100%)',
+    group: 'Adventure',
+    order: 612,
+  },
+  'StarKindredRetired10': {
+    title: 'Hall of Legends',
+    description: 'Retire 10 level-20 ★Kindred adventurers.',
+    image: 'items/book/star-kindred',
+    color: 'conic-gradient(from 45deg, #191970, #6a5acd, #ffd700, #6a5acd, #191970)',
+    group: 'Adventure',
+    order: 613,
+  },
 
   // great spirits
   'GreatSpiritMinorRewards1': {

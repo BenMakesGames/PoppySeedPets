@@ -13,115 +13,548 @@ declare(strict_types=1);
 
 namespace App\Service\StarKindred;
 
-use App\Entity\MonthlyStoryAdventureStep;
 use App\Entity\Pet;
+use App\Entity\StarKindredCharacter;
+use App\Entity\StarKindredDailyPlay;
 use App\Entity\User;
-use App\Entity\UserMonthlyStoryAdventureStepCompleted;
+use App\Exceptions\PSPFormValidationException;
+use App\Exceptions\PSPInvalidOperationException;
 use App\Enum\LocationEnum;
-use App\Enum\StoryAdventureTypeEnum;
+use App\Enum\StarKindredClassEnum;
+use App\Enum\StarKindredDifficultyEnum;
+use App\Enum\StarKindredRaceEnum;
+use App\Enum\StarKindredSchoolOfMagicEnum;
+use App\Enum\StarKindredSexEnum;
+use App\Enum\StarKindredSkillEnum;
+use App\Enum\StarKindredStatEnum;
+use App\Enum\UnlockableFeatureEnum;
+use App\Enum\UserStat;
+use App\Functions\ArrayFunctions;
+use App\Functions\GrammarFunctions;
+use App\Model\PetShelterPet;
+use App\Model\StarKindred\StarKindredAdventure;
+use App\Model\StarKindred\StarKindredAdventureResult;
+use App\Model\StarKindred\StarKindredAnimalCompanion;
+use App\Model\StarKindred\StarKindredCharacterProgress;
+use App\Model\StarKindred\StarKindredCheckResult;
+use App\Service\Clock;
+use App\Service\HattierService;
 use App\Service\InventoryService;
-use App\Service\StarKindred\Adventures\RemixAdventuresService;
-use App\Service\StarKindred\Adventures\StandardAdventuresService;
+use App\Service\IRandom;
+use App\Service\UserStatsService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class StarKindredAdventureService
 {
+    public const int MaxPartySize = 3;
+    public const int MaxAdventurers = 10;
+    public const string RetirementAura = 'StarKindred';
+    public const array RetirementRewardsPerAdventurer = [ 'Faded Treasure Map' ];
+
     public function __construct(
-        private readonly InventoryService $inventoryService,
+        private readonly IRandom $rng,
+        private readonly Clock $clock,
         private readonly EntityManagerInterface $em,
-        private readonly StandardAdventuresService $standardAdventures,
-        private readonly RemixAdventuresService $remixAdventures,
+        private readonly InventoryService $inventoryService,
+        private readonly HattierService $hattierService,
+        private readonly UserStatsService $userStatsService,
     )
     {
     }
 
-    public function isStepCompleted(User $user, MonthlyStoryAdventureStep $step): bool
+    /**
+     * Null if the user hasn't played yet today.
+     */
+    public function findTodaysPlay(User $user): ?StarKindredDailyPlay
     {
-        $completedStep = $this->em->getRepository(UserMonthlyStoryAdventureStepCompleted::class)->createQueryBuilder('c')
-            ->select('COUNT(c.id) AS qty')
-            ->andWhere('c.user=:user')
-            ->andWhere('c.adventureStep=:adventureStep')
-            ->setParameter('user', $user)
-            ->setParameter('adventureStep', $step)
-            ->getQuery()
-            ->getSingleResult();
+        $play = $this->em->getRepository(StarKindredDailyPlay::class)->findOneBy([ 'user' => $user ]);
 
-        return $completedStep['qty'] > 0;
-    }
-
-    public function isPreviousStepCompleted(User $user, MonthlyStoryAdventureStep $step): bool
-    {
-        $previousStep = $this->em->getRepository(MonthlyStoryAdventureStep::class)->createQueryBuilder('s')
-            ->andWhere('s.step=:step')
-            ->andWhere('s.adventure=:adventure')
-            ->setParameter('step', $step->getPreviousStep())
-            ->setParameter('adventure', $step->getAdventure()->getId())
-            ->getQuery()
-            ->getSingleResult()
-        ;
-
-        if(!$previousStep)
-            throw new \Exception('Ben has made a terrible error: one of the story adventure steps could not be found. And it totally should have been.');
-
-        return $this->isStepCompleted($user, $previousStep);
+        return $play?->isOn($this->clock->now) ? $play : null;
     }
 
     /**
-     * @param Pet[] $pets
+     * @param string|null $adventureId Null when retiring adventurers, instead of going on an adventure
+     * @throws PSPInvalidOperationException
      */
-    public function completeStep(User $user, MonthlyStoryAdventureStep $step, array $pets): string
+    private function markPlayedToday(User $user, ?string $adventureId): StarKindredDailyPlay
     {
-        $petSkills = array_map(fn(Pet $pet) => $pet->getComputedSkills(), $pets);
+        $play = $this->em->getRepository(StarKindredDailyPlay::class)->findOneBy([ 'user' => $user ]);
 
-        $results = match ($step->getType())
+        if($play === null)
         {
-            StoryAdventureTypeEnum::CollectStone => $this->standardAdventures->doCollectStone($step, $petSkills),
-            StoryAdventureTypeEnum::Gather => $this->standardAdventures->doGather($step, $petSkills),
-            StoryAdventureTypeEnum::Hunt => $this->standardAdventures->doHunt($step, $petSkills),
-            StoryAdventureTypeEnum::MineGold => $this->standardAdventures->doMineGold($step, $petSkills),
-            StoryAdventureTypeEnum::RandomRecruit => $this->standardAdventures->doRandomRecruit($step, $petSkills),
-            StoryAdventureTypeEnum::Story => $this->standardAdventures->doStory($step, $petSkills),
-            StoryAdventureTypeEnum::TreasureHunt => $this->standardAdventures->doTreasureHunt($step, $petSkills),
-            StoryAdventureTypeEnum::WanderingMonster => $this->standardAdventures->doWanderingMonster($step, $petSkills),
-            StoryAdventureTypeEnum::RemixShipwreck => $this->remixAdventures->doShipwreck($step, $petSkills),
-            StoryAdventureTypeEnum::RemixBeach => $this->remixAdventures->doBeach($step, $petSkills),
-            StoryAdventureTypeEnum::RemixForest => $this->remixAdventures->doForest($step, $petSkills),
-            StoryAdventureTypeEnum::RemixCave => $this->remixAdventures->doCave($step, $petSkills),
-            StoryAdventureTypeEnum::RemixUndergroundLake => $this->remixAdventures->doUndergroundLake($step, $petSkills),
-            StoryAdventureTypeEnum::RemixMagicTower => $this->remixAdventures->doMagicTower($step, $petSkills),
-            StoryAdventureTypeEnum::RemixUmbralPlants => $this->remixAdventures->doUmbralPlants($step, $petSkills),
-            StoryAdventureTypeEnum::RemixDarkVillage => $this->remixAdventures->doUndergroundVillage($step, $petSkills),
-            StoryAdventureTypeEnum::RemixGraveyard => $this->remixAdventures->doGraveyard($step, $petSkills),
-            StoryAdventureTypeEnum::RemixTheDeep => $this->remixAdventures->doTheDeep($step, $petSkills),
-            StoryAdventureTypeEnum::RemixTreasureRoom => $this->remixAdventures->doTreasureRoom($step, $petSkills),
-            default => throw new \Exception('Oh, dang: Ben forgot to implement this story adventure type! :('),
-        };
+            $play = new StarKindredDailyPlay($user, $this->clock->now, $adventureId);
+            $this->em->persist($play);
+            return $play;
+        }
 
-        foreach($results->loot as $item)
-            $this->inventoryService->receiveItem($item, $user, $user, $user->getName() . ' gave this to their pets during a game of ★Kindred.', LocationEnum::Home);
+        if($play->isOn($this->clock->now))
+            throw new PSPInvalidOperationException('There\'s only time for one ★Kindred adventure per day. THEM\'S JUST THE RULES.');
 
-        $this->markStepComplete($user, $step);
+        $play->replay($this->clock->now, $adventureId);
 
-        return $results->text;
+        return $play;
     }
 
-    private function markStepComplete(User $user, MonthlyStoryAdventureStep $step): void
+    public static function findActiveCharacter(EntityManagerInterface $em, Pet $pet): ?StarKindredCharacter
     {
-        $completedStep = new UserMonthlyStoryAdventureStepCompleted($user, $step);
-
-        $this->em->persist($completedStep);
+        return $em->getRepository(StarKindredCharacter::class)->findOneBy([ 'pet' => $pet, 'retiredOn' => null ]);
     }
 
-    public function userCanPlayREMIX(User $user): bool
+    /**
+     * Counts the active (un-retired) characters played by the user's pets.
+     */
+    public static function countActiveCharacters(EntityManagerInterface $em, User $user): int
     {
-        $adventuresCompleted = (int)$this->em->getRepository(UserMonthlyStoryAdventureStepCompleted::class)
-            ->createQueryBuilder('c')
-            ->select('COUNT(c)')
-            ->where('c.user = :user')
+        return (int)$em->getRepository(StarKindredCharacter::class)->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->join('c.pet', 'p')
+            ->andWhere('p.owner = :user')
+            ->andWhere('c.retiredOn IS NULL')
             ->setParameter('user', $user)
             ->getQuery()
             ->getSingleScalarResult();
-
-        return $adventuresCompleted >= 50;
     }
+
+    /**
+     * Loads, and validates, a party of the user's pets' active characters.
+     *
+     * @param int[] $characterIds
+     * @return StarKindredCharacter[]
+     * @throws PSPFormValidationException
+     */
+    public function findParty(User $user, array $characterIds): array
+    {
+        $characterIds = array_values(array_unique(array_map(intval(...), $characterIds)));
+
+        if(count($characterIds) < 1 || count($characterIds) > self::MaxPartySize)
+            throw new PSPFormValidationException('A party must have between 1 and ' . self::MaxPartySize . ' adventurers.');
+
+        /** @var StarKindredCharacter[] $party */
+        $party = $this->em->getRepository(StarKindredCharacter::class)->createQueryBuilder('c')
+            ->join('c.pet', 'p')
+            ->andWhere('c.id IN (:ids)')
+            ->andWhere('p.owner = :user')
+            ->andWhere('c.retiredOn IS NULL')
+            ->setParameter('ids', $characterIds)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
+        if(count($party) !== count($characterIds))
+            throw new PSPFormValidationException('One or more of those adventurers could not be found. (Maybe reload and try again?)');
+
+        return $party;
+    }
+
+    public function rollCharacter(Pet $pet): StarKindredCharacter
+    {
+        if(self::findActiveCharacter($this->em, $pet))
+            throw new PSPInvalidOperationException($pet->getName() . ' already has a ★Kindred character!');
+
+        if(self::countActiveCharacters($this->em, $pet->getOwner()) >= self::MaxAdventurers)
+            throw new PSPInvalidOperationException('Your pets already have ' . self::MaxAdventurers . ' ★Kindred characters! Retire some before rolling up more.');
+
+        // ease new players in: their first character is a race they probably already know; their second
+        // is guaranteed to show them something new; after that, anything goes
+        $charactersRolled = $this->userStatsService->getStatValue($pet->getOwner(), UserStat::RolledAStarKindredCharacter);
+
+        $races = match($charactersRolled) {
+            0 => StarKindredRaceEnum::familiar(),
+            1 => StarKindredRaceEnum::unfamiliar(),
+            default => StarKindredRaceEnum::cases(),
+        };
+
+        $this->userStatsService->incrementStat($pet->getOwner(), UserStat::RolledAStarKindredCharacter);
+
+        // don't let the new character share a name or portrait with any of the player's other active characters
+        $otherCharacters = $this->em->getRepository(StarKindredCharacter::class)->createQueryBuilder('c')
+            ->select('c.name, c.portrait')
+            ->join('c.pet', 'p')
+            ->andWhere('p.owner = :user')
+            ->andWhere('c.retiredOn IS NULL')
+            ->setParameter('user', $pet->getOwner())
+            ->getQuery()
+            ->getArrayResult();
+
+        $takenNames = array_column($otherCharacters, 'name');
+        $takenPortraits = array_column($otherCharacters, 'portrait');
+
+        do
+        {
+            $race = $this->rng->rngNextFromArray($races);
+
+            // sex only picks the name & portrait; it isn't stored
+            $sex = $race->isAndrogynous() ? null : $this->rng->rngNextFromArray(StarKindredSexEnum::cases());
+
+            $name = StarKindredNames::roll($this->rng, $race, $sex);
+            $portrait = StarKindredPortraits::roll($this->rng, $race, $sex);
+        }
+        while(in_array($name, $takenNames, true) || in_array($portrait, $takenPortraits, true));
+
+        $class = $this->rng->rngNextFromArray(StarKindredClassEnum::cases());
+
+        $chosenSkill = $this->rng->rngNextFromArray(array_values(array_filter(
+            StarKindredSkillEnum::cases(),
+            fn(StarKindredSkillEnum $skill) => !in_array($skill, $class->classSkills(), true)
+        )));
+
+        $stats = [];
+
+        foreach(StarKindredStatEnum::cases() as $stat)
+        {
+            // 4d6, drop the lowest
+            $dice = [ $this->rng->rngNextInt(1, 6), $this->rng->rngNextInt(1, 6), $this->rng->rngNextInt(1, 6), $this->rng->rngNextInt(1, 6) ];
+            sort($dice);
+
+            $stats[$stat->value] = max(3, $dice[1] + $dice[2] + $dice[3] + ($race->statModifiers()[$stat->value] ?? 0));
+        }
+
+        $character = new StarKindredCharacter($pet, $name, $race, $class, $portrait, $chosenSkill, $stats, $this->clock->now);
+
+        // level-1 Bards start with a song; no need to announce it, since it's on the new character's sheet
+        $this->learnSongs($character);
+
+        $this->em->persist($character);
+
+        return $character;
+    }
+
+    /**
+     * @param StarKindredCharacter[] $party
+     */
+    public function goOnAdventure(User $user, StarKindredAdventure $adventure, StarKindredDifficultyEnum $difficulty, array $party): StarKindredAdventureResult
+    {
+        if(array_any($party, fn(StarKindredCharacter $c) => $c->isMaxLevel()))
+            throw new PSPInvalidOperationException('Level ' . StarKindredCharacter::MaxLevel . ' adventurers have nothing left to prove! The only adventure left for them is retirement.');
+
+        $play = $this->markPlayedToday($user, $adventure->id);
+
+        $target = $difficulty->target(count($party));
+        $encountersWon = 0;
+
+        $checks = [];
+        $text = '';
+
+        foreach($adventure->encounters as $encounter)
+        {
+            $total = ArrayFunctions::sum(
+                $party,
+                fn(StarKindredCharacter $c) => $this->rng->rngNextInt(1, 20) + $c->getEncounterBonus($encounter)
+            );
+
+            $won = $total >= $target;
+
+            $checks[] = new StarKindredCheckResult(
+                $won,
+                "**{$encounter->title}** ({$encounter->skill->value}: rolled {$total} vs. {$target})\\\n" .
+                ($won ? $encounter->success : $encounter->failure)
+            );
+
+            if($won)
+                $encountersWon++;
+        }
+
+        $victory = $encountersWon * 2 > count($adventure->encounters);
+        $loot = [];
+        $extraMessages = [];
+
+        if($victory)
+        {
+            $rewards = $adventure->getRewardsFor($difficulty);
+
+            $play->setRewardsWon(count($rewards));
+
+            foreach($rewards as $reward)
+            {
+                if($reward->item)
+                {
+                    for($i = 0; $i < $reward->quantity; $i++)
+                        $loot[] = $reward->item;
+                }
+
+                if($reward->aura)
+                    $extraMessages[] = $this->maybeUnlockAura($this->rng->rngNextFromArray($party)->getPet(), $reward->aura);
+            }
+
+            $this->userStatsService->incrementStat($user, UserStat::WonAStarKindredAdventure);
+
+            if($difficulty === StarKindredDifficultyEnum::Demigod)
+                $this->userStatsService->incrementStat($user, UserStat::WonADemigodStarKindredAdventure);
+        }
+        else
+        {
+            $text .= "The party retreats to regroup, a little wiser for the experience.\n\n";
+        }
+
+        $this->userStatsService->incrementStat($user, UserStat::WentOnAStarKindredAdventure);
+
+        $experience = $victory
+            ? $difficulty->victoryExperience()
+            : $difficulty->defeatExperience($encountersWon);
+
+        $progress = [];
+        $milestones = [];
+
+        foreach($party as $character)
+        {
+            $character->recordAdventure($victory);
+            $levelsGained = $character->gainExperience($experience);
+
+            $progress[] = new StarKindredCharacterProgress(
+                $character->getId(), $character->getName(), $character->getPet()->getName(),
+                $experience, $levelsGained, $character->getLevel(), false
+            );
+
+            if($levelsGained > 0)
+            {
+                $milestones = [
+                    ...$milestones,
+                    ...array_filter([
+                        $this->maybeGainAnimalCompanion($user, $character),
+                        $this->maybeChooseSchoolOfMagic($character),
+                        $this->maybeLearnToBanishUndead($character, $levelsGained),
+                    ]),
+                    ...$this->learnSongs($character),
+                ];
+            }
+        }
+
+        if(count($loot) > 0)
+            $text .= '(You award your pets ' . self::describeLoot($loot) . '.)';
+
+        foreach($extraMessages as $message)
+            $text .= "\n\n" . $message;
+
+        $this->receiveLoot($user, $loot);
+
+        return new StarKindredAdventureResult($victory, $adventure->title, $checks, $text, $loot, $progress, $milestones);
+    }
+
+    /**
+     * @return string|null A message for the player (Markdown), if the character gained an animal companion
+     */
+    private function maybeGainAnimalCompanion(User $user, StarKindredCharacter $character): ?string
+    {
+        $class = $character->getCharacterClass();
+
+        if(
+            !$class->hasAnimalCompanion() ||
+            $character->getLevel() < StarKindredAnimalCompanion::GainedAtLevel ||
+            $character->getAnimalCompanion() !== null
+        )
+            return null;
+
+        $figurine = $this->rng->rngNextFromArray(array_keys(self::AnimalCompanionFigurines));
+        $species = self::AnimalCompanionFigurines[$figurine];
+        $companion = new StarKindredAnimalCompanion($this->rng->rngNextFromArray(PetShelterPet::PetNames), $species);
+
+        $character->gainAnimalCompanion($companion);
+
+        $this->inventoryService->receiveItem(
+            $figurine, $user, $user,
+            "This {$species} represents {$companion->name}, the animal companion of {$character->getName()} ({$character->getPet()->getName()}'s ★Kindred {$class->value}).",
+            LocationEnum::Home
+        );
+
+        return
+            "{$character->getName()}, as a level-" . StarKindredAnimalCompanion::GainedAtLevel . " {$class->value}, gets an animal companion! " .
+            'They chose ' . GrammarFunctions::indefiniteArticle($species) . " {$species} named {$companion->name}. " .
+            '(You award your pets ' . GrammarFunctions::indefiniteArticle($figurine) . " {$figurine}, to commemorate the event!)"
+        ;
+    }
+
+    /**
+     * Banish Undead is derived from class & level, so there's nothing to store; just announce it.
+     * @return string|null A message for the player (Markdown), if the character just learned to Banish Undead
+     */
+    private function maybeLearnToBanishUndead(StarKindredCharacter $character, int $levelsGained): ?string
+    {
+        $levelBefore = $character->getLevel() - $levelsGained;
+
+        if(!$character->canBanishUndead() || $levelBefore >= StarKindredCharacter::BanishUndeadLevel)
+            return null;
+
+        return
+            "{$character->getName()}, as a level-" . StarKindredCharacter::BanishUndeadLevel . " {$character->getCharacterClass()->value}, learns to Banish Undead! " .
+            '(+' . StarKindredCharacter::BanishUndeadBonus . ' against the undead.)'
+        ;
+    }
+
+    /**
+     * Teaches the character every song it's reached the level for (possibly several, after a big level-up).
+     * @return string[] A message for the player (Markdown) per song learned
+     */
+    private function learnSongs(StarKindredCharacter $character): array
+    {
+        $messages = [];
+
+        while($character->getSongsToLearn() > 0)
+        {
+            $options = $character->getLearnableSongs();
+
+            // can't happen with today's skills & song levels, but if it ever does, there's simply nothing new to learn
+            if(count($options) === 0)
+                break;
+
+            $skill = $this->rng->rngNextFromArray($options);
+
+            $character->learnSong($skill);
+
+            $messages[] =
+                "{$character->getName()} learns a new song: a song of {$skill->value}! " .
+                '(+' . StarKindredCharacter::SongBonus . " to {$skill->value}.)"
+            ;
+        }
+
+        return $messages;
+    }
+
+    /**
+     * @return string|null A message for the player (Markdown), if the character specialized in a school of magic
+     */
+    private function maybeChooseSchoolOfMagic(StarKindredCharacter $character): ?string
+    {
+        if(
+            $character->getCharacterClass() !== StarKindredClassEnum::Wizard ||
+            $character->getLevel() < StarKindredSchoolOfMagicEnum::ChosenAtLevel ||
+            $character->getSchoolOfMagic() !== null
+        )
+            return null;
+
+        $options = array_values(array_filter(
+            StarKindredSchoolOfMagicEnum::cases(),
+            fn(StarKindredSchoolOfMagicEnum $school) => !$character->isTrainedSkill($school->skill())
+        ));
+
+        // can't happen with today's class & school skills, but if it ever does, there's simply nothing new to learn
+        if(count($options) === 0)
+            return null;
+
+        $school = $this->rng->rngNextFromArray($options);
+
+        $character->chooseSchoolOfMagic($school);
+
+        return
+            "{$character->getName()}, as a level-" . StarKindredSchoolOfMagicEnum::ChosenAtLevel . ' Wizard, specializes in a school of magic: ' .
+            "{$school->value}! ({$school->skill()->value} is now a trained skill.)"
+        ;
+    }
+
+    /**
+     * @param StarKindredCharacter[] $party
+     */
+    public function retire(User $user, array $party): StarKindredAdventureResult
+    {
+        if(array_any($party, fn(StarKindredCharacter $c) => !$c->isMaxLevel()))
+            throw new PSPInvalidOperationException('Only level ' . StarKindredCharacter::MaxLevel . ' adventurers may retire, and they must all retire together.');
+
+        $this->markPlayedToday($user, null);
+
+        $loot = [];
+        $text = '';
+
+        foreach($party as $character)
+        {
+            $epilogue = $this->generateEpilogue($character);
+            $character->retire($this->clock->now, $epilogue);
+
+            $loot = [ ...$loot, ...self::RetirementRewardsPerAdventurer ];
+
+            $text .= "**{$character->getName()}**\\\n{$epilogue}\n\n";
+
+            $this->userStatsService->incrementStat($user, UserStat::RetiredAStarKindredAdventurer);
+        }
+
+        $text .= '(You award your pets ' . self::describeLoot($loot) . ', to remember their adventurers by.)';
+
+        $text .= "\n\n" . $this->maybeUnlockAura($this->rng->rngNextFromArray($party)->getPet(), self::RetirementAura);
+
+        $this->receiveLoot($user, $loot);
+
+        $progress = array_map(
+            fn(StarKindredCharacter $c) => new StarKindredCharacterProgress(
+                $c->getId(), $c->getName(), $c->getPet()->getName(), 0, 0, $c->getLevel(), true
+            ),
+            $party
+        );
+
+        return new StarKindredAdventureResult(true, 'The Final Adventure', [], $text, $loot, $progress, []);
+    }
+
+    private function generateEpilogue(StarKindredCharacter $character): string
+    {
+        $fate = $this->rng->rngNextFromArray([
+            'opened a cozy tavern in a quiet village, where the stew is always hot and the stories are always tall',
+            'became a teacher at the Adventurers\' Academy, where students still whisper about their exploits',
+            'were crowned ruler of a small, but very happy, kingdom',
+            'set sail for lands unknown, and were last seen waving from the deck',
+            'wrote a best-selling memoir (which only slightly exaggerates things)',
+            'took up gardening, and now grow the finest pumpkins in the realm',
+            'ascended to the heavens, and now shine as a new star in the night sky',
+            'founded a guild for young heroes, and give every new member a copy of their old map',
+            'retired to a mountain cabin, and answer every letter from adoring fans',
+            'became the keeper of a great library, guarding the stories of heroes yet to come',
+        ]);
+
+        $adventures = $character->getAdventuresCompleted();
+        $victories = $character->getAdventuresWon();
+
+        return
+            $character->getName() . ', ' . $character->getRace()->value . ' ' . $character->getCharacterClass()->value . ', ' .
+            'hung up their ' . $character->getCharacterClass()->signatureGear() . ' after ' .
+            $adventures . ' ' . ($adventures === 1 ? 'adventure' : 'adventures') . ' (' .
+            $victories . ' ' . ($victories === 1 ? 'victory' : 'victories') . '). ' .
+            'They ' . $fate . '.'
+        ;
+    }
+
+    /**
+     * @return string A message for the player, whether or not the styling was new to them
+     */
+    private function maybeUnlockAura(Pet $pet, string $auraName): string
+    {
+        $message = '★Kindred inspired ' . $pet->getName() . ' to create a new hat style!';
+
+        $unlocked = $this->hattierService->petMaybeUnlockAura($pet, $auraName, $message, $message, $message);
+
+        if(!$unlocked)
+            return "(The adventure reminds {$pet->getName()} of the \"{$auraName}\" hat styling... but you've already got that one!)";
+
+        if($pet->getOwner()->hasUnlockedFeature(UnlockableFeatureEnum::Hattier))
+            return "(Inspired by the adventure, {$pet->getName()} created a new hat styling: \"{$auraName}\"! Find it at the Hattier!)";
+        else
+            return "(Inspired by the adventure, {$pet->getName()} created a new hat styling?! What!? (The Hattier has been unlocked! Check it out in the menu!))";
+    }
+
+    /**
+     * @param string[] $loot
+     */
+    private static function describeLoot(array $loot): string
+    {
+        $quantities = array_count_values($loot);
+        ksort($quantities);
+
+        return ArrayFunctions::list_nice_quantities($quantities);
+    }
+
+    /**
+     * @param string[] $loot
+     */
+    private function receiveLoot(User $user, array $loot): void
+    {
+        foreach($loot as $item)
+            $this->inventoryService->receiveItem($item, $user, $user, $user->getName() . ' gave this to their pets during a game of ★Kindred.', LocationEnum::Home, lockedToOwner: true);
+    }
+
+    /**
+     * Item name => companion species. ("Roy" Plushy is a special event item; Phoenix Plushy is a quest item.)
+     */
+    public const array AnimalCompanionFigurines = [
+        'Bulbun Plushy' => 'Bulbun',
+        'Peacock Plushy' => 'Peacock',
+        'Rainbow Dolphin Plushy' => 'Rainbow Dolphin',
+        'Sneqo Plushy' => 'Sneqo',
+        'Catmouse Figurine' => 'Catmouse',
+        'Tentacat Figurine' => 'Tentacat',
+    ];
 }

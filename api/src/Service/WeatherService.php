@@ -19,7 +19,7 @@ use App\Model\WeatherSky;
 
 class WeatherService
 {
-    public function __construct(private readonly CacheHelper $cache)
+    public function __construct(private readonly CacheHelper $cache, private readonly Clock $clock)
     {
     }
 
@@ -88,7 +88,7 @@ class WeatherService
 
         for($day = 0; $day <= 6; $day++)
         {
-            $date = new \DateTimeImmutable()->modify('+' . $day . ' days');
+            $date = $this->clock->now->modify('+' . $day . ' days');
 
             $weather[] = $this->cache->getOrCompute(
                 'Weather ' . $date->format('Y-m-d'),

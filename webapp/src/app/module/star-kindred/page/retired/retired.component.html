@@ -1,0 +1,41 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main>
+  <h2><a routerLink="/library">Library</a> » <a routerLink="/starKindred">★Kindred</a> » Retired Adventurers</h2>
+  @if(!retired)
+  {
+    <app-loading-throbber />
+  }
+  @else if(retired.resultCount === 0)
+  {
+    <p>None of your pets have retired an adventurer yet. Reach level 20, and go on the Final Adventure, to write the first page of this book!</p>
+  }
+  @else
+  {
+    @if(retired.pageCount > 1)
+    {
+      <app-paginator [pageCount]="retired.pageCount" [page]="retired.page" (pageChange)="doChangePage($event)" />
+    }
+    <ul class="retired">
+      @for(character of retired.results; track character.id)
+      {
+        <li>
+          <a [routerLink]="[ '/starKindred/character', character.id ]"><app-character-card [character]="character" /></a>
+          <p>{{ character.epilogue }}</p>
+          <small>Retired {{ character.retiredOn|date:'mediumDate' }}</small>
+        </li>
+      }
+    </ul>
+    @if(retired.pageCount > 1)
+    {
+      <app-paginator [pageCount]="retired.pageCount" [page]="retired.page" (pageChange)="doChangePage($event)" />
+    }
+  }
+</main>

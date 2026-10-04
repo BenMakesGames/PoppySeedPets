@@ -45,7 +45,7 @@ class WildHedgeMazeService
     public function exploreHedgeMaze(ComputedPetSkills $petWithSkills): PetActivityLog
     {
         if($this->rng->rngNextInt(1, 20) === 1)
-            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, 'exploring the woods');
+            return $this->gatheringDistractions->adventure($petWithSkills, DistractionLocationEnum::Woods, [ PetActivityLogTagEnum::Gathering ], 'exploring the woods');
 
         $pet = $petWithSkills->getPet();
 
@@ -282,6 +282,9 @@ class WildHedgeMazeService
         $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Nature ], $activityLog);
 
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 120), PetActivityStatEnum::GATHER, true);
+
+        foreach($loot as $itemName)
+            $this->inventoryService->petCollectsItem($itemName, $pet, $pet->getName() . ' found this in a Wild Hedgemaze.', $activityLog);
 
         return $activityLog;
     }

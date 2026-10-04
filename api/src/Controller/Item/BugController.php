@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace App\Controller\Item;
 
 use App\Entity\Inventory;
-use App\Entity\PetSpecies;
 use App\Enum\FlavorEnum;
 use App\Enum\PetLocationEnum;
+use App\Enum\PetSpeciesName;
 use App\Enum\SerializationGroupEnum;
 use App\Enum\StoryEnum;
 use App\Enum\UserStat;
@@ -26,6 +26,7 @@ use App\Functions\ColorFunctions;
 use App\Functions\ItemRepository;
 use App\Functions\MeritRepository;
 use App\Functions\PetRepository;
+use App\Functions\PetSpeciesRepository;
 use App\Functions\UserQuestRepository;
 use App\Service\InventoryService;
 use App\Service\IRandom;
@@ -241,7 +242,7 @@ class BugController
         $newPet = $petFactory->createPet(
             $user,
             $petName,
-            $em->getRepository(PetSpecies::class)->find(40),
+            PetSpeciesRepository::findOneByName($em, PetSpeciesName::SentientBeetle),
             $colorA,
             $colorB,
             $rng->rngNextFromArray(FlavorEnum::cases()),

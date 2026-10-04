@@ -37,5 +37,9 @@
         </button></li>
       }
     </ul>
+    @if(pageCount > 1)
+    {
+      <app-paginator [pageCount]="pageCount" [(page)]="page" (change)="goToPage(page)" />
+    }
   }
 }

@@ -13,13 +13,15 @@ import {
 import {MyPetSerializationGroup} from "../../../../model/my-pet/my-pet.serialization-group";
 import { fromEvent, Observable, Subscription } from "rxjs";
 import {ApiService} from "../../service/api.service";
-import {debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, filter, map, switchMap, tap} from "rxjs/operators";
 import {ApiResponseModel} from "../../../../model/api-response.model";
+import {FilterResultsSerializationGroup} from "../../../../model/filter-results.serialization-group";
 import { UserDataService } from "../../../../service/user-data.service";
 import { SvgIconComponent } from "../svg-icon/svg-icon.component";
 import { PetAppearanceComponent } from "../pet-appearance/pet-appearance.component";
 import { LocationSpritePipe } from "../../pipe/location-sprite.pipe";
 import { LoadingThrobberComponent } from "../loading-throbber/loading-throbber.component";
+import { PaginatorComponent } from "../paginator/paginator.component";
 import { CommonModule } from "@angular/common";
 
 @Component({
@@ -30,6 +32,7 @@ import { CommonModule } from "@angular/common";
         PetAppearanceComponent,
         LocationSpritePipe,
         LoadingThrobberComponent,
+        PaginatorComponent,
         CommonModule
     ],
     styleUrls: ['./select-pet.component.scss']
@@ -54,6 +57,9 @@ export class SelectPetComponent implements OnInit {
   selectedPet: MyPetSerializationGroup;
   showLocations: boolean;
 
+  page = 0;
+  pageCount = 0;
+
   constructor(private api: ApiService, private userService: UserDataService) {
     this.showLocations = this.userService.user.getValue().canAssignHelpers;
   }
@@ -61,11 +67,7 @@ export class SelectPetComponent implements OnInit {
   public reload()
   {
     this.suggest(this.search.nativeElement.value).subscribe({
-      next: (r: ApiResponseModel<MyPetSerializationGroup[]>) => {
-        this.results = r.data;
-        this.pets = this.petMapper === null ? r.data : r.data.map(this.petMapper);
-        this.searching = false;
-      },
+      next: r => this.applyResults(r.data),
       error: () => {
         this.searching = false;
       }
@@ -79,14 +81,12 @@ export class SelectPetComponent implements OnInit {
         debounceTime(400),
         distinctUntilChanged(),
         filter(q => q.length > 0),
+        // typing a new search starts over from the first page
+        tap(() => this.page = 0),
         switchMap(q => this.suggest(q))
       )
       .subscribe({
-        next: (r: ApiResponseModel<MyPetSerializationGroup[]>) => {
-          this.results = r.data;
-          this.pets = this.petMapper === null ? r.data : r.data.map(this.petMapper);
-          this.searching = false;
-        },
+        next: r => this.applyResults(r.data),
         error: () => {
           this.searching = false;
         }
@@ -99,18 +99,34 @@ export class SelectPetComponent implements OnInit {
     this.keyUpSubscription.unsubscribe();
   }
 
-  suggest(search: string): Observable<ApiResponseModel<MyPetSerializationGroup[]>>
+  suggest(search: string): Observable<ApiResponseModel<FilterResultsSerializationGroup<MyPetSerializationGroup>>>
   {
     this.doSelect(null);
     this.results = null;
     this.searching = true;
 
     const data = this.additionalFilters
-      ? { ...this.additionalFilters, search: search }
-      : { search: search }
+      ? { ...this.additionalFilters, search: search, page: this.page }
+      : { search: search, page: this.page }
     ;
 
-    return this.api.get<MyPetSerializationGroup[]>(this.apiEndpoint, data);
+    return this.api.get<FilterResultsSerializationGroup<MyPetSerializationGroup>>(this.apiEndpoint, data);
+  }
+
+  // a page click re-fetches immediately for the current search text, bypassing the debounced keyup stream
+  goToPage(page: number)
+  {
+    this.page = page;
+    this.reload();
+  }
+
+  private applyResults(data: FilterResultsSerializationGroup<MyPetSerializationGroup>)
+  {
+    this.results = data.results;
+    this.pets = this.petMapper === null ? data.results : data.results.map(this.petMapper);
+    this.page = data.page;
+    this.pageCount = data.pageCount;
+    this.searching = false;
   }
 
   doSelect(pet: MyPetSerializationGroup)

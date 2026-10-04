@@ -1,0 +1,64 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<div class="dialog">
+  <h4>{{ result.title }}</h4>
+  <div class="dialog-body">
+    @if(result.checks.length > 0)
+    {
+      <p class="outcome">
+        <span class="flourish" aria-hidden="true">~⊱☙</span>
+        {{ result.victory ? 'Victory!' : 'Defeat...' }}
+        <span class="flourish" aria-hidden="true">❧⊰~</span>
+      </p>
+    }
+    @for(check of result.checks; track $index)
+    {
+      <div class="check" [class.success]="check.success">
+        @if(check.success)
+        {
+          <i class="fa-solid fa-check mark" role="img" aria-label="Success"></i>
+        }
+        @else
+        {
+          <i class="fa-solid fa-xmark mark" role="img" aria-label="Failure"></i>
+        }
+        <markdown [data]="check.text" />
+      </div>
+    }
+    <markdown [data]="result.text" />
+    <ul class="progress">
+      @for(p of result.progress; track p.characterId)
+      {
+        <li>
+          <a [routerLink]="[ '/starKindred/character', p.characterId ]" (click)="doOk()">{{ p.characterName }}</a> ({{ p.petName }})
+          @if(p.retired)
+          {
+            retired, at level {{ p.level }}!
+          }
+          @else
+          {
+            gained {{ p.experienceGained }} XP.
+            @if(p.levelsGained > 0)
+            {
+              <b>Level up! Now level {{ p.level }}!</b>
+            }
+          }
+        </li>
+      }
+    </ul>
+    @for(milestone of result.milestones; track $index)
+    {
+      <markdown [data]="milestone" />
+    }
+    <div class="buttons centered">
+      <button type="button" (click)="doOk()">OK</button>
+    </div>
+  </div>
+</div>

@@ -18,7 +18,9 @@ use App\Enum\SerializationGroupEnum;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Ulid;
 
 #[ORM\Table]
 #[ORM\Index(name: 'name_sort_idx', columns: ['name_sort'])]
@@ -28,10 +30,8 @@ class PetSpecies
 {
     #[Groups(["petEncyclopedia", "zoologistCatalog", "typeahead"])]
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    /** @phpstan-ignore property.unusedType */
-    private ?int $id = null;
+    #[ORM\Column(type: UlidType::NAME)]
+    private Ulid $id;
 
     #[Groups(["myPet", "petEncyclopedia", "petShelterPet", "zoologistCatalog", "typeahead", SerializationGroupEnum::PET_PUBLIC_PROFILE])]
     #[ORM\Column(type: 'string', length: 40, unique: true)]
@@ -93,6 +93,10 @@ class PetSpecies
     #[ORM\Column(type: 'boolean')]
     private bool $availableFromBreeding;
 
+    #[Groups(["petEncyclopedia"])]
+    #[ORM\Column(type: 'boolean')]
+    private bool $availableAtSignup = false;
+
     #[Groups(["zoologistCatalog"])]
     #[ORM\ManyToOne(targetEntity: Item::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -115,12 +119,13 @@ class PetSpecies
 
     public function __construct()
     {
+        $this->id = new Ulid();
         $this->pets = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): Ulid
     {
-        return $this->id ?? throw new \LogicException('This entity has not been persisted.');
+        return $this->id;
     }
 
     public function getName(): string
@@ -303,10 +308,16 @@ class PetSpecies
         return $this;
     }
 
-    #[Groups(["petEncyclopedia"])]
     public function getAvailableAtSignup(): bool
     {
-        return $this->getId() <= 16 || $this->getId() === 96 || $this->getId() === 100;
+        return $this->availableAtSignup;
+    }
+
+    public function setAvailableAtSignup(bool $availableAtSignup): self
+    {
+        $this->availableAtSignup = $availableAtSignup;
+
+        return $this;
     }
 
     public function getSheds(): Item
