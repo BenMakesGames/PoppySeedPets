@@ -250,6 +250,37 @@ table {
   100% { opacity: 0.5; }
 }
 
+/***** typeahead dropdowns ***************************************************/
+
+.tag-select {
+  border: 1px solid #ccc;
+  background-color: rgb(var(--color-input-background));
+  border-radius: 3px;
+  max-height: 12rem;
+  overflow-y: auto;
+
+  > button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    color: rgb(var(--color-input-foreground));
+    padding: 0.25em 0.5em;
+    border-radius: 0;
+
+    &.selected {
+      background-color: rgb(var(--color-link-and-button));
+      color: rgb(var(--color-text-on-button));
+    }
+  }
+
+  > p {
+    padding: 0.5em;
+    margin: 0;
+    opacity: 0.5;
+  }
+}
+
 /***** forms *****************************************************************/
 
 .radio-checkbox {
