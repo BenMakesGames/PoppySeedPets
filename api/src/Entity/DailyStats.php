@@ -185,6 +185,62 @@ class DailyStats
     #[Groups(['globalStats'])]
     private ?int $unlockedPortalLifetime = null;
 
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $petsBorn1Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $petsBorn3Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $petsBorn7Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $petsBorn28Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $petsBornLifetime = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $activePets1Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $activePets3Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $activePets7Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $activePets28Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $activePetsLifetime = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $newPets1Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $newPets3Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $newPets7Day = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['globalStats'])]
+    private int $newPets28Day = 0;
+
     public function getId(): int
     {
         return $this->id ?? throw new \LogicException('This entity has not been persisted.');
@@ -706,6 +762,160 @@ class DailyStats
     public function setUnlockedPortalLifetime(?int $unlockedPortalLifetime): self
     {
         $this->unlockedPortalLifetime = $unlockedPortalLifetime;
+        return $this;
+    }
+
+    public function getPetsBorn1Day(): int
+    {
+        return $this->petsBorn1Day;
+    }
+
+    public function setPetsBorn1Day(int $petsBorn1Day): self
+    {
+        $this->petsBorn1Day = $petsBorn1Day;
+        return $this;
+    }
+
+    public function getPetsBorn3Day(): int
+    {
+        return $this->petsBorn3Day;
+    }
+
+    public function setPetsBorn3Day(int $petsBorn3Day): self
+    {
+        $this->petsBorn3Day = $petsBorn3Day;
+        return $this;
+    }
+
+    public function getPetsBorn7Day(): int
+    {
+        return $this->petsBorn7Day;
+    }
+
+    public function setPetsBorn7Day(int $petsBorn7Day): self
+    {
+        $this->petsBorn7Day = $petsBorn7Day;
+        return $this;
+    }
+
+    public function getPetsBorn28Day(): int
+    {
+        return $this->petsBorn28Day;
+    }
+
+    public function setPetsBorn28Day(int $petsBorn28Day): self
+    {
+        $this->petsBorn28Day = $petsBorn28Day;
+        return $this;
+    }
+
+    public function getPetsBornLifetime(): int
+    {
+        return $this->petsBornLifetime;
+    }
+
+    public function setPetsBornLifetime(int $petsBornLifetime): self
+    {
+        $this->petsBornLifetime = $petsBornLifetime;
+        return $this;
+    }
+
+    public function getactivePets1Day(): int
+    {
+        return $this->activePets1Day;
+    }
+
+    public function setactivePets1Day(int $activePets1Day): self
+    {
+        $this->activePets1Day = $activePets1Day;
+        return $this;
+    }
+
+    public function getactivePets3Day(): int
+    {
+        return $this->activePets3Day;
+    }
+
+    public function setactivePets3Day(int $activePets3Day): self
+    {
+        $this->activePets3Day = $activePets3Day;
+        return $this;
+    }
+
+    public function getactivePets7Day(): int
+    {
+        return $this->activePets7Day;
+    }
+
+    public function setactivePets7Day(int $activePets7Day): self
+    {
+        $this->activePets7Day = $activePets7Day;
+        return $this;
+    }
+
+    public function getactivePets28Day(): int
+    {
+        return $this->activePets28Day;
+    }
+
+    public function setactivePets28Day(int $activePets28Day): self
+    {
+        $this->activePets28Day = $activePets28Day;
+        return $this;
+    }
+
+    public function getactivePetsLifetime(): int
+    {
+        return $this->activePetsLifetime;
+    }
+
+    public function setactivePetsLifetime(int $activePetsLifetime): self
+    {
+        $this->activePetsLifetime = $activePetsLifetime;
+        return $this;
+    }
+
+    public function getnewPets1Day(): int
+    {
+        return $this->newPets1Day;
+    }
+
+    public function setnewPets1Day(int $newPets1Day): self
+    {
+        $this->newPets1Day = $newPets1Day;
+        return $this;
+    }
+
+    public function getnewPets3Day(): int
+    {
+        return $this->newPets3Day;
+    }
+
+    public function setnewPets3Day(int $newPets3Day): self
+    {
+        $this->newPets3Day = $newPets3Day;
+        return $this;
+    }
+
+    public function getnewPets7Day(): int
+    {
+        return $this->newPets7Day;
+    }
+
+    public function setnewPets7Day(int $newPets7Day): self
+    {
+        $this->newPets7Day = $newPets7Day;
+        return $this;
+    }
+
+    public function getnewPets28Day(): int
+    {
+        return $this->newPets28Day;
+    }
+
+    public function setnewPets28Day(int $newPets28Day): self
+    {
+        $this->newPets28Day = $newPets28Day;
         return $this;
     }
 }
