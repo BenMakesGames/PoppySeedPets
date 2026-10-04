@@ -400,7 +400,7 @@ class FishingService implements IPetActivity
         if($fightSkill <= 3)
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went fishing, and started to reel something in, only to realize it was a huge Galloping Octopus! ' . $pet->getName() . ' was caught unawares, and took a tentacle slap to the face before running away! :(')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting', PetActivityLogTagEnum::Location_Beach ]))
             ;
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(30, 45), PetActivityStatEnum::HUNT, false);
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Brawl ], $activityLog);
@@ -417,7 +417,7 @@ class FishingService implements IPetActivity
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 60), PetActivityStatEnum::HUNT, true);
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went fishing, and started to reel something in, only to realize it was a huge Galloping Octopus! ' . $pet->getName() . ' beat the creature back into the sea, but not before discerping one of its Tentacles!')
                     ->addInterestingness(PetActivityLogInterestingness::HoHum + 18)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting', PetActivityLogTagEnum::Location_Beach ]))
                 ;
                 $this->inventoryService->petCollectsItem('Tentacle', $pet, $pet->getName() . ' received this from a fight with a Galloping Octopus.', $activityLog);
 
@@ -431,7 +431,7 @@ class FishingService implements IPetActivity
                 $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(60, 75), PetActivityStatEnum::HUNT, true);
                 $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went fishing, and started to reel something in, only to realize it was a huge Galloping Octopus! ' . $pet->getName() . ' beat the creature back into the sea, but not before discerping two of its Tentacles!')
                     ->addInterestingness(PetActivityLogInterestingness::HoHum + 18)
-                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting' ]))
+                    ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting', PetActivityLogTagEnum::Location_Beach ]))
                 ;
                 $this->inventoryService->petCollectsItem('Tentacle', $pet, $pet->getName() . ' received this from a fight with a Galloping Octopus.', $activityLog);
                 $this->inventoryService->petCollectsItem('Tentacle', $pet, $pet->getName() . ' received this from a fight with a Galloping Octopus.', $activityLog);
@@ -447,7 +447,7 @@ class FishingService implements IPetActivity
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went fishing, and started to reel something in, only to realize it was a huge Galloping Octopus! The two tussled for a while before breaking apart and cautiously retreating...')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', 'Fighting', PetActivityLogTagEnum::Location_Beach ]))
             ;
             $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::HUNT, false);
             $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Brawl ], $activityLog);
@@ -1130,7 +1130,7 @@ class FishingService implements IPetActivity
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went fishing way out on the pier, and caught a Jellyfish.')
                 ->setIcon('items/tool/fishing-rod/crooked')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', PetActivityLogTagEnum::Location_Beach ]))
             ;
             $this->inventoryService->petCollectsItem('Jellyfish Jelly', $pet, $pet->getName() . ' got this from a Jellyfish they caught way out on the pier.', $activityLog);
 
@@ -1146,7 +1146,7 @@ class FishingService implements IPetActivity
         else
         {
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% went fishing way out on the pier, and pulled up a Jellyfish, but it stung ' . $pet->getName() . ', and got away!')
-                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing' ]))
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Fishing', PetActivityLogTagEnum::Location_Beach ]))
             ;
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Nature ], $activityLog);
 
