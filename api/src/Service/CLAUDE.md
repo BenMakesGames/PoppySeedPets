@@ -187,7 +187,7 @@ Though many operations rely on Symfony's automatic flush at end of request.
 ### The Clock Service
 For testability, don't use `new \DateTime()`. Use `Clock`:
 ```php
-$now = $this->clock->now();  // DateTimeImmutable
+$now = $this->clock->now;  // DateTimeImmutable
 ```
 
 ### The IRandom Interface

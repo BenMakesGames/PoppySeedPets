@@ -8,9 +8,12 @@
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
  */
 import {Injectable} from '@angular/core';
-import { BehaviorSubject, Subscription, timer } from "rxjs";
+import { BehaviorSubject, filter, fromEvent, Subscription, timer } from "rxjs";
 import { WeatherDataModel } from "../../../model/weather.model";
 import { ApiService } from "./api.service";
+
+const RetryDelayMs = 5000;
+const MaxAttempts = 3;
 
 @Injectable({
   providedIn: 'root'
@@ -19,40 +22,67 @@ export class WeatherService {
   weather = new BehaviorSubject<WeatherDataModel[]|null>(null);
 
   #weatherAjax = Subscription.EMPTY;
-  #lastUpdated: string|null = null;
+  #nextFetch = Subscription.EMPTY;
+  #nextFetchAt = Infinity;
+  #failures = 0;
 
   constructor(private readonly apiService: ApiService) {
-    // every 1 second, check if it's a new (UTC) day; if so, update the weather
-    timer(0, 1000).subscribe({
-      next: () => {
-        if(this.#weatherAjax.closed)
-        {
-          const today = new Date().toISOString().substring(0, 10);
+    // timers don't tick while the computer sleeps, so a fetch scheduled for midnight can fire hours late;
+    // catch up when the player comes back
+    fromEvent(document, 'visibilitychange')
+      .pipe(filter(() => document.visibilityState === 'visible' && Date.now() >= this.#nextFetchAt))
+      .subscribe(() => this.#fetchWeather());
 
-          if(this.weather.getValue() === null || this.#lastUpdated === null || this.#lastUpdated !== today)
-          {
-            this.#lastUpdated = today;
-            this.updateWeather();
-          }
-        }
-      }
-    });
-
+    this.#fetchWeather();
   }
 
-  updateWeather()
+  /**
+   * Called by apiReachableInterceptor for every successful API response.
+   */
+  reportApiReachable(url: string)
   {
+    // any other successful API call means the API is reachable again; if we gave up, try again
+    if(this.#failures >= MaxAttempts && !url.endsWith('/weather'))
+    {
+      this.#failures = 0;
+      this.#fetchWeather();
+    }
+  }
+
+  #fetchWeather()
+  {
+    this.#nextFetch.unsubscribe();
+    this.#nextFetchAt = Infinity;
+
     this.#weatherAjax.unsubscribe();
-    this.#weatherAjax = this.apiService.get<{ forecast: WeatherDataModel[] }>('/weather').subscribe({
+    this.#weatherAjax = this.apiService.get<{ forecast: WeatherDataModel[], secondsUntilNextDay: number }>('/weather').subscribe({
       next: r => {
         if(r.data?.forecast?.length > 0)
+        {
+          this.#failures = 0;
           this.weather.next(r.data.forecast);
+          this.#scheduleFetch(r.data.secondsUntilNextDay * 1000);
+        }
         else
-          this.#lastUpdated = null;
+          this.#recordFailure();
       },
       error: () => {
-        this.#lastUpdated = null;
+        this.#recordFailure();
       }
     });
+  }
+
+  #recordFailure()
+  {
+    this.#failures++;
+
+    if(this.#failures < MaxAttempts)
+      this.#scheduleFetch(RetryDelayMs);
+  }
+
+  #scheduleFetch(delayMs: number)
+  {
+    this.#nextFetchAt = Date.now() + delayMs;
+    this.#nextFetch = timer(delayMs).subscribe(() => this.#fetchWeather());
   }
 }

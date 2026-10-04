@@ -20,6 +20,7 @@ import { LoginComponent } from './component/login/login.component';
 import {FormsModule} from "@angular/forms";
 import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from "@angular/common/http";
 import { apiBuildInterceptor } from "./service/api-build.interceptor";
+import { apiReachableInterceptor } from "./service/api-reachable.interceptor";
 import { LoginChoicesComponent } from './component/login-choices/login-choices.component';
 import {NoopAnimationsModule} from "@angular/platform-browser/animations";
 import { IconComponent } from './component/icon/icon.component';
@@ -122,7 +123,7 @@ Array.prototype.listNice = function(separator: string = ', ', lastSeparator = ',
     CurrentMoonPhaseComponent,
   ],
   providers: [
-    provideHttpClient(withInterceptorsFromDi(), withInterceptors([ apiBuildInterceptor ])),
+    provideHttpClient(withInterceptorsFromDi(), withInterceptors([ apiBuildInterceptor, apiReachableInterceptor ])),
   ]
 })
 export class AppModule { }
