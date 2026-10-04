@@ -26,7 +26,7 @@ final class Version20260710042441 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql(<<<EOSQL
-        INSERT INTO `pet_activity_log_tag` (`id`, `title`, `color`, `emoji`) VALUES (102, 'Location: Beach', '38C789', 'fa-solid fa-tree-palm')
+        INSERT INTO `pet_activity_log_tag` (`id`, `title`, `color`, `emoji`) VALUES (106, 'Location: Beach', '38C789', 'fa-solid fa-tree-palm')
         ON DUPLICATE KEY UPDATE `id` = `id`;
         EOSQL);
     }
