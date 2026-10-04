@@ -18,6 +18,7 @@ use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
 use App\Exceptions\PSPNotEnoughCurrencyException;
 use App\Exceptions\PSPNotUnlockedException;
+use App\Functions\CalendarFunctions;
 use App\Service\Clock;
 use App\Service\InventoryService;
 use App\Service\IRandom;
@@ -110,7 +111,7 @@ class RollSatyrDiceController
         }
 
         $dayOfTheWeek = strtolower($clock->now->format('l'));
-        $dayOfTheWeekCoin = self::dayOfTheWeekCoin((int)$clock->now->format('w'));
+        $dayOfTheWeekCoin = CalendarFunctions::dayOfTheWeekCoin($clock->now);
 
         if($r1 === 0) $items[] = $dayOfTheWeekCoin;
         if($r2 === 0) $items[] = $dayOfTheWeekCoin;
@@ -148,20 +149,5 @@ class RollSatyrDiceController
             'points' => $points,
             'items' => $items
         ]);
-    }
-
-    private static function dayOfTheWeekCoin(int $dayOfWeek): string
-    {
-        return match ($dayOfWeek)
-        {
-            0 => 'Sunday Coin',
-            1 => 'Monday Coin',
-            2 => 'Tuesday Coin',
-            3 => 'Wednesday Coin',
-            4 => 'Thursday Coin',
-            5 => 'Friday Coin',
-            6 => 'Saturday Coin',
-            default => throw new \InvalidArgumentException("Invalid day of the week"),
-        };
     }
 }

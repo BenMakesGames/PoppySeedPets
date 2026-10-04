@@ -71,9 +71,14 @@ export class SelectionComponent implements OnInit, OnDestroy {
     this.userSubscription.unsubscribe();
   }
 
-  doSelectPet(pet: MyPetSerializationGroup)
+  doZhuzhUp(pet: MyPetSerializationGroup)
   {
     this.router.navigate(['/hattier', pet.id]);
+  }
+
+  doChangeFit(pet: MyPetSerializationGroup)
+  {
+    this.router.navigate(['/hattier', 'fit', pet.id]);
   }
 
   setDefaultHattierDialog()
@@ -81,6 +86,6 @@ export class SelectionComponent implements OnInit, OnDestroy {
     if(this.isOctober)
       this.hattierDialog = 'Welcome. My name is Lysander. Myles is away until November, however he\'s left me instructions on how to assist you with your hat styling needs. Additionally, I\'m selling some specialty items, if you\'re interested.';
     else
-      this.hattierDialog = 'Welcome to the Hattier!';
+      this.hattierDialog = 'Welcome to the Hattier! I can zhuzh up your pets\' hats, or fit any hats that don\'t seem to be sitting right.';
   }
 }

@@ -124,6 +124,9 @@ class GrocerService
         if(CalendarFunctions::isAwaOdori($now))
             $inventory[] = $this->createInventoryData([ 'Odori 0.0%', 12 ], true);
 
+        if(CalendarFunctions::isPerseidPeakOrAdjacent($now))
+            $inventory[] = $this->createInventoryData([ 'Frosted Medusa Head Cracker', 8 ], true);
+
         if(CalendarFunctions::isAHornOfPlentyDay($now))
             $inventory[] = $this->createInventoryData([ 'Horn of Plenty', 50 ], true);
 

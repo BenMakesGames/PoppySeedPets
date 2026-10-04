@@ -9,7 +9,7 @@
  */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
-import {Observable, throwError} from "rxjs";
+import {Observable, Subject, throwError} from "rxjs";
 import {ApiResponseModel} from "../../../model/api-response.model";
 import {catchError, map, mergeMap} from "rxjs/operators";
 import {UserDataService} from "../../../service/user-data.service";
@@ -23,6 +23,9 @@ import * as qs from 'qs/dist/qs.js';
 export class ApiService {
 
   private rootUrl = environment.apiEndpoint;
+
+  // emits the path of every request that gets a 2xx response
+  readonly requestSucceeded = new Subject<string>();
 
   constructor(
     private http: HttpClient, private userData: UserDataService, private messages: MessagesService
@@ -39,7 +42,7 @@ export class ApiService {
         catchError(r => this.commonErrorHandler<T>(r, () => {
           return this.http.get<ApiResponseModel<T>>(this.rootUrl + path + (data ? '?' + qs.stringify(data) : ''), <object>options);
         })),
-        map(r => this.commonDataHandler<T>(r)),
+        map(r => this.commonDataHandler<T>(path, r)),
       )
     ;
   }
@@ -51,7 +54,7 @@ export class ApiService {
         catchError(r => this.commonErrorHandler<T>(r, () => {
           return this.http.post<ApiResponseModel<T>>(this.rootUrl + path, data, this.options());
         })),
-        map(r => this.commonDataHandler<T>(r)),
+        map(r => this.commonDataHandler<T>(path, r)),
       )
     ;
   }
@@ -63,7 +66,7 @@ export class ApiService {
         catchError(r => this.commonErrorHandler<T>(r, () => {
           return this.http.put<ApiResponseModel<T>>(this.rootUrl + path, data, this.options());
         })),
-        map(r => this.commonDataHandler<T>(r)),
+        map(r => this.commonDataHandler<T>(path, r)),
       )
     ;
   }
@@ -75,7 +78,7 @@ export class ApiService {
         catchError(r => this.commonErrorHandler<T>(r, () => {
           return this.http.patch<ApiResponseModel<T>>(this.rootUrl + path, data, this.options());
         })),
-        map(r => this.commonDataHandler<T>(r)),
+        map(r => this.commonDataHandler<T>(path, r)),
       )
     ;
   }
@@ -87,7 +90,7 @@ export class ApiService {
         catchError(r => this.commonErrorHandler<T>(r, () => {
           return this.http.delete<ApiResponseModel<T>>(this.rootUrl + path, this.options());
         })),
-        map(r => this.commonDataHandler<T>(r)),
+        map(r => this.commonDataHandler<T>(path, r)),
       )
     ;
   }
@@ -120,9 +123,10 @@ export class ApiService {
     }
   }
 
-  private commonDataHandler<T>(r: ApiResponseModel<T>): ApiResponseModel<T>
+  private commonDataHandler<T>(path: string, r: ApiResponseModel<T>): ApiResponseModel<T>
   {
     this.processCommonData(r);
+    this.requestSucceeded.next(path);
 
     return r;
   }

@@ -2011,48 +2011,6 @@ parameters:
 			path: src/Controller/Pet/TalentAndExpertiseController.php
 
 		-
-			message: '#^Cannot call method add\(\) on DateTimeImmutable\|false\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Controller/StarKindred/GetById.php
-
-		-
-			message: '#^Method App\\Controller\\StarKindred\\GetById\:\:findAvailable\(\) should return array\<App\\Entity\\MonthlyStoryAdventureStep\> but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Controller/StarKindred/GetById.php
-
-		-
-			message: '#^Parameter \#2 \$datetime of static method DateTimeImmutable\:\:createFromFormat\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/StarKindred/GetById.php
-
-		-
-			message: '#^Parameter \#3 \$completed of static method App\\Controller\\StarKindred\\GetById\:\:findAvailable\(\) expects array\<App\\Entity\\UserMonthlyStoryAdventureStepCompleted\>, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/StarKindred/GetById.php
-
-		-
-			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
-			count: 1
-			path: src/Controller/StarKindred/RestartRemix.php
-
-		-
-			message: '#^Parameter \#1 \$object of method Doctrine\\Persistence\\ObjectManager\:\:remove\(\) expects object, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/StarKindred/RestartRemix.php
-
-		-
-			message: '#^Parameter \#1 \$value of function count expects array\|Countable, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Controller/StarKindred/RestartRemix.php
-
-		-
 			message: '#^Parameter \#1 \$backgroundColor of method App\\Entity\\UserStyle\:\:setBackgroundColor\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -2609,18 +2567,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Entity/ItemTool.php
-
-		-
-			message: '#^Method App\\Entity\\MonthlyStoryAdventure\:\:isREMIX\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Entity/MonthlyStoryAdventure.php
-
-		-
-			message: '#^Property App\\Entity\\MonthlyStoryAdventure\:\:\$steps with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types\: TKey, T$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Entity/MonthlyStoryAdventure.php
 
 		-
 			message: '#^Method App\\Entity\\MuseumItem\:\:getComments\(\) return type has no value type specified in iterable type array\.$#'
@@ -3335,12 +3281,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Model/HouseSim.php
-
-		-
-			message: '#^Method App\\Model\\MonthlyStoryAdventure\\AdventureResult\:\:__construct\(\) has parameter \$loot with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Model/MonthlyStoryAdventure/AdventureResult.php
 
 		-
 			message: '#^Cannot call method getName\(\) on App\\Entity\\Item\|null\.$#'
@@ -5111,30 +5051,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Service/ResponseService.php
-
-		-
-			message: '#^Cannot access offset ''qty'' on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Service/StarKindred/StarKindredAdventureService.php
-
-		-
-			message: '#^Match arm comparison between App\\Enum\\StoryAdventureTypeEnum\:\:RemixTreasureRoom and App\\Enum\\StoryAdventureTypeEnum\:\:RemixTreasureRoom is always true\.$#'
-			identifier: match.alwaysTrue
-			count: 1
-			path: src/Service/StarKindred/StarKindredAdventureService.php
-
-		-
-			message: '#^Parameter \#1 \$item of method App\\Service\\InventoryService\:\:receiveItem\(\) expects App\\Entity\\Item\|string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/StarKindred/StarKindredAdventureService.php
-
-		-
-			message: '#^Parameter \#2 \$step of method App\\Service\\StarKindred\\StarKindredAdventureService\:\:isStepCompleted\(\) expects App\\Entity\\MonthlyStoryAdventureStep, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Service/StarKindred/StarKindredAdventureService.php
 
 		-
 			message: '#^Argument of an invalid type array\|null supplied for foreach, only iterables are supported\.$#'

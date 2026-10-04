@@ -7,7 +7,10 @@
  *
  * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
  */
-app-pet-customer {
-  display: block;
-  + app-pet-customer { margin-top: 2rem; }
+.pets {
+  padding-top: 1rem;
+  display: grid;
+  // min() keeps a single column from overflowing on screens narrower than 370px
+  grid-template-columns: repeat(auto-fill, minmax(min(370px, 100%), 1fr));
+  gap: 2rem;
 }

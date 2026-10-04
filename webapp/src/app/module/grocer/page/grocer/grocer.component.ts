@@ -16,6 +16,9 @@ import { UserDataService } from "../../../../service/user-data.service";
 import { ItemDetailsDialog } from "../../../../dialog/item-details/item-details.dialog";
 import { MatDialog } from "@angular/material/dialog";
 import { HasSounds, SoundsService } from "../../../shared/service/sounds.service";
+import { WeatherService } from "../../../shared/service/weather.service";
+
+const PerseidsHoliday = 'The Perseids Meteor Shower';
 
 @Component({
     templateUrl: './grocer.component.html',
@@ -34,6 +37,9 @@ export class GrocerComponent implements OnInit, OnDestroy {
   grocerData: GrocerDataModel|undefined;
   grocerDataSubscription = Subscription.EMPTY;
   buySubscription = Subscription.EMPTY;
+  weatherSubscription = Subscription.EMPTY;
+
+  isPerseids = false;
 
   quantity: { [key:string]:any } = {};
   totalCost = 0;
@@ -43,7 +49,7 @@ export class GrocerComponent implements OnInit, OnDestroy {
 
   constructor(
     private api: ApiService, private userData: UserDataService, private matDialog: MatDialog,
-    private sounds: SoundsService
+    private sounds: SoundsService, private weatherService: WeatherService
   )
   {
     this.payWith = localStorage.getItem('payWith') || 'recycling';
@@ -74,6 +80,14 @@ export class GrocerComponent implements OnInit, OnDestroy {
           if(i.special)
             this.hotBarItems.push(i.item.name);
         });
+      }
+    })
+
+    this.weatherSubscription = this.weatherService.weather.subscribe({
+      next: weather => {
+        const today = weather?.find(w => new Date().toISOString().startsWith(w.date));
+
+        this.isPerseids = today ? today.holidays.includes(PerseidsHoliday) : false;
       }
     })
   }
@@ -135,6 +149,7 @@ export class GrocerComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.userSubscription.unsubscribe();
     this.grocerDataSubscription.unsubscribe();
+    this.weatherSubscription.unsubscribe();
   }
 
 }

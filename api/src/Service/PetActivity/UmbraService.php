@@ -61,6 +61,7 @@ class UmbraService implements IPetActivity
         private readonly HattierService $hattierService,
         private readonly EntityManagerInterface $em,
         private readonly LeonidsService $leonidsService,
+        private readonly PerseidsService $perseidsService,
         private readonly Clock $clock
     )
     {
@@ -117,6 +118,10 @@ class UmbraService implements IPetActivity
         if(CalendarFunctions::isLeonidPeakOrAdjacent($this->clock->now) && $this->rng->rngNextInt(1, 4) === 1)
         {
             $activityLog = $this->leonidsService->adventure($petWithSkills);
+        }
+        else if(CalendarFunctions::isPerseidPeakOrAdjacent($this->clock->now) && $this->rng->rngNextInt(1, 4) === 1)
+        {
+            $activityLog = $this->perseidsService->adventure($petWithSkills);
         }
         else
         {

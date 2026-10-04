@@ -1,0 +1,164 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main>
+  <h2>
+    <a routerLink="/library">Library</a> » <a routerLink="/starKindred">★Kindred</a>
+    @if(character?.retiredOn)
+    {
+      » <a routerLink="/starKindred/retired">Retired Adventurers</a>
+    }
+    » Character Sheet
+  </h2>
+  @if(!character)
+  {
+    <app-loading-throbber />
+  }
+  @else
+  {
+    <div class="sheet">
+      <div class="header">
+        <img class="portrait" [src]="'/assets/images/star-kindred/portraits/' + character.portrait + '.png'" alt="" />
+        <div class="banner">
+          <div class="title">
+            <h3>{{ character.name }}</h3>
+            <div>Level {{ character.level }} {{ character.race }} {{ character.class }}</div>
+          </div>
+          <a class="player" [routerLink]="'/poppyopedia/pet/' + character.pet.id">
+            <small>Played by</small>
+            <app-pet-appearance [pet]="character.pet" size="3.5em" />
+            <span>{{ character.pet.name }}</span>
+          </a>
+          <dl class="facts">
+            @if(character.retiredOn)
+            {
+              <dt>Retired</dt><dd>{{ character.retiredOn|date:'mediumDate' }}</dd>
+            }
+            @else if(character.experienceToNextLevel !== null)
+            {
+              <dt>Experience</dt><dd>{{ character.experience }} / {{ character.experienceToNextLevel }}</dd>
+            }
+            @else
+            {
+              <dt>Experience</dt><dd>Max level! Ready to retire.</dd>
+            }
+            <dt>Adventures</dt><dd>{{ character.adventuresCompleted }} ({{ character.adventuresWon }} won)</dd>
+            <dt>Created</dt><dd>{{ character.createdOn|date:'mediumDate' }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      @if(character.epilogue)
+      {
+        <blockquote class="epilogue">{{ character.epilogue }}</blockquote>
+      }
+
+      <div class="columns">
+        <section>
+          <h3>Stats</h3>
+          <table>
+            <tbody>
+              @for(stat of character.stats; track stat.name)
+              {
+                <tr>
+                  <th>
+                    {{ stat.name }}
+                    @if(stat.growth === 'primary')
+                    {
+                      <i class="fa-solid fa-angles-up" title="Primary stat: grows fastest as {{ character.class }}s level up" aria-label="primary stat"></i>
+                    }
+                    @else if(stat.growth === 'secondary')
+                    {
+                      <i class="fa-solid fa-angle-up" title="Secondary stat: grows quickly as {{ character.class }}s level up" aria-label="secondary stat"></i>
+                    }
+                  </th>
+                  <td>{{ stat.value }}</td>
+                  <td>({{ stat.modifier >= 0 ? '+' : '' }}{{ stat.modifier }})</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <h3>Skills{{ character.class === 'Bard' ? '*' : '' }}</h3>
+          <table>
+            <tbody>
+              @for(skill of character.skills; track skill.name)
+              {
+                <tr [class.trained-skill]="skill.training">
+                  <th>
+                    {{ skill.name }}
+                    @if(skill.training === 'class')
+                    {
+                      <i class="fa-solid fa-star" title="{{ character.class }} class skill" aria-label="class skill"></i>
+                    }
+                    @else if(skill.training === 'chosen')
+                    {
+                      <i class="fa-regular fa-star" title="Chosen by {{ character.pet.name }}" aria-label="chosen skill"></i>
+                    }
+                    @else if(skill.training === 'schoolOfMagic')
+                    {
+                      <i class="fa-solid fa-wand-sparkles" title="{{ character.classFeatures.schoolOfMagic }} specialty" aria-label="school of magic skill"></i>
+                    }
+                  </th>
+                  <td><small>{{ skill.stat }}</small></td>
+                  <td>{{ skill.value >= 0 ? '+' : '' }}{{ skill.value }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if(character.class === 'Bard')
+          {
+            <p><small>* Includes bonuses from songs.</small></p>
+          }
+        </section>
+      </div>
+
+      @if(character.classFeatures.animalCompanion; as companion)
+      {
+        <section class="class-feature">
+          <h4>Animal Companion</h4>
+          <dl>
+            <dt>Name</dt><dd>{{ companion.name }}</dd>
+            <dt>Species</dt><dd>{{ companion.species }}</dd>
+          </dl>
+        </section>
+      }
+
+      @if(character.classFeatures.schoolOfMagic; as school)
+      {
+        <section class="class-feature">
+          <h4>School of Magic</h4>
+          <p>{{ school }}</p>
+        </section>
+      }
+
+      @if(character.classFeatures.banishUndead; as bonus)
+      {
+        <section class="class-feature">
+          <h4>Banish Undead</h4>
+          <p>+{{ bonus }} against the undead.</p>
+        </section>
+      }
+
+      @if(character.classFeatures.songs?.length)
+      {
+        <section class="class-feature">
+          <h4>Songs</h4>
+          <ul>
+            @for(song of character.classFeatures.songs; track song)
+            {
+              <li>Song of {{ song }} (+1 to {{ song }})</li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  }
+</main>

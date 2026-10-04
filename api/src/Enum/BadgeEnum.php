@@ -214,4 +214,9 @@ final class BadgeEnum
 
     public const string OPENED_INFINITY_VAULT_1 = 'OpenedInfinityVault1';
     public const string INFINITY_VAULT_MONEYS_SPENT_9999 = 'InfinityVaultMoneysSpent9999';
+
+    public const string STAR_KINDRED_VICTORIES_10 = 'StarKindredVictories10';
+    public const string STAR_KINDRED_DEMIGOD_VICTORY_1 = 'StarKindredDemigodVictory1';
+    public const string STAR_KINDRED_RETIRED_1 = 'StarKindredRetired1';
+    public const string STAR_KINDRED_RETIRED_10 = 'StarKindredRetired10';
 }

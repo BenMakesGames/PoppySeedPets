@@ -36,7 +36,7 @@
     <div [class.disabled]="disableButtons">
       <app-select-pet (selected)="doPredictOffspring($event)" />
       <ul class="dialog-choices">
-        <li><button type="button" class="link-text" (click)="state = 'chooseOne'">"Wait, I changed my mind!"</button></li>
+        <li><button type="button" (click)="state = 'chooseOne'">"Wait, I changed my mind!"</button></li>
       </ul>
     </div>
   }
@@ -57,7 +57,7 @@
     <div [class.disabled]="disableButtons">
       <app-select-pet (selected)="doCreateFate($event)" />
       <ul class="dialog-choices">
-        <li><button type="button" class="link-text" (click)="state = 'chooseOne'">"Wait, I changed my mind!"</button></li>
+        <li><button type="button" (click)="state = 'chooseOne'">"Wait, I changed my mind!"</button></li>
       </ul>
     </div>
   }

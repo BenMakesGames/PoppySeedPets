@@ -17,8 +17,8 @@
       <p>However, as per the terms of the contract set forth by Olfert Voorson over 300 years ago, you may only be granted one wish.</p>
     </app-npc-dialog>
     <ul class="dialog-choices">
-      <li><button type="button" (click)="doAskWhoWunderbossIs()" class="link-text">"Who are you, again?"</button></li>
-      <li><button type="button" (click)="doAskAboutTheContract()" class="link-text">"Maybe an exception could be made?"</button></li>
+      <li><button type="button" (click)="doAskWhoWunderbossIs()">"Who are you, again?"</button></li>
+      <li><button type="button" (click)="doAskAboutTheContract()">"Maybe an exception could be made?"</button></li>
     </ul>
   }
   @else if(state === DialogState.AskAboutContract)
@@ -32,7 +32,7 @@
       <p>This <em>Museum</em> of yours is clearly the closest, safest location accessible. You are, of course, entitled to debate this point, but I don't believe an Arbiter of sufficient experience in contracts of this kind will be available for a number years. The Morrígan were only recently able to employ the time of such an Arbiter, and they had to wait nearly 250 years; you should expect to wait a fair bit longer.</p>
     </app-npc-dialog>
     <ul class="dialog-choices">
-      <li><button type="button" (click)="doRestartDialog()" class="link-text">"Oof. Okay, then."</button></li>
+      <li><button type="button" (click)="doRestartDialog()">"Oof. Okay, then."</button></li>
     </ul>
   }
   @else if(state === DialogState.AskAboutWunderboss)
@@ -45,7 +45,7 @@
       <p>Most brilliantly of all, Olfert's contract protects not only myself, but any who invoke my services, so you need not fear: though Mars, Futsunushi, and every Valkyrie may hate your soul until the end of time for having even <em>spoken</em> to me, you are protected from their eternal vengeance, direct, or indirect. Not even a Domovoy would dare tickle you on their behalf! Haha!</p>
     </app-npc-dialog>
     <ul class="dialog-choices">
-      <li><button type="button" (click)="doRestartDialog()" class="link-text">"Interesting..."</button></li>
+      <li><button type="button" (click)="doRestartDialog()">"Interesting..."</button></li>
     </ul>
   }
   @else if(state === DialogState.MakeAWish || state === DialogState.MakingWish)
@@ -56,8 +56,8 @@
       <p>I shall grant you one wish: ask for any item you want - any item at all - and I shall create it for you, sent directly to your Museum.</p>
     </app-npc-dialog>
     <ul class="dialog-choices">
-      <li><button type="button" (click)="doAskWhoWunderbossIs()" class="link-text">"W&mdash; who are you?"</button></li>
-      <li><button type="button" (click)="doAskAboutTheContract()" class="link-text">"Does it have to go to the Museum?"</button></li>
+      <li><button type="button" (click)="doAskWhoWunderbossIs()">"W&mdash; who are you?"</button></li>
+      <li><button type="button" (click)="doAskAboutTheContract()">"Does it have to go to the Museum?"</button></li>
     </ul>
     <div [class.disabled]="state === DialogState.MakingWish">
       <app-find-item-by-name (valueChange)="doIt($event)" />
