@@ -408,6 +408,7 @@ class BookstoreService
         {
             $prices['⤮'] = 25;
             $prices['The Open Window'] = 20;
+            $prices['The First Story of Takae Su Suzi'] = 20;
         }
 
         ksort($prices);

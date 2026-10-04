@@ -50,8 +50,8 @@ class FeedController
     {
         $user = $userAccessor->getUserOrThrow();
 
-        if(!$user->hasUnlockedFeature(UnlockableFeatureEnum::Fireplace) || !$user->getBeehive())
-            throw new PSPNotUnlockedException('Fireplace');
+        if(!$user->hasUnlockedFeature(UnlockableFeatureEnum::Beehive) || !$user->getBeehive())
+            throw new PSPNotUnlockedException('Beehive');
 
         $itemIds = RequestFunctions::getUniqueIdsOrThrow($request, 'flowers', 'No items were selected???');
 
@@ -103,6 +103,6 @@ class FeedController
             );
         }
 
-        return $responseService->success($beehive, [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
+        return $responseService->success($beehiveService->getResponseData($user), [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
     }
 }

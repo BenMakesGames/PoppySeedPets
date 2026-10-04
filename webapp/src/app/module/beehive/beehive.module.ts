@@ -19,6 +19,7 @@ import { PetAppearanceComponent } from "../shared/component/pet-appearance/pet-a
 import { ProgressBarComponent } from "../shared/component/progress-bar/progress-bar.component";
 import { DialogTitleWithIconsComponent } from "../shared/component/dialog-title-with-icons/dialog-title-with-icons.component";
 import {HelpLinkComponent} from "../shared/component/help-link/help-link.component";
+import { BeehiveSpacesComponent } from "./component/beehive-spaces/beehive-spaces.component";
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import {HelpLinkComponent} from "../shared/component/help-link/help-link.compone
     ProgressBarComponent,
     DialogTitleWithIconsComponent,
     HelpLinkComponent,
+    BeehiveSpacesComponent,
   ],
   exports: [
     BeehiveRoutingModule

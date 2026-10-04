@@ -1,0 +1,97 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<div class="dialog">
+  <h4>{{ adventure ? adventure.title : 'The Final Adventure' }}</h4>
+  <div class="dialog-body" [class.disabled]="embarking">
+    @if(adventure)
+    {
+      <p>Choose up to {{ status.maxPartySize }} adventurers, and a difficulty. Harder adventures give more rewards and experience, but every adventurer raises the bar for the whole party.</p>
+      <div class="difficulties" role="radiogroup" aria-label="Difficulty">
+        @for(d of status.difficulties; track d.name; let i = $index)
+        {
+          <div class="difficulty" [class.earned]="i <= tier">
+            <button type="button" role="radio" [class.checked]="d === difficulty" [attr.aria-checked]="d === difficulty ? 'true' : 'false'" (click)="doSetDifficulty(d)">
+              {{ d.name }}<br><small>{{ d.victoryExperience }} XP</small>
+            </button>
+            @if(rewardFor(d); as reward)
+            {
+              <div class="reward">
+                <app-star-kindred-reward [reward]="reward" />
+                @if(i <= tier)
+                {
+                  <span class="sr-only">(earned on victory)</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+    @else
+    {
+      <p>Choose up to {{ status.maxPartySize }} level-{{ status.maxLevel }} adventurers to retire together. Their stories will be kept forever in the Book of Retired Adventurers.</p>
+    }
+
+    @if(available.length === 0)
+    {
+      <p><i>None of your adventurers can go on this adventure.</i></p>
+    }
+    @else
+    {
+      <ul class="available">
+        @for(character of available; track character.id)
+        {
+          <li>
+            <button type="button" (click)="doToggle(character)" [class.checked]="isSelected(character)" [attr.aria-pressed]="isSelected(character) ? 'true' : 'false'">
+              <app-character-card [character]="character" />
+              @if(adventure)
+              {
+                <span class="character-skills">
+                  @for(skill of adventure.skillsTested; track skill)
+                  {
+                    <span>{{ skill }} {{ skillValue(character, skill) >= 0 ? '+' : '' }}{{ skillValue(character, skill) }}</span>
+                  }
+                  @if(adventure.hasUndeadEncounters && character.classFeatures.banishUndead; as bonus)
+                  {
+                    <span>Banish Undead +{{ bonus }}</span>
+                  }
+                </span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    @if(adventure && selected.length > 0)
+    {
+      <table class="odds">
+        <thead>
+          <tr><th>Skill</th><th>Party's Average Roll</th><th>Target</th></tr>
+        </thead>
+        <tbody>
+          @for(o of skillOdds; track o.skill)
+          {
+            <tr>
+              <td>{{ o.skill }}</td>
+              <td [class.risky]="o.averageRoll < o.target">{{ o.averageRoll }}</td>
+              <td>{{ o.target }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <p class="buttons centered">
+      <button type="button" [class.disabled]="selected.length === 0" (click)="doEmbark()">{{ adventure ? 'Go Forth!' : 'Retire Them' }}</button>
+      <button type="button" class="wire" (click)="doCancel()">Cancel</button>
+    </p>
+  </div>
+</div>

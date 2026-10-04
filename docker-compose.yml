@@ -79,7 +79,7 @@ services:
     # --host 0.0.0.0  : listen on the container's external interface
     # --poll 2000     : polling-based file watcher (bind-mount inotify is unreliable on Windows)
     # --allowed-hosts : trust the Host header when the browser hits https://localhost:4200
-    command: sh -c "npm ci && ng serve --host 0.0.0.0 --poll 2000 --allowed-hosts all"
+    command: sh -c "npm install && ng serve --host 0.0.0.0 --poll 2000 --allowed-hosts all"
 
 volumes:
   mysql_data:

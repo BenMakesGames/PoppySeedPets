@@ -1,0 +1,137 @@
+/*
+ * This file is part of the Poppy Seed Pets Webapp.
+ *
+ * The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+ */
+.played {
+  font-style: italic;
+}
+
+.adventures {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1em;
+  margin-bottom: 1em;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.adventure {
+  background-color: rgb(var(--color-speech-bubble-background));
+  border-radius: 5px;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em; // children set no vertical margins of their own; this is the only spacing between them
+
+  // a header strip across the top of the card, styled like table headers
+  h4 {
+    margin: -1em -1em 0;
+    padding: 0.5em 1em;
+    border-radius: 5px 5px 0 0;
+    background-color: rgb(var(--color-primary));
+    color: rgb(var(--color-text-on-primary));
+    text-align: center;
+  }
+
+  markdown {
+    flex-grow: 1;
+  }
+
+  > .buttons, > p, > ul {
+    margin: 0;
+  }
+
+  &.not-picked {
+    opacity: 0.3;
+  }
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25em 0.5em;
+  align-items: baseline;
+}
+
+.skill {
+  border: 1px solid rgb(var(--color-link-and-button));
+  border-radius: 1em;
+  padding: 0 0.5em;
+  font-size: 90%;
+}
+
+.characters {
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
+  gap: 0.5em;
+
+  a {
+    display: block;
+    height: 100%;
+    box-sizing: border-box;
+    color: inherit;
+    text-decoration: none;
+    padding: 0.5em;
+    border-radius: 5px;
+    background-color: rgb(var(--color-speech-bubble-background));
+  }
+}
+
+.rewards {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75em;
+
+  > li {
+    position: relative;
+  }
+
+  // top-left, so it never covers the quantity badge (bottom-right)
+  .won, .lost {
+    position: absolute;
+    top: -0.4em;
+    left: -0.4em;
+    width: 1.4em;
+    height: 1.4em;
+    line-height: 1.4em;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 0.5em;
+    color: #fff;
+  }
+
+  .won {
+    background-color: #2a2;
+  }
+
+  .lost {
+    background-color: #c22;
+  }
+}
+
+.retirement-rewards {
+  list-style: none;
+  padding-left: 0;
+
+  > li + li {
+    margin-top: 0.25em;
+  }
+}
+
+.roll-character {
+  margin-bottom: 1rem;
+}

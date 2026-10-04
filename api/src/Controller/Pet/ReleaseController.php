@@ -26,6 +26,7 @@ use App\Model\PetChanges;
 use App\Model\PetShelterPet;
 use App\Service\IRandom;
 use App\Service\ResponseService;
+use App\Service\StarKindred\StarKindredAdventureService;
 use App\Service\UserAccessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -66,6 +67,12 @@ class ReleaseController
 
         EquipmentFunctions::unequipPet($pet);
         EquipmentFunctions::unhatPet($pet);
+
+        // a released pet's ★Kindred adventurer is simply gone - not retired into the owner's book
+        $starKindredCharacter = StarKindredAdventureService::findActiveCharacter($em, $pet);
+
+        if($starKindredCharacter)
+            $em->remove($starKindredCharacter);
 
         // to prevent people from releasing rude names for other players to pick up, rename the pet unless it has one
         // of the game's default names:

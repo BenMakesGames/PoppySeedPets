@@ -62,6 +62,11 @@ final class UserStat
     public const string SetAToucanFree = 'Set a Toucan Free';
     public const string OpenedTheInfinityVault = 'Opened the Infinity Vault';
     public const string MoneysSpentOnTheInfinityVault = 'Moneys Spent on the Infinity Vault';
+    public const string RolledAStarKindredCharacter = 'Rolled a ★Kindred Character';
+    public const string WentOnAStarKindredAdventure = 'Went on a ★Kindred Adventure';
+    public const string WonAStarKindredAdventure = 'Won a ★Kindred Adventure';
+    public const string WonADemigodStarKindredAdventure = 'Won a Demigod ★Kindred Adventure';
+    public const string RetiredAStarKindredAdventurer = 'Retired a ★Kindred Adventurer';
 
     public const string RECEIVED_A_MINOR_PRIZE_FROM_A_GREAT_SPIRIT = 'Received a Minor Reward from a Great Spirit';
     public const string RECEIVED_A_MODERATE_PRIZE_FROM_A_GREAT_SPIRIT = 'Received a Moderate Reward from a Great Spirit';

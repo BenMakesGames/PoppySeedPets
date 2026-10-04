@@ -15,8 +15,6 @@ import {ApiResponseModel} from "../../../../model/api-response.model";
 import { LoadingThrobberComponent } from "../loading-throbber/loading-throbber.component";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { PetSpeciesTypeaheadModel } from "../find-pet-species-by-name/find-pet-species-by-name.component";
-
 @Component({
     selector: 'app-find-item-by-name',
     templateUrl: './find-item-by-name.component.html',
@@ -109,7 +107,7 @@ export class FindItemByNameComponent implements OnInit {
     this.results = null;
   }
 
-  doSelect(result: PetSpeciesTypeaheadModel)
+  doSelect(result: ItemTypeaheadModel)
   {
     this.selected = result;
     this.valueChange.emit(result.id);

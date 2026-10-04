@@ -1,0 +1,44 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main style="padding-bottom: 0;">
+  <h2><a routerLink="/hattier">Hattier</a> » Fitting Room</h2>
+  @if(!petSubscription.closed)
+  {
+    <app-loading-throbber />
+  }
+  @else if(selectedPet)
+  {
+    <div>
+      <section [class.disabled]="!buySubscription.closed">
+        <div class="preview">
+          <h6>Preview</h6>
+          <app-pet-appearance [pet]="previewPet" [flipped]="false" size="2in" />
+        </div>
+        <div class="adjustments">
+          @for(a of adjustments; track a.label)
+          {
+            <label [for]="'fit-' + $index">{{ a.label }}</label>
+            <button type="button" (click)="doNudge(a, -1)" [attr.aria-label]="a.lessLabel" [title]="a.lessLabel">&lt;</button>
+            <input [id]="'fit-' + $index" type="range" [min]="a.min" [max]="a.max" [step]="a.step" [ngModel]="a.get()" (ngModelChange)="doSet(a, $event)" />
+            <button type="button" (click)="doNudge(a, 1)" [attr.aria-label]="a.moreLabel" [title]="a.moreLabel">&gt;</button>
+          }
+        </div>
+        <p class="fit-note">A fit is made for one hat, on one pet. If this {{ selectedPet.hat.item.name }} is removed, the fit will be lost.</p>
+        <div class="buy-buttons">
+          <div class="buttons centered">
+            <button type="button" (click)="doBuy('moneys')" [class.disabled]="isUnchanged || user.moneys < moneysCost">Buy (<app-moneys [amount]="moneysCost" />)</button>
+            <button type="button" (click)="doBuy('recycling')" [class.disabled]="isUnchanged || user.recyclePoints < recyclingCost">Buy (<app-recycling-points [amount]="recyclingCost" />)</button>
+            <a routerLink="/hattier">Never mind...</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</main>

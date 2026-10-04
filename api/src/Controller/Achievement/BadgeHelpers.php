@@ -18,6 +18,7 @@ use App\Entity\UserBadge;
 use App\Entity\UserStats;
 use App\Entity\UserUnlockedFeature;
 use App\Enum\BadgeEnum;
+use App\Enum\UnlockableFeatureEnum;
 use App\Enum\UserStat;
 use App\Functions\InMemoryCache;
 use App\Functions\ItemRepository;
@@ -919,17 +920,17 @@ final class BadgeHelpers
                 break;
 
             case BadgeEnum::BASEMENT_SIZE_2000:
-                $progress = [ 'target' => 2000, 'current' => $user->getBasementSize() ];
+                $progress = [ 'target' => 2000, 'current' => $user->hasUnlockedFeature(UnlockableFeatureEnum::Basement) ? $user->getBasementSize() : 0 ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Worker Bee'), 2);
                 break;
 
             case BadgeEnum::BASEMENT_SIZE_5000:
-                $progress = [ 'target' => 5000, 'current' => $user->getBasementSize() ];
+                $progress = [ 'target' => 5000, 'current' => $user->hasUnlockedFeature(UnlockableFeatureEnum::Basement) ? $user->getBasementSize() : 0 ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Worker Bee'), 5);
                 break;
 
             case BadgeEnum::BASEMENT_SIZE_10000:
-                $progress = [ 'target' => 10000, 'current' => $user->getBasementSize() ];
+                $progress = [ 'target' => 10000, 'current' => $user->hasUnlockedFeature(UnlockableFeatureEnum::Basement) ? $user->getBasementSize() : 0 ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Shiny Baabble'), 1);
                 break;
 
@@ -941,6 +942,26 @@ final class BadgeHelpers
             case BadgeEnum::INFINITY_VAULT_MONEYS_SPENT_9999:
                 $progress = [ 'target' => 9999, 'current' => self::getStatTotal($user, [ UserStat::MoneysSpentOnTheInfinityVault ], $em, $cache) ];
                 $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Tiny Rocketship'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_VICTORIES_10:
+                $progress = [ 'target' => 10, 'current' => self::getStatTotal($user, [ UserStat::WonAStarKindredAdventure ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Handicrafts Supply Box'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_DEMIGOD_VICTORY_1:
+                $progress = [ 'target' => 1, 'current' => self::getStatTotal($user, [ UserStat::WonADemigodStarKindredAdventure ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Ruby Chest'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_RETIRED_1:
+                $progress = [ 'target' => 1, 'current' => self::getStatTotal($user, [ UserStat::RetiredAStarKindredAdventurer ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Gold Chest'), 1);
+                break;
+
+            case BadgeEnum::STAR_KINDRED_RETIRED_10:
+                $progress = [ 'target' => 10, 'current' => self::getStatTotal($user, [ UserStat::RetiredAStarKindredAdventurer ], $em, $cache) ];
+                $reward = TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($em, 'Cup of Life'), 1);
                 break;
 
             default:

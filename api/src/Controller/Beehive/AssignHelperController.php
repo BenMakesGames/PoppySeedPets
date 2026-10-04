@@ -15,6 +15,7 @@ namespace App\Controller\Beehive;
 
 use App\Entity\Pet;
 use App\Enum\SerializationGroupEnum;
+use App\Service\BeehiveService;
 use App\Service\PetAssistantService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,7 +31,7 @@ class AssignHelperController
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
     public function assignHelper(
         Pet $pet, ResponseService $responseService, EntityManagerInterface $em,
-        UserAccessor $userAccessor
+        UserAccessor $userAccessor, BeehiveService $beehiveService
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
@@ -39,8 +40,6 @@ class AssignHelperController
 
         $em->flush();
 
-        $beehive = $user->getBeehive();
-
-        return $responseService->success($beehive, [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
+        return $responseService->success($beehiveService->getResponseData($user), [ SerializationGroupEnum::MY_BEEHIVE, SerializationGroupEnum::HELPER_PET ]);
     }
 }

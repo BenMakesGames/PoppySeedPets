@@ -47,6 +47,20 @@ class BuzzBuzzCommand extends Command
             WHERE workers < 1000000 AND flower_power >= LOG(workers) * 5
         ');
 
+        // a helper pet's bar fills at Honeycomb speed, but only while a helper is assigned
+        // (must run before the goods statements below, which consume the flower power that gates the working bonus)
+        $this->em->getConnection()->executeQuery('
+            UPDATE beehive
+            SET
+                helper_progress = helper_progress + LOG(workers) * 2
+            WHERE helper_id IS NOT NULL;
+
+            UPDATE beehive
+            SET
+                helper_progress = helper_progress + LOG(workers) * 3
+            WHERE helper_id IS NOT NULL AND flower_power >= LOG(workers);
+        ');
+
         // create goods; consume flower power to create goods FASTER
         $this->em->getConnection()->executeQuery('
             UPDATE beehive

@@ -76,7 +76,7 @@ export class ZoologistComponent implements OnDestroy, OnInit {
     this.router.navigate([ '/zoologist' ], { queryParams: { page: 0, ...this.params }});
   }
 
-  doReplaceEntry(speciesId: number)
+  doReplaceEntry(speciesId: string)
   {
     SelectPetDialog.open(this.matDialog, { speciesId: speciesId }).afterClosed().subscribe({
       next: pet => {
@@ -122,7 +122,7 @@ export class ZoologistComponent implements OnDestroy, OnInit {
 interface Specimen
 {
   species: {
-    id: number,
+    id: string,
     image: string,
     name: string,
     family: string,

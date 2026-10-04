@@ -23,6 +23,7 @@ use App\Exceptions\PSPPetNotFoundException;
 use App\Functions\DragonHelpers;
 use App\Functions\DragonRepository;
 use App\Functions\PetRepository;
+use App\Model\ExtraItemTiers;
 use Doctrine\ORM\EntityManagerInterface;
 
 class PetAssistantService
@@ -144,7 +145,12 @@ class PetAssistantService
         if($pet->getLocation() == PetLocationEnum::BEEHIVE)
         {
             if($user->getBeehive())
-                $user->getBeehive()->setHelper(null);
+            {
+                $user->getBeehive()
+                    ->setHelper(null)
+                    ->setHelperProgress(0)
+                ;
+            }
         }
         else if($pet->getLocation() == PetLocationEnum::GREENHOUSE)
         {
@@ -172,6 +178,11 @@ class PetAssistantService
             $pet->setLocation(PetLocationEnum::DAYCARE);
         else
             $pet->setLocation(PetLocationEnum::HOME);
+    }
+
+    public static function getExtraItemFromTiers(IRandom $rng, int $totalSkill, ExtraItemTiers $tiers): string
+    {
+        return self::getExtraItem($rng, $totalSkill, $tiers->base, $tiers->medium, $tiers->high, $tiers->superHigh);
     }
 
     /**

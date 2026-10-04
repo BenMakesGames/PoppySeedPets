@@ -20,7 +20,7 @@ import {
 } from '@angular/core';
 import {fromEvent, Observable, Subscription} from "rxjs";
 import {ApiService} from "../../service/api.service";
-import {concat, debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
 import {ApiResponseModel} from "../../../../model/api-response.model";
 import { LoadingThrobberComponent } from "../loading-throbber/loading-throbber.component";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
@@ -40,8 +40,8 @@ import { FormsModule } from "@angular/forms";
 export class FindPetSpeciesByNameComponent implements OnInit, OnChanges {
 
   @Input() label: string = 'Species';
-  @Input() value: number|null = null;
-  @Output() valueChange = new EventEmitter<number|null>();
+  @Input() value: string|null = null;
+  @Output() valueChange = new EventEmitter<string|null>();
 
   @ViewChild('search', { 'static': true }) search: ElementRef;
 
@@ -61,7 +61,6 @@ export class FindPetSpeciesByNameComponent implements OnInit, OnChanges {
         filter((e: KeyboardEvent) => e.keyCode !== 13),
         map((e: any) => e.target.value),
         debounceTime(400),
-        concat(),
         distinctUntilChanged(),
         filter(q => q.length > 0),
         switchMap(q => this.suggest(q))
@@ -138,7 +137,7 @@ export class FindPetSpeciesByNameComponent implements OnInit, OnChanges {
 
 export interface PetSpeciesTypeaheadModel
 {
-  id: number;
+  id: string;
   name: string;
   image: string;
 }

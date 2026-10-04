@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 ## Project Overview
 
 Poppy Seed Pets is a browser-based pet adoption and activity simulation game (poppyseedpets.com). Monorepo with two independent apps:
@@ -7,29 +5,31 @@ Poppy Seed Pets is a browser-based pet adoption and activity simulation game (po
 - **`api/`** — Symfony 7.3 (PHP 8.4) backend with MySQL + Redis
 - **`webapp/`** — Angular 20 frontend (TypeScript, SCSS, Angular Material)
 
+**Path roots (avoid common mistake)**: `docs/`, `docs/tickets/`, `db/`, `proprietary-assets/` all live at the **repo root**. Code lives in `api/` or `webapp/`. If you `cd api` to run `composer`/`phpstan`, remember that Bash & PowerShell cwd persists across calls.
+
 ## Common Commands
 
 - **API lint**: `composer run php-cs-fixer-dry-run` / `composer run php-cs-fixer` (in `api/`)
-- **API static analysis**: `vendor/bin/phpstan --configuration=phpstan.dist.neon` (in `api/`)
-- **Cron (manual)**: `vendor/bin/crunz schedule:run` (in `api/`)
+- **API static analysis**: `php vendor/bin/phpstan` (in `api/`)
+- **Cron (manual)**: `php vendor/bin/crunz schedule:run` (in `api/`)
 - **Storybook**: `ng run PoppySeedPetsApp:storybook` (in `webapp/`)
-- **Quick start**: `install.bat` / `run.bat` from repo root
 
 ## Architecture Decisions & Patterns
 
 * [docs/architecture/Departures from Symfony Standard.md](docs/architecture/Departures from Symfony Standard.md)
 * [docs/architecture/Project Patterns.md](docs/architecture/Project Patterns.md)
 
+We value:
+
+* Null safety, data integrity, & exhaustiveness through defensive programming
+* Creating ergonomic APIs with pits of success
+* The principle of least surprise
+* YAGNI & KISS
+
 ## Feature References
 
 * [docs/features/merits.md](docs/features/merits.md) — every pet merit (trait), what it does, how it's acquired, and the conventions for each
 * [docs/features/satyr-dice.md](docs/features/satyr-dice.md) — satyr dice mechanic
-
-## Cron Jobs (api/tasks/AllTasks.php)
-
-- **Every minute**: `app:increase-time` (pet activity time), `app:run-park-events`
-- **Hourly**: `app:buzz-buzz` (beehive production)
-- **Daily**: `app:calculate-daily-market-item-averages`, `app:calculate-daily-stats`
 
 ## Frontend Notes
 

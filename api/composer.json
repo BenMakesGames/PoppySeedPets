@@ -16,7 +16,7 @@
         "doctrine/doctrine-bundle": "^3.0",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.0",
-        "guzzlehttp/guzzle": "7.8",
+        "guzzlehttp/guzzle": "^7.8",
         "nelmio/api-doc-bundle": "^5.0",
         "nelmio/cors-bundle": "^2.1",
         "oro/doctrine-extensions": "^3.0",

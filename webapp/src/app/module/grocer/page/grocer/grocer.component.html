@@ -20,6 +20,10 @@
       {
         <p>Welcome to the Grocer.</p>
         <p>Today at the hot bar, we have {{ hotBarItems.listNice() }}.</p>
+        @if(isPerseids)
+        {
+          <p>Oh: and since it's almost always raining here during the Perseid meteor shower, I thought "if we can't watch it, let's at least <em>bake</em> it!" And so: Frosted Medusa Head Crackers! Because Perseus slays Medusa, and who wants a boring star shape when you can have a Medusa head shape!</p>
+        }
         @if(grocerData.maxRemainingToday >= grocerData.maxPerDay)
         {
           <p>To ensure there's enough stock for everyone, please limit yourself to {{ grocerData.maxPerDay }} items per day.</p>

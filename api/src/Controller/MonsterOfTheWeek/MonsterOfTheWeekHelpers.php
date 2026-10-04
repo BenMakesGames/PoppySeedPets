@@ -266,7 +266,7 @@ final class MonsterOfTheWeekHelpers
         {
             $effects = $item->getTool();
 
-            $points = max($points, $effects->getScience() + ($effects->getFocusSkill() == PetSkillEnum::Science ? 2 : 0) + ($effects->getPreventsBugs() ? 1 : 0));
+            $points = max($points, $effects->getScience() + ($effects->getFocusSkill() == PetSkillEnum::Science ? 2 : 0) + ($effects->getPreventsBugs() ? 1 : 0) + $effects->getHacking() + $effects->getElectronics());
         }
 
         if($item->getEnchants() && $item->getEnchants()->getEffects())

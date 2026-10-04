@@ -61,6 +61,7 @@ class UmbraService implements IPetActivity
         private readonly HattierService $hattierService,
         private readonly EntityManagerInterface $em,
         private readonly LeonidsService $leonidsService,
+        private readonly PerseidsService $perseidsService,
         private readonly Clock $clock
     )
     {
@@ -117,6 +118,10 @@ class UmbraService implements IPetActivity
         if(CalendarFunctions::isLeonidPeakOrAdjacent($this->clock->now) && $this->rng->rngNextInt(1, 4) === 1)
         {
             $activityLog = $this->leonidsService->adventure($petWithSkills);
+        }
+        else if(CalendarFunctions::isPerseidPeakOrAdjacent($this->clock->now) && $this->rng->rngNextInt(1, 4) === 1)
+        {
+            $activityLog = $this->perseidsService->adventure($petWithSkills);
         }
         else
         {
@@ -339,7 +344,8 @@ class UmbraService implements IPetActivity
         $pet = $petWithSkills->getPet();
 
         $hasEideticMemory = $pet->hasMerit(MeritEnum::EIDETIC_MEMORY);
-        $hasRelevantSpirit = $pet->getSpiritCompanion()?->getStar() === SpiritCompanionStarEnum::Altair;
+        $spiritCompanion = $pet->getSpiritCompanion();
+        $hasRelevantSpirit = $spiritCompanion !== null && $spiritCompanion->getStar() === SpiritCompanionStarEnum::Altair;
 
         $roll = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getArcana()->getTotal() + $petWithSkills->getUmbraBonus()->getTotal());
 
@@ -358,15 +364,11 @@ class UmbraService implements IPetActivity
 
         if($hasEideticMemory || $hasRelevantSpirit)
         {
-            if($hasEideticMemory && !($hasRelevantSpirit && $this->rng->rngNextBool()))
-            {
-                $messageDetail = ActivityHelpers::PetName($pet) . ' had already memorized the lay of the land, and after calming the three down pointed the way.';
-                $useSpirit = false;
-            }
-            else {
-                $messageDetail = ActivityHelpers::PetName($pet) . ' and ' . $pet->getSpiritCompanion()->getName() . ' were able to calm them down and point the way.';
-                $useSpirit = true;
-            }
+            $useSpirit = $spiritCompanion !== null && $hasRelevantSpirit && (!$hasEideticMemory || $this->rng->rngNextBool());
+
+            $messageDetail = $useSpirit
+                ? ActivityHelpers::PetName($pet) . ' and ' . $spiritCompanion->getName() . ' were able to calm them down and point the way.'
+                : ActivityHelpers::PetName($pet) . ' had already memorized the lay of the land, and after calming the three down pointed the way.';
 
             $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, '%pet:' . $pet->getId() . '.name% met a swan, fish, and crab in the Umbra. They were arguing over which way to pull a cart, and getting nowhere. ' . $messageDetail . ' The three were very thankful, and insisted that ' . ActivityHelpers::PetName($pet) . ' take ' . $rewards[$reward] . ' ' . $reward . '.')
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'The Umbra' ]))
@@ -1010,9 +1012,10 @@ class UmbraService implements IPetActivity
 
         $roll = $this->rng->rngNextInt(1, $skill);
 
-        $isRanged = $pet->getTool() && $pet->getTool()->rangedOnly() && $pet->getTool()->brawlBonus() > 0;
+        $tool = $pet->getTool();
+        $isRanged = $tool !== null && $tool->rangedOnly() && $tool->brawlBonus() > 0;
 
-        $defeated = $isRanged ? 'drew their ' . $pet->getTool()->getItem()->getName() . ' faster' : 'pounced on it before it could fire';
+        $defeated = $isRanged ? 'drew their ' . $tool->getItem()->getName() . ' faster' : 'pounced on it before it could fire';
 
         $this->fieldGuideService->maybeUnlock($pet->getOwner(), 'Abandondero', ActivityHelpers::PetName($pet) . ' encountered an Abandondero in the Umbra!');
 

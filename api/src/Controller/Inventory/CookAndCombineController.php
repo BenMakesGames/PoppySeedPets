@@ -126,6 +126,32 @@ class CookAndCombineController
             }
         }
 
+        $bulkSpicingPlan = InventoryModifierFunctions::planBulkSpicing($inventory);
+
+        if($bulkSpicingPlan !== null)
+        {
+            foreach($bulkSpicingPlan->pairs as [$food, $spice])
+                InventoryModifierFunctions::spiceUp($em, $food, $spice);
+
+            $seasoned =
+                self::listNiceItemQuantities(array_column($bulkSpicingPlan->pairs, 0)) .
+                ' are now seasoned: ' .
+                self::listNiceItemQuantities(array_column($bulkSpicingPlan->pairs, 1));
+
+            if(count($bulkSpicingPlan->leftoverFoods) > 0)
+                $responseService->addFlashMessage($seasoned . ' - but there wasn\'t enough for the last ' . self::listNiceItemQuantities($bulkSpicingPlan->leftoverFoods) . ' so they\'re plain for now.');
+            else if(count($bulkSpicingPlan->leftoverSpices) > 0)
+                $responseService->addFlashMessage($seasoned . '! You have ' . self::listNiceItemQuantities($bulkSpicingPlan->leftoverSpices) . ' leftover.');
+            else
+                $responseService->addFlashMessage($seasoned . '! Batch-prepping FTW!');
+
+            $em->flush();
+
+            $responseService->setReloadInventory();
+
+            return $responseService->success(array_column($bulkSpicingPlan->pairs, 0), [ SerializationGroupEnum::MY_INVENTORY ]);
+        }
+
         $results = $cookingService->prepareRecipeByHand($user, $user, $inventory);
 
         // do this before checking if anything was made
@@ -154,5 +180,13 @@ class CookAndCombineController
         $responseService->addFlashMessage('You prepared ' . ArrayFunctions::list_nice_quantities($qList) . $exclaim);
 
         return $responseService->success($results->inventory, [ SerializationGroupEnum::MY_INVENTORY ]);
+    }
+
+    /**
+     * @param Inventory[] $inventory
+     */
+    private static function listNiceItemQuantities(array $inventory): string
+    {
+        return ArrayFunctions::list_nice_quantities(array_count_values(array_map(fn(Inventory $i) => $i->getItem()->getName(), $inventory)));
     }
 }

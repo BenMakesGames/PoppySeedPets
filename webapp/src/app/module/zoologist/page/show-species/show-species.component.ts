@@ -102,5 +102,5 @@ interface Pet
   name: string;
   colorA: string;
   colorB: string;
-  species: { id: number, name: string, image: string };
+  species: { id: string, name: string, image: string };
 }

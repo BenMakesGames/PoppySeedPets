@@ -18,6 +18,7 @@ use App\Entity\User;
 use App\Exceptions\PSPHoursMustBeRun;
 use App\Service\HouseService;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -38,7 +39,8 @@ class ControllerActionSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly Security $security,
         private readonly HouseService $houseService,
-        private readonly RateLimiterFactoryInterface $pspDefaultLimiter
+        private readonly RateLimiterFactoryInterface $pspDefaultLimiter,
+        private readonly ParameterBagInterface $parameterBag
     )
     {
     }
@@ -111,5 +113,13 @@ class ControllerActionSubscriber implements EventSubscriberInterface
     public function finalizeResponse(ResponseEvent $event): void
     {
         $event->getResponse()->headers->set('X-Powered-By', 'PSYC-101');
+
+        // changes on every deploy (cache:clear rebuilds the container); the webapp watches it to learn it is out of date
+        $buildId = $this->parameterBag->get('container.build_id');
+
+        if(!is_string($buildId))
+            throw new \LogicException('container.build_id should be a string.');
+
+        $event->getResponse()->headers->set('X-PSP-Build', $buildId);
     }
 }

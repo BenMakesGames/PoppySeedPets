@@ -8,3 +8,6 @@ CLAUDE.local.md
 
 # Per-dev docker-compose port overrides (see .env.example)
 /.env
+
+bin/
+obj/

@@ -565,5 +565,20 @@ class Music
 
         // Still Alive, by Solar Fields
         'I\'ve learned to looose, I\'ve learned to wiiin, I turn my faaace against the wiiind...',
+
+        // Faces, by Clio
+        'Fa-a-ces. You see a lot of people got two fa-a-ces. You must give your mind to all the fa-a-ces...',
+
+        // Stop, by B.W.H.
+        '[indistinct] peeeopleeee[?]. [indistinct] thinkin\' aboooout me. Driving [indistinct] wiiiith yooou. I [indistinct] Blackway through the ni-ight - stop [indistinct]!',
+
+        // Lemonade, by aespa
+        'I\'ma stand all on my own. 어디라도 now I can go. 새롭게 open the door. I need more-- lemonaaaaaaaaaaade!',
+        
+        // In the Waiting Line, by Zero 7 & Sophie Barker
+        'Do you belieeeve... in what you see... motionless wheeeel... nothing is reeeal...',
+        
+        // Nothing Burns Like the Cold, by Snoh Aalegra
+        'Nothin\' burns like the cold, ayy... ayy... (they say nothin\' burns like the cooollld...)'
     ];
 }

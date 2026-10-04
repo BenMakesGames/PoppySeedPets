@@ -1,0 +1,120 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main>
+  <h2><a routerLink="/library">Library</a> » ★Kindred <app-help-link link="starKindred" /></h2>
+  @if(!status)
+  {
+    <app-loading-throbber />
+  }
+  @else
+  {
+    <h3>Today's Adventures</h3>
+    @let play = status.todaysPlay;
+    @if(play)
+    {
+      <p class="played">Your pets have already played ★Kindred today. Come back tomorrow for new adventures!</p>
+    }
+    <div class="adventures">
+      @for(adventure of status.adventures; track adventure.id)
+      {
+        @let picked = play?.adventureId === adventure.id;
+        <div class="adventure" [class.not-picked]="play && !picked">
+          <h4>{{ adventure.title }}</h4>
+          <markdown [data]="adventure.summary" />
+          <p class="skills">
+            @for(skill of adventure.skillsTested; track skill)
+            {
+              <span class="skill">{{ skill }}</span>
+            }
+            @if(adventure.hasUndeadEncounters)
+            {
+              <span class="skill"><i class="fa-solid fa-skull" aria-hidden="true"></i> Undead</span>
+            }
+          </p>
+          <ul class="rewards" aria-label="Rewards">
+            @for(reward of adventure.rewards; track reward.difficulty; let i = $index)
+            {
+              <li>
+                @if(reward.item)
+                {
+                  <a [routerLink]="'/poppyopedia/item/' + reward.item.name"><app-star-kindred-reward [reward]="reward" part="icon" /></a>
+                }
+                @else
+                {
+                  <app-star-kindred-reward [reward]="reward" part="icon" />
+                }
+                @if(picked)
+                {
+                  @if(i < play!.rewardsWon)
+                  {
+                    <i class="fa-solid fa-check won" role="img" aria-label="Won"></i>
+                  }
+                  @else
+                  {
+                    <i class="fa-solid fa-xmark lost" role="img" aria-label="Not won"></i>
+                  }
+                }
+              </li>
+            }
+          </ul>
+          @if(!play)
+          {
+            <div class="buttons centered">
+              <button type="button" (click)="doChooseParty(adventure)" [class.disabled]="!hasAdventurers">Choose Party</button>
+            </div>
+          }
+        </div>
+      }
+      @if(hasRetirees)
+      {
+        <div class="adventure retirement" [class.not-picked]="play && play.adventureId !== null">
+          <h4>The Final Adventure</h4>
+          <p>Level {{ status.maxLevel }} adventurers have nothing left to prove. Send up to {{ status.maxPartySize }} of them on one last journey, and retire them into legend.</p>
+          <p><b>Rewards:</b></p>
+          <ul class="retirement-rewards">
+            @for(reward of status.retirementRewards.perAdventurer; track reward.item?.name)
+            {
+              <li><a [routerLink]="'/poppyopedia/item/' + reward.item!.name"><app-star-kindred-reward [reward]="reward" note="(one per adventurer)" /></a></li>
+            }
+            <li><app-star-kindred-reward [reward]="status.retirementRewards.aura" /></li>
+          </ul>
+          @if(!play)
+          {
+            <div class="buttons centered">
+              <button type="button" (click)="doChooseParty(null)">Retire Adventurers</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <h3>Adventurers ({{ status.characters.length }}/{{ status.maxAdventurers }})</h3>
+    @if(status.characters.length === 0)
+    {
+      <p>None of your pets have a ★Kindred character yet! Roll one up to start adventuring.</p>
+    }
+    @else
+    {
+      <ul class="characters">
+        @for(character of status.characters; track character.id)
+        {
+          <li><a [routerLink]="[ '/starKindred/character', character.id ]"><app-character-card [character]="character" /></a></li>
+        }
+      </ul>
+    }
+    @if(status.characters.length < status.maxAdventurers)
+    {
+      <div class="buttons roll-character">
+        <button type="button" (click)="doRollCharacter()">Roll a New Character</button>
+      </div>
+    }
+    <p><a routerLink="/starKindred/retired">Book of Retired Adventurers</a></p>
+  }
+</main>
