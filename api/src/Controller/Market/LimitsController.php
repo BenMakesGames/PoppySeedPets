@@ -18,6 +18,7 @@ use App\Exceptions\PSPInvalidOperationException;
 use App\Exceptions\PSPNotFoundException;
 use App\Functions\ItemRepository;
 use App\Functions\PlayerLogFactory;
+use App\Functions\UserPhoneNumberRepository;
 use App\Service\InventoryService;
 use App\Service\MarketService;
 use App\Service\ResponseService;
@@ -33,13 +34,15 @@ class LimitsController
     #[Route("/limits", methods: ["GET"])]
     #[IsGranted("IS_AUTHENTICATED_FULLY")]
     public function getMarketLimits(ResponseService $responseService, MarketService $marketService,
-        UserAccessor $userAccessor
+        EntityManagerInterface $em, UserAccessor $userAccessor
     ): JsonResponse
     {
         $user = $userAccessor->getUserOrThrow();
 
         return $responseService->success([
             'offeringBulkSellUpgrade' => $marketService->canOfferWingedKey($user),
+            // Argentelle recommends 1-800-CURRIES until the player knows it
+            'knows1800Curries' => UserPhoneNumberRepository::knowsNumber($em, $user, '1-800-CURRIES'),
             'limits' => [
                 'moneysLimit' => $user->getMaxSellPrice(),
                 'itemRequired' => $marketService->getItemToRaiseLimit($user)

@@ -37,6 +37,10 @@
           }
           <li><button type="button" (click)="doIncreaseLimits()">"I was wondering if I could increase my market limits?"</button></li>
           <li><button type="button" (click)="doGetTips()">"Have any tips on how to make a ton of money?"</button></li>
+          @if(suggestCurries)
+          {
+            <li><button type="button" (click)="doAskAboutDelivery()">"Know any good places that deliver around here?"</button></li>
+          }
           @if(canAsk)
           {
             <li><button type="button" (mouseover)="doDontAsk()" (click)="doDontAsk()" (focus)="doDontAsk()">"Oh! You're so--"</button></li>
@@ -70,6 +74,19 @@
       </app-npc-dialog>
       <ul class="dialog-choices" [style.padding-bottom.rem]="dialogChoicesPaddingBottom">
         <li><button type="button" (click)="doNoMoreTips()">"Hm, okay. Thanks."</button></li>
+      </ul>
+    </div>
+  }
+  @else if(state === 'delivery')
+  {
+    <div>
+      <app-npc-dialog npc="market-fairy" name="Argentelle" [smallerImage]="true" [showBorder]="false" [removeNegativeMargins]="true">
+        <p>What?</p>
+        <p>I mean... I do. Not that you can order from them - they don't deliver to the other side of The Hedge. (Sweet glamour, that'd be incredible...)</p>
+        <p>I <em>suppose</em> your "Indian" food might be a top contender for the next best thing, though. <code>1-800-CURRIES</code>, I believe their number was? It's no fae feast, but it'll do in a pinch.</p>
+      </app-npc-dialog>
+      <ul class="dialog-choices" [style.padding-bottom.rem]="dialogChoicesPaddingBottom">
+        <li><button type="button" (click)="doDoneAskingAboutDelivery()">"Thanks! I'll give them a call."</button></li>
       </ul>
     </div>
   }

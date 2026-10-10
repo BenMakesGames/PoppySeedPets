@@ -158,6 +158,7 @@ interface GrocerDataModel {
   inventory: GrocerInventorySerializationGroup[];
   maxPerDay: number;
   maxRemainingToday: number;
+  knows1800Onigiri: boolean;
 }
 
 interface GrocerInventorySerializationGroup extends NPCStoreInventorySerializationGroup

@@ -32,6 +32,7 @@ export class IncreaseLimitsDialog implements OnInit, OnDestroy {
   limits: UserLimitsModel;
   marketLimitsAjax = Subscription.EMPTY;
   suggestBulkSelling = false;
+  suggestCurries = false;
 
   constructor(
     private userData: UserDataService,
@@ -49,6 +50,7 @@ export class IncreaseLimitsDialog implements OnInit, OnDestroy {
       next: r => {
         this.limits = r.data.limits;
         this.suggestBulkSelling = r.data.offeringBulkSellUpgrade;
+        this.suggestCurries = !r.data.knows1800Curries;
         this.dialogText = 'Can I help you with something?';
       }
     })
@@ -60,6 +62,17 @@ export class IncreaseLimitsDialog implements OnInit, OnDestroy {
     localStorage.setItem('tried to ask Market Manager about her size', 'how rude!');
     this.dialogText = 'CAN I help you?';
     this.dialogChoicesPaddingBottom = 1.5;
+  }
+
+  doAskAboutDelivery()
+  {
+    this.state = 'delivery';
+  }
+
+  doDoneAskingAboutDelivery()
+  {
+    this.state = 'intro';
+    this.dialogText = 'Mm-hm.';
   }
 
   doGetTips()
@@ -178,6 +191,7 @@ export class IncreaseLimitsDialog implements OnInit, OnDestroy {
 interface MarketStateResponse
 {
   offeringBulkSellUpgrade: boolean;
+  knows1800Curries: boolean;
   limits: UserLimitsModel;
 }
 

@@ -1,0 +1,52 @@
+<!--
+  ~ This file is part of the Poppy Seed Pets Webapp.
+  ~
+  ~ The Poppy Seed Pets Webapp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+  ~
+  ~ The Poppy Seed Pets Webapp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with The Poppy Seed Pets Webapp. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<main>
+  <h2>Telephone</h2>
+  <div [class.disabled]="calling">
+    <form (submit)="doCall(number)">
+      <label for="number">Number</label>
+      <div class="dial">
+        <input type="text" name="number" id="number" maxlength="40" autocomplete="off" [(ngModel)]="number" />
+        <button type="submit" [class.disabled]="number.trim() === ''">Call</button>
+      </div>
+    </form>
+
+    @if(knownNumbers === null)
+    {
+      <app-loading-throbber />
+    }
+    @else if(knownNumbers.length > 0)
+    {
+      <h3>Known Numbers</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th class="cost">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for(knownNumber of knownNumbers; track knownNumber.label)
+          {
+            <tr>
+              <td><button type="button" class="link-text" (click)="doCall(knownNumber.label)">{{ knownNumber.label }}</button></td>
+              <td class="cost"><app-moneys [amount]="knownNumber.cost" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    @if(calling)
+    {
+      <app-loading-throbber text="Ring... ring..." />
+    }
+  </div>
+</main>

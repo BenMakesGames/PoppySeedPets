@@ -229,6 +229,7 @@ export class InventoryDetailsDialog implements OnInit {
         case 'magicCrystalBall':
         case 'smilingWand':
         case 'resonatingBow':
+        case 'telephone':
           this.router.navigate([ 'home/' + link + '/' + this.inventory.id ]);
           break;
 
