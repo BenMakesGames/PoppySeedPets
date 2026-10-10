@@ -36,6 +36,7 @@ import { DragonTongueComponent } from "./page/dragon-tongue/dragon-tongue.compon
 import { MagicCrystalBallComponent } from "./page/magic-crystal-ball/magic-crystal-ball.component";
 import { SmilingWandComponent } from "./page/smiling-wand/smiling-wand.component";
 import { ResonatingBowComponent } from "./page/resonating-bow/resonating-bow.component";
+import { TelephoneComponent } from "./page/telephone/telephone.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -65,6 +66,7 @@ const routes: Routes = [
   { path: 'magicCrystalBall/:id', component: MagicCrystalBallComponent },
   { path: 'smilingWand/:id', component: SmilingWandComponent },
   { path: 'resonatingBow/:id', component: ResonatingBowComponent },
+  { path: 'telephone/:id', component: TelephoneComponent },
 ];
 
 @NgModule({

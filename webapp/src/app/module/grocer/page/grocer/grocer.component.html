@@ -51,6 +51,10 @@
         <p>I'm trying to remember if there was anything else...</p>
         <p>Anyway, if you're new to the island, Recycling Points are probably easier to come by than Moneys. Don't be afraid to recycle things you don't need!</p>
       }
+      @else if(dialogStep == 'askAboutDelivery')
+      {
+        <p>There's a place that does sushi and onigiri and stuff... I haven't checked if they deliver, but you can try calling them. Their number is <code>1-800-ONIGIRI</code>. I always remember their number because... it's so easy to remember!</p>
+      }
     </app-npc-dialog>
     <ul class="dialog-choices">
       @if(dialogStep == 'shopping')
@@ -71,6 +75,10 @@
       @if(user.recyclePoints == 0 && dialogStep !== 'askAboutRecycling')
       {
         <li><button type="button" (click)="dialogStep = 'askAboutRecycling'">How do I get... <i class="recycle" title="recycling points" role="img"></i>? (What are <i class="recycle" title="recycling points" role="img"></i>, anyway?)</button></li>
+      }
+      @if(!grocerData.knows1800Onigiri && dialogStep !== 'askAboutDelivery')
+      {
+        <li><button type="button" (click)="dialogStep = 'askAboutDelivery'">"Know any good places that deliver around here?"</button></li>
       }
       @if(dialogStep !== 'shopping')
       {

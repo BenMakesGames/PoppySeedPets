@@ -68,6 +68,8 @@ import { ChanceOfChangesLovePipe } from "./pipe/chance-of-chang-e-s-love.pipe";
 import { SummaryLocationComponent } from "./component/summary-location/summary-location.component";
 import { InteractWithPetDialog } from "./dialog/interact-with-pet/interact-with-pet.dialog";
 import { ResonatingBowComponent } from "./page/resonating-bow/resonating-bow.component";
+import { TelephoneComponent } from "./page/telephone/telephone.component";
+import { MoneysComponent } from "../shared/component/moneys/moneys.component";
 
 @NgModule({
   declarations: [
@@ -98,6 +100,7 @@ import { ResonatingBowComponent } from "./page/resonating-bow/resonating-bow.com
     MagicCrystalBallComponent,
     SmilingWandComponent,
     ResonatingBowComponent,
+    TelephoneComponent,
   ],
   imports: [
     CommonModule,
@@ -133,6 +136,7 @@ import { ResonatingBowComponent } from "./page/resonating-bow/resonating-bow.com
     ChanceOfChangesLovePipe,
     SummaryLocationComponent,
     InteractWithPetDialog,
+    MoneysComponent,
   ]
 })
 export class HomeModule { }

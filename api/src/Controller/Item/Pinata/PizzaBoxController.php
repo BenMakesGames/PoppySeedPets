@@ -75,7 +75,9 @@ class PizzaBoxController
         }
 
 
-        return BoxHelpers::countRemoveFlushAndRespond('You open the box, finding', $userStatsRepository, $user, $inventory, $newInventory, $responseService, $em);
+        BoxHelpers::countRemoveAndFlush($userStatsRepository, $user, $inventory, $responseService, $em);
+
+        return BoxHelpers::createResponse($responseService, $newInventory, 'You open the box, finding', "\n\nThere's a phone number written inside: 1-800-PIZZA.");
     }
 
 }

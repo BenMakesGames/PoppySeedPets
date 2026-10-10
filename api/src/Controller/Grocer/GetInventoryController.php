@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Grocer;
 
+use App\Functions\UserPhoneNumberRepository;
 use App\Functions\UserQuestRepository;
 use App\Service\GrocerService;
 use App\Service\ResponseService;
@@ -47,6 +48,8 @@ class GetInventoryController
             'inventory' => $grocerService->getInventory(),
             'maxPerDay' => GrocerService::MaxCanPurchasePerDay,
             'maxRemainingToday' => $maxCanPurchase,
+            // Bells recommends 1-800-ONIGIRI until the player knows it
+            'knows1800Onigiri' => UserPhoneNumberRepository::knowsNumber($em, $user, '1-800-ONIGIRI'),
         ]);
     }
 }
