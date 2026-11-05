@@ -19,7 +19,8 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="local:EntryRow">
               <DockPanel Margin="0,0,0,6">
-                <Button DockPanel.Dock="Right" Content="✕" VerticalAlignment="Top" Margin="6,0,0,0" ToolTip.Tip="Delete line" />
+                <!-- Not focusable, or pressing it could finish an edit, sort the list, and move what it's about to delete. -->
+                <Button DockPanel.Dock="Right" Content="✕" VerticalAlignment="Top" Margin="6,0,0,0" ToolTip.Tip="Delete line" Focusable="False" />
                 <TextBox Text="{Binding Text}" TextWrapping="Wrap" />
               </DockPanel>
             </DataTemplate>
@@ -29,7 +30,7 @@
 
       <DockPanel Grid.Row="4">
         <Button x:Name="AddButton" DockPanel.Dock="Left" Content="Add line" />
-        <TextBlock Text="Enter adds a line below" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="12,0,0,0" Opacity="0.7" />
+        <TextBlock x:Name="Hint" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="12,0,0,0" Opacity="0.7" />
         <TextBlock x:Name="Summary" VerticalAlignment="Center" HorizontalAlignment="Right" Opacity="0.7" />
       </DockPanel>
     </Grid>

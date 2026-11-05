@@ -8,7 +8,7 @@ Avalonia desktop app for editing Poppy Seed Pets' game data in place, in the rep
 ## Adding a section
 
 A section is an `ISection`: one line in `Program.CreateSections`. More of a const that's already understood? Just the
-line (`GroupedStringsView` or `StringListView`: a title, file and const name). A new shape of PHP data? Add an `IPhpCodec<T>` in `Php/`
+line (`GroupedStringsView` or `StringListView`: a title, file and const name; `alphabetical: true` keeps a list sorted). A new shape of PHP data? Add an `IPhpCodec<T>` in `Php/`
 and a view in `Sections/`, using `ListPicker` for a filterable list, and hold the data in a `PhpDocument<T>`, which does undo, dirty tracking, saving and noticing
 outside changes.
 

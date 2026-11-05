@@ -4,6 +4,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using PoppySeedPets.Editor.Php;
 using PoppySeedPets.Editor.Sections.StringList;
 
 namespace PoppySeedPets.Editor.Tests;
@@ -247,5 +248,138 @@ public sealed class StringListViewTests : IDisposable
         Ui.Render();
 
         Assert.True(view.Scroller.Offset.Y > 0);
+    }
+
+    private (MainWindow Window, StringListView View) OpenAlphabetical()
+    {
+        var view = new StringListView("Names", _file.Path, "Names", alphabetical: true);
+        var window = new MainWindow([view]);
+        window.Show();
+        Ui.Settle();
+        return (window, view);
+    }
+
+    [AvaloniaFact]
+    public void AnAlphabeticalEntryDoesntMoveWhileBeingTyped()
+    {
+        var (_, view) = OpenAlphabetical();
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.Text = "Zed";
+        Assert.Equal(["Zed", "Bob", "Cy"], VisibleLines(view));
+    }
+
+    [AvaloniaFact]
+    public void EnterMovesAnAlphabeticalEntryToItsPlace()
+    {
+        var (window, view) = OpenAlphabetical();
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.Text = "Zed";
+
+        window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Ui.Settle();
+
+        Assert.Equal(["Bob", "Cy", "Zed"], VisibleLines(view));
+    }
+
+    [AvaloniaFact]
+    public void LeavingABoxMovesAnAlphabeticalEntryToItsPlace()
+    {
+        var (_, view) = OpenAlphabetical();
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.Text = "Zed";
+
+        view.FilterBox.Focus();
+        Ui.Settle();
+
+        Assert.Equal(["Bob", "Cy", "Zed"], VisibleLines(view));
+    }
+
+    [AvaloniaFact]
+    public void SavingWhileStillInABoxSavesInOrder()
+    {
+        var (window, view) = OpenAlphabetical();
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.Text = "Zed";
+
+        Press(window, PhysicalKey.S);
+        Ui.Settle();
+
+        Assert.False(view.Document.IsDirty);
+        Assert.Equal(["Bob", "Cy", "Zed"], new StringListCodec("Names").Read(_file.Text));
+    }
+
+    [AvaloniaFact]
+    public void UndoTakesBackTheEditAndTheMoveTogether()
+    {
+        var (window, view) = OpenAlphabetical();
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.CaretIndex = 0;
+        window.KeyTextInput("Z");
+        window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Ui.Settle();
+        Assert.Equal(["Bob", "Cy", "ZAnn"], VisibleLines(view));
+
+        Press(window, PhysicalKey.Z);
+
+        Assert.Equal(["Ann", "Bob", "Cy"], VisibleLines(view));
+        Assert.False(view.Document.IsDirty);
+    }
+
+    [AvaloniaFact]
+    public void ANewAlphabeticalLineWaitsAtTheBottomUntilItsFilledIn()
+    {
+        var (window, view) = OpenAlphabetical();
+        Click(view.AddButton);
+        Assert.Equal(["Ann", "Bob", "Cy", ""], VisibleLines(view));
+
+        view.FilterBox.Focus();
+        Ui.Settle();
+        Assert.Equal(["Ann", "Bob", "Cy", ""], VisibleLines(view));
+
+        Row(view, 3).Box.Focus();
+        Row(view, 3).Box.Text = "Abe";
+        window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Ui.Settle();
+        Assert.Equal(["Abe", "Ann", "Bob", "Cy"], VisibleLines(view));
+    }
+
+    [AvaloniaFact]
+    public void AnEntryMovingKeepsAFilterAccurate()
+    {
+        var (window, view) = OpenAlphabetical();
+        view.FilterBox.Text = "Ann";
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.Text = "Zann";
+        window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        Ui.Settle();
+
+        Assert.Equal(["Zann"], VisibleLines(view));
+    }
+
+    [AvaloniaFact]
+    public void PressingDeleteCantFinishAnEdit()
+    {
+        var (_, view) = OpenAlphabetical();
+        Assert.False(Row(view, 0).DeleteButton.Focusable);
+    }
+
+    [AvaloniaFact]
+    public void AListThatIsntAlphabeticalIsLeftAlone()
+    {
+        var (window, view) = Open();
+        var box = Row(view, 0).Box;
+        box.Focus();
+        box.Text = "Zed";
+
+        Press(window, PhysicalKey.S);
+        Ui.Settle();
+
+        Assert.Equal(Text.Replace("'Ann'", "'Zed'"), _file.Text);
     }
 }

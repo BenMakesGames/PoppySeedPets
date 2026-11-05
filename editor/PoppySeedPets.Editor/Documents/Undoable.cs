@@ -25,6 +25,19 @@ public sealed class Undoable<T>(T value, IEqualityComparer<T> comparer)
         return true;
     }
 
+    /// <summary>A change that goes with the last one: undoing undoes both, if that was part of a merged run.</summary>
+    /// <returns>Whether the value changed.</returns>
+    public bool Amend(T after)
+    {
+        if (comparer.Equals(after, Value)) return false;
+
+        if (_lastMergeKey is null) _undo.Push(Value);
+
+        Value = after;
+        _lastMergeKey = null;
+        return true;
+    }
+
     /// <returns>Whether there was anything to undo.</returns>
     public bool Undo()
     {

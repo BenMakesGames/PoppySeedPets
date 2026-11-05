@@ -34,7 +34,8 @@ public interface ISectionDocument
 
 /// <summary>Some data from a PHP file, being edited.</summary>
 /// <typeparam name="T">Immutable.</typeparam>
-public sealed class PhpDocument<T>(string path, IPhpCodec<T> codec, IEqualityComparer<T> comparer) : ISectionDocument where T : class
+/// <param name="normalize">Puts a value in the form it must be saved in, e.g. sorted. Runs on every save, and on <see cref="Normalize"/>.</param>
+public sealed class PhpDocument<T>(string path, IPhpCodec<T> codec, IEqualityComparer<T> comparer, Func<T, T>? normalize = null) : ISectionDocument where T : class
 {
     // Strict, so a file that isn't valid UTF-8 is refused rather than saved with replacement characters.
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
@@ -79,9 +80,18 @@ public sealed class PhpDocument<T>(string path, IPhpCodec<T> codec, IEqualityCom
         if (_content?.Undo() == true) Changed?.Invoke();
     }
 
+    /// <summary>Applies the normalization now: for when the user's finished an edit, rather than mid-word.</summary>
+    public void Normalize()
+    {
+        if (_content is { } content && normalize is not null && content.Amend(normalize(content.Value))) Changed?.Invoke();
+    }
+
     public string? Save()
     {
         if (_content is not { IsDirty: true } content) return null;
+
+        Normalize();
+
         if (codec.Problem(content.Value) is { } problem) return problem;
 
         try

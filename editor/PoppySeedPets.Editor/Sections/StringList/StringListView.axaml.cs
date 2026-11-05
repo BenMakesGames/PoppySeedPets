@@ -46,12 +46,20 @@ public sealed partial class StringListView : UserControl, ISection
     // For the XAML designer.
     public StringListView() : this("Preview", "", "Preview") { }
 
-    public StringListView(string title, string path, string constName)
+    /// <param name="title">The section's name.</param>
+    /// <param name="path">The PHP file.</param>
+    /// <param name="constName">The const.</param>
+    /// <param name="alphabetical">
+    /// Keeps the list sorted: an entry moves to its place once it's finished with, never while it's being typed, and
+    /// Enter finishes it. Otherwise, the list's order is the user's, and Enter adds a line below.
+    /// </param>
+    public StringListView(string title, string path, string constName, bool alphabetical = false)
     {
         InitializeComponent();
 
         Title = title;
-        _document = new(path, new StringListCodec(constName), ItemsComparer<string>.Instance);
+        _document = new(path, new StringListCodec(constName), ItemsComparer<string>.Instance, alphabetical ? Alphabetical.Sorted : null);
+        Hint.Text = alphabetical ? "Kept in alphabetical order" : "Enter adds a line below";
 
         Lines.ItemsSource = Visible;
 
@@ -72,8 +80,11 @@ public sealed partial class StringListView : UserControl, ISection
         {
             if (e.Key != Key.Enter || e.Source is not Control { DataContext: EntryRow row }) return;
             e.Handled = true;
-            InsertLine(row.Index + 1);
+            if (alphabetical) _document.Normalize();
+            else InsertLine(row.Index + 1);
         });
+
+        if (alphabetical) Lines.AddHandler(LostFocusEvent, (_, _) => _document.Normalize());
     }
 
     public string Title { get; }
@@ -118,7 +129,9 @@ public sealed partial class StringListView : UserControl, ISection
 
         var strings = _document.Value ?? [];
         var changed = ListDifference.First(_shown, strings);
-        var (countChanged, removed) = (strings.Count != _shown.Count, strings.Count < _shown.Count);
+        var previous = _shown;
+        var removed = strings.Count < previous.Count;
+        var moved = strings.Count != previous.Count || strings.Zip(previous).Count(pair => pair.First != pair.Second) > 1;
         _shown = strings;
 
         Summary.Text = $"{strings.Count} entries";
@@ -128,11 +141,24 @@ public sealed partial class StringListView : UserControl, ISection
 
         foreach (var (line, row) in _rows.Index()) row.Text = strings[line];
 
-        // Edits don't re-filter, or an entry could vanish from the list mid-word.
-        if (countChanged) ApplyFilter();
+        // Editing an entry doesn't re-filter, or it could vanish from the list mid-word.
+        if (moved) ApplyFilter();
 
         // Not after removing: what's now there isn't what changed, and is no reason to drop a filter.
-        if (changed is { } first && first < strings.Count && !removed) Reveal(_rows[first]);
+        if (changed is { } first && first < strings.Count && !removed) Reveal(_rows[Target(previous, strings, first)]);
+    }
+
+    /// <summary>
+    /// Where what changed ended up, given where the lists first differ. That's the same place, unless an entry moved
+    /// down the list, in which case the first difference is just what used to come after it.
+    /// </summary>
+    private static int Target(IReadOnlyList<string> before, IReadOnlyList<string> after, int first)
+    {
+        if (before.Count != after.Count) return first;
+
+        var last = after.Count - 1;
+        while (before[last] == after[last]) last--;
+        return before[first] == after[last] ? last : first;
     }
 
     private void ApplyFilter()
