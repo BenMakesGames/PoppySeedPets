@@ -88,7 +88,7 @@ public sealed class GroupedStringsCodecTests
         var text = File.ReadAllText(Repo.MusicPhp);
         var groups = _codec.Read(text).ToList();
 
-        // Near the end, where the file's stray whitespace is, and on the comma-less last line.
+        // Near the end, where the file's stray whitespace is, and on the last line, whose comma isn't ours to change.
         var last = groups[^1];
         groups[^2] = groups[^2] with { Strings = groups[^2].Strings.SetItem(0, "edited") };
         groups[^1] = last with { Strings = last.Strings.SetItem(0, "also edited") };
@@ -97,7 +97,7 @@ public sealed class GroupedStringsCodecTests
 
         Assert.Equal(4, removed.Length); // the two lines, and the comment and blank line between them
         Assert.Equal("        'edited',", added[0]);
-        Assert.Equal("        'also edited'", added[^1]);
+        Assert.Equal("        'also edited'" + (removed[^1].EndsWith(',') ? "," : ""), added[^1]);
         Assert.Equal(removed[1..^1], added[1..^1]);
     }
 
@@ -214,10 +214,10 @@ public sealed class GroupedStringsCodecTests
     [Theory]
     [InlineData("'string before a heading'", "needs a // heading")]
     [InlineData("// H\n'a' 'b'", "expected a comma")]
-    [InlineData("// H\n\"double-quoted\"", "only // headings")]
+    [InlineData("// H\n\"double-quoted\"", "only // comments")]
     [InlineData("// H\n'a' . 'b'", "expected a comma")]
-    [InlineData("// H\n/* block */", "only // headings")]
-    [InlineData("# H", "only // headings")]
+    [InlineData("// H\n/* block */", "only // comments")]
+    [InlineData("# H", "only // comments")]
     [InlineData("// H\n'key' => 'value'", "expected a comma")]
     [InlineData("// H\n'a', // trailing note", "line of its own")]
     public void AnythingElseInTheArrayIsRefusedNotDropped(string body, string message)

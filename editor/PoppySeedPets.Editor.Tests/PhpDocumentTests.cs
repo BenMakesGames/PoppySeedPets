@@ -165,7 +165,7 @@ public sealed class PhpDocumentTests : IDisposable
         _file.Text = "<?php const array Lyrics = [ 1 ];";
         _document.Refresh();
         Assert.Null(_document.Value);
-        Assert.Contains("only // headings", _document.LoadError);
+        Assert.Contains("only // comments", _document.LoadError);
 
         _file.Text = Text;
         _document.Refresh();

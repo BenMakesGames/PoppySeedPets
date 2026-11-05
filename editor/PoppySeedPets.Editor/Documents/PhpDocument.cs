@@ -11,6 +11,9 @@ public interface ISectionDocument
 
     bool IsDirty { get; }
 
+    /// <summary>Why the file couldn't be loaded, if it couldn't.</summary>
+    string? LoadError { get; }
+
     /// <summary>The file no longer matches what was loaded or last saved.</summary>
     bool HasOutsideChanges { get; }
 

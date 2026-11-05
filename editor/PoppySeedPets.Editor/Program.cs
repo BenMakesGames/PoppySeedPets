@@ -1,5 +1,6 @@
 using Avalonia;
 using PoppySeedPets.Editor.Sections.GroupedStrings;
+using PoppySeedPets.Editor.Sections.StringList;
 
 namespace PoppySeedPets.Editor;
 
@@ -20,10 +21,30 @@ internal static class Program
 
     public static string RepoRoot => _repoRoot ??= FindRepoRoot();
 
-    public static IReadOnlyList<ISection> CreateSections(string repoRoot) =>
-    [
-        new GroupedStringsView("Lyrics", Path.Combine(repoRoot, "api", "src", "Model", "Music.php"), "Lyrics"),
-    ];
+    public static IReadOnlyList<ISection> CreateSections(string repoRoot)
+    {
+        string Api(string relative) => Path.Combine(repoRoot, "api", "src", relative);
+
+        var band = Api("Service/PetActivity/Group/BandService.php");
+
+        ISection[] sections =
+        [
+            new GroupedStringsView("Lyrics", Api("Model/Music.php"), "Lyrics"),
+            new StringListView("Fortunes", Api("Model/FortuneCookie.php"), "Fortunes"),
+            new StringListView("Dream locations", Api("Service/PetActivity/DreamingService.php"), "Locations"),
+            new GroupedStringsView("Trader names", Api("Service/TraderService.php"), "TraderNames"),
+            new StringListView("Pet names", Api("Model/PetShelterPet.php"), "PetNames"),
+            new StringListView("Bee queen names", Api("Service/BeehiveService.php"), "QueenNames"),
+            new StringListView("Fairy names", Api("Controller/Item/Blueprint/HouseFairyController.php"), "FairyNames"),
+            new StringListView("Band adjectives", band, "AdjectiveList"),
+            new StringListView("Band nouns", band, "NounList"),
+            new StringListView("Band plural nouns", band, "PluralNounList"),
+            new StringListView("Band numbers", band, "NumberList"),
+            new StringListView("Band name patterns", band, "GroupNamePatterns"),
+        ];
+
+        return sections.OrderBy(s => s.Title, StringComparer.OrdinalIgnoreCase).ToList();
+    }
 
     private static string FindRepoRoot()
     {

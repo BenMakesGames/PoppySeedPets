@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:PoppySeedPets.Editor.Sections.StringList"
+             x:Class="PoppySeedPets.Editor.Sections.StringList.StringListView">
+  <Grid>
+    <SelectableTextBlock x:Name="LoadError" IsVisible="False" Foreground="#FF8A80" TextWrapping="Wrap" />
+
+    <Grid x:Name="Editor" RowDefinitions="Auto,8,*,8,Auto">
+      <TextBox x:Name="FilterBox" PlaceholderText="Filter" />
+
+      <!-- Virtualized: only the rows on screen exist. A box per entry takes over a second to open. -->
+      <ScrollViewer x:Name="Scroller" Grid.Row="2">
+        <ItemsControl x:Name="Lines" Margin="0,0,16,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <VirtualizingStackPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="local:EntryRow">
+              <DockPanel Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right" Content="✕" VerticalAlignment="Top" Margin="6,0,0,0" ToolTip.Tip="Delete line" />
+                <TextBox Text="{Binding Text}" TextWrapping="Wrap" />
+              </DockPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <DockPanel Grid.Row="4">
+        <Button x:Name="AddButton" DockPanel.Dock="Left" Content="Add line" />
+        <TextBlock Text="Enter adds a line below" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="12,0,0,0" Opacity="0.7" />
+        <TextBlock x:Name="Summary" VerticalAlignment="Center" HorizontalAlignment="Right" Opacity="0.7" />
+      </DockPanel>
+    </Grid>
+  </Grid>
+</UserControl>

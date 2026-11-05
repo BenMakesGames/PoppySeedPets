@@ -64,9 +64,22 @@ public static class RealPhp
 {
     /// <summary>Evaluates a file's <c>App\Model\Music::Lyrics</c>.</summary>
     /// <remarks>Skips the test if PHP isn't installed.</remarks>
-    public static IReadOnlyList<string> Lyrics(string path)
+    public static IReadOnlyList<string> Lyrics(string path) =>
+        Evaluate($"require '{path.Replace('\\', '/')}'; echo json_encode(App\\Model\\Music::Lyrics);");
+
+    /// <summary>Evaluates a const in the repo's code, private or not.</summary>
+    /// <remarks>Skips the test if PHP or the API's vendor folder isn't installed.</remarks>
+    public static IReadOnlyList<string> Const(string className, string constName)
     {
-        var script = $"require '{path.Replace('\\', '/')}'; echo json_encode(App\\Model\\Music::Lyrics);";
+        var autoload = Path.Combine(Repo.Root, "api", "vendor", "autoload.php");
+        if (!File.Exists(autoload)) Assert.Skip("The API's vendor folder isn't installed.");
+
+        return Evaluate($"require '{autoload.Replace('\\', '/')}'; " +
+            $"echo json_encode((new ReflectionClassConstant('{className}', '{constName}'))->getValue());");
+    }
+
+    private static IReadOnlyList<string> Evaluate(string script)
+    {
         var start = new ProcessStartInfo("php") { RedirectStandardOutput = true, RedirectStandardError = true, ArgumentList = { "-r", script } };
 
         Process process;
@@ -113,6 +126,14 @@ public static class Ui
 
     private static IEnumerable<Control> Walk(Panel panel) =>
         panel.Children.SelectMany(c => c is Panel inner ? Walk(inner).Prepend(c) : [c]);
+
+    /// <summary>Runs layout and a render, as the real app would between inputs.</summary>
+    public static void Render()
+    {
+        Settle();
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        Settle();
+    }
 
     /// <summary>Set EDITOR_FRAMES to a directory to save a PNG of the window: the quickest way to see the editor without launching it.</summary>
     public static void Capture(Window window, string name)

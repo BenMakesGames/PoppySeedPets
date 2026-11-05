@@ -3,6 +3,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using PoppySeedPets.Editor.Sections;
 using PoppySeedPets.Editor.Sections.GroupedStrings;
 
 namespace PoppySeedPets.Editor.Tests;
@@ -55,7 +56,7 @@ public sealed class MainWindowTests : IDisposable
         Ui.Settle();
     }
 
-    private static void Pick(GroupedStringsView view, int group) => view.GroupList.SelectedIndex = group;
+    private static void Pick(GroupedStringsView view, int group) => view.Picker.RowList.SelectedIndex = group;
 
     [AvaloniaFact]
     public void ShowsTheSectionsAndGroups()
@@ -63,7 +64,7 @@ public sealed class MainWindowTests : IDisposable
         var (window, view) = Open();
         Assert.Equal(2, window.SectionList.ItemCount);
         Assert.Same(view, window.SectionHost.Content);
-        Assert.Equal(2, view.GroupList.ItemCount);
+        Assert.Equal(2, view.Picker.RowList.ItemCount);
         Assert.Equal("One", view.HeadingBox.Text);
         Assert.Equal("one b", LineBox(view, 1).Text);
         Assert.Equal("2 groups, 3 lines", view.Summary.Text);
@@ -285,7 +286,7 @@ public sealed class MainWindowTests : IDisposable
     {
         var (_, view) = Open();
         view.HeadingBox.Text = "Uno";
-        Assert.Equal("Uno", Assert.IsType<GroupRow>(view.GroupList.SelectedItem).Heading);
+        Assert.Equal("Uno", Assert.IsType<PickerRow>(view.Picker.RowList.SelectedItem).Label);
     }
 
     [AvaloniaFact]
@@ -294,7 +295,7 @@ public sealed class MainWindowTests : IDisposable
         var (window, view) = Open();
         Click(view.AddGroupButton);
 
-        Assert.Equal(2, view.GroupList.SelectedIndex);
+        Assert.Equal(2, view.Picker.RowList.SelectedIndex);
         Assert.Equal("", view.HeadingBox.Text);
 
         view.HeadingBox.Text = "Three";
@@ -337,14 +338,14 @@ public sealed class MainWindowTests : IDisposable
         var (window, view) = Open();
         Pick(view, 1);
         Click(view.DeleteGroupButton);
-        Assert.Equal(1, view.GroupList.ItemCount);
+        Assert.Equal(1, view.Picker.RowList.ItemCount);
         Assert.Equal("One", view.HeadingBox.Text);
 
         Press(window, PhysicalKey.Z);
 
-        Assert.Equal(2, view.GroupList.ItemCount);
+        Assert.Equal(2, view.Picker.RowList.ItemCount);
         Assert.Equal("Two", view.HeadingBox.Text);
-        Assert.Equal(1, view.GroupList.SelectedIndex);
+        Assert.Equal(1, view.Picker.RowList.SelectedIndex);
     }
 
     [AvaloniaFact]
@@ -353,11 +354,11 @@ public sealed class MainWindowTests : IDisposable
         var (window, view) = Open();
         Click(view.DeleteGroupButton);
         Click(view.DeleteGroupButton);
-        Assert.Equal(0, view.GroupList.ItemCount);
+        Assert.Equal(0, view.Picker.RowList.ItemCount);
         Assert.False(view.AddLineButton.IsEnabled);
 
         Click(view.AddGroupButton);
-        Assert.Equal(1, view.GroupList.ItemCount);
+        Assert.Equal(1, view.Picker.RowList.ItemCount);
         Assert.True(view.AddLineButton.IsEnabled);
         view.HeadingBox.Text = "Fresh";
         LineBox(view, 0).Text = "start";
@@ -383,14 +384,14 @@ public sealed class MainWindowTests : IDisposable
     public void FilteringMatchesHeadingsAndText()
     {
         var (_, view) = Open();
-        view.FilterBox.Text = "TWO A";
-        Assert.Equal("Two", Assert.IsType<GroupRow>(Assert.Single(view.GroupList.Items)).Heading);
+        view.Picker.FilterBox.Text = "TWO A";
+        Assert.Equal("Two", Assert.IsType<PickerRow>(Assert.Single(view.Picker.RowList.Items)).Label);
 
-        view.FilterBox.Text = "one";
-        Assert.Equal("One", Assert.IsType<GroupRow>(Assert.Single(view.GroupList.Items)).Heading);
+        view.Picker.FilterBox.Text = "one";
+        Assert.Equal("One", Assert.IsType<PickerRow>(Assert.Single(view.Picker.RowList.Items)).Label);
 
-        view.FilterBox.Text = "";
-        Assert.Equal(2, view.GroupList.ItemCount);
+        view.Picker.FilterBox.Text = "";
+        Assert.Equal(2, view.Picker.RowList.ItemCount);
         Assert.False(view.Document.IsDirty);
     }
 
@@ -398,21 +399,21 @@ public sealed class MainWindowTests : IDisposable
     public void EditingAFilteredGroupDoesntHideItMidWord()
     {
         var (_, view) = Open();
-        view.FilterBox.Text = "Two";
+        view.Picker.FilterBox.Text = "Two";
         Pick(view, 0);
         view.HeadingBox.Text = "Tw";
-        Assert.Equal("Tw", Assert.IsType<GroupRow>(Assert.Single(view.GroupList.Items)).Heading);
+        Assert.Equal("Tw", Assert.IsType<PickerRow>(Assert.Single(view.Picker.RowList.Items)).Label);
     }
 
     [AvaloniaFact]
     public void AddingAGroupClearsAFilterThatWouldHideIt()
     {
         var (_, view) = Open();
-        view.FilterBox.Text = "Two";
+        view.Picker.FilterBox.Text = "Two";
         Click(view.AddGroupButton);
-        Assert.Equal("", view.FilterBox.Text);
-        Assert.Equal(3, view.GroupList.ItemCount);
-        Assert.Equal(2, view.GroupList.SelectedIndex);
+        Assert.Equal("", view.Picker.FilterBox.Text);
+        Assert.Equal(3, view.Picker.RowList.ItemCount);
+        Assert.Equal(2, view.Picker.RowList.SelectedIndex);
     }
 
     [AvaloniaFact]
