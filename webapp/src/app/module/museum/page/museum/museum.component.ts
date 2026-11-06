@@ -121,8 +121,10 @@ export class MuseumComponent implements OnInit, OnDestroy {
       return 'After donating 100 items, you can get a new kind of care package from Tess at the Plaza.';
     else if(itemsDonated < 150)
       return 'Hector will expand his Bookstore offerings to you once you\'ve donated 150 items.';
+    else if(itemsDonated < 200)
+      return 'Hector will expand his Bookstore offerings yet again after you\'ve donated 200 items.';
     else if(itemsDonated < 300)
-      return 'Hector will expand his Bookstore offerings yet again after you\'ve donated 200 items, and again after you\'ve donated 300!';
+      return 'Hector will expand his Bookstore offerings even more once you\'ve donated 300 items!';
     else if(itemsDonated < 400)
       return 'Argentelle - the Market manager - will let you make more bids after you\'ve donated 400 items. She has a lot of connections with the fae world, and I hear there\'s some other benefits, too, but I don\'t know the details...';
     else if(itemsDonated < 450)
