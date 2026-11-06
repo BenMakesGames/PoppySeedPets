@@ -38,7 +38,7 @@ final class DragonHelpers
             'stat' => UserStat::TreasuresGivenToDragonHoard
         ]);
 
-        $response = $normalizer->normalize($dragon, null, [ 'groups' => [
+        $response = NormalizerHelpers::normalizeToArray($normalizer, $dragon, null, [ 'groups' => [
             SerializationGroupEnum::MY_DRAGON,
             SerializationGroupEnum::HELPER_PET
         ]]);
