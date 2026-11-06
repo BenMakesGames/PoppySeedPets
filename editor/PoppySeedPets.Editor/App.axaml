@@ -1,0 +1,16 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PoppySeedPets.Editor.App"
+             RequestedThemeVariant="Dark">
+  <Application.Styles>
+    <FluentTheme />
+    <!-- Fluent shrinks scrollbars to slivers until hovered; keep them usable. ListBox binds its inner ScrollViewer to
+         the attached property, which outranks a ScrollViewer style, so set both. -->
+    <Style Selector="ScrollViewer">
+      <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
+    </Style>
+  </Application.Styles>
+</Application>
