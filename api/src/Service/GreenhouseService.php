@@ -32,6 +32,7 @@ use App\Enum\UserStat;
 use App\Functions\ArrayFunctions;
 use App\Functions\ItemRepository;
 use App\Functions\MeritRepository;
+use App\Functions\NormalizerHelpers;
 use App\Functions\PetRepository;
 use App\Functions\PetSpeciesRepository;
 use App\Functions\PlayerLogFactory;
@@ -212,7 +213,7 @@ class GreenhouseService
     }
 
     /**
-     * @return array{greenhouse: Greenhouse, weeds: string|null, plants: GreenhousePlant[], fertilizer: array}
+     * @return array{greenhouse: Greenhouse|null, weeds: string|null, plants: GreenhousePlant[], fertilizer: array<array-key, mixed>, hasBubblegum: bool, hasOil: bool}
      */
     public function getGreenhouseResponseData(User $user): array
     {
@@ -224,7 +225,7 @@ class GreenhouseService
             'greenhouse' => $user->getGreenhouse(),
             'weeds' => $this->getWeedText($user),
             'plants' => $this->em->getRepository(GreenhousePlant::class)->findBy([ 'owner' => $user->getId() ]),
-            'fertilizer' => $this->normalizer->normalize($fertilizers, null, [ 'groups' => [ SerializationGroupEnum::GREENHOUSE_FERTILIZER ] ]),
+            'fertilizer' => NormalizerHelpers::normalizeToArray($this->normalizer, $fertilizers, null, [ 'groups' => [ SerializationGroupEnum::GREENHOUSE_FERTILIZER ] ]),
             'hasBubblegum' => $hasBirdBath && $this->hasItemInBirdBath($user, 'Bubblegum'),
             'hasOil' => $hasBirdBath && $this->hasItemInBirdBath($user, 'Oil'),
         ];

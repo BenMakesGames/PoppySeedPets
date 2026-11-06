@@ -18,6 +18,7 @@ use App\Entity\User;
 use App\Exceptions\PSPHoursMustBeRun;
 use App\Service\HouseService;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -39,7 +40,7 @@ class ControllerActionSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly Security $security,
         private readonly HouseService $houseService,
-        private readonly RateLimiterFactoryInterface $pspDefaultLimiter,
+        #[Target('psp_default')] private readonly RateLimiterFactoryInterface $pspDefaultLimiter,
         private readonly ParameterBagInterface $parameterBag
     )
     {
