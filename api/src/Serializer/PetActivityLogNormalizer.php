@@ -15,6 +15,7 @@ namespace App\Serializer;
 
 use App\Entity\PetActivityLog;
 use App\Entity\UserActivityLog;
+use App\Functions\NormalizerHelpers;
 use App\Service\CommentFormatter;
 use App\Service\FlashMessage;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -36,9 +37,9 @@ class PetActivityLogNormalizer implements NormalizerInterface
      */
     public function normalize($data, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
-        $normalizedData = $this->normalizer->normalize($data, $format, $context);
+        $normalizedData = NormalizerHelpers::normalizeToArray($this->normalizer, $data, $format, $context);
 
-        if(array_key_exists('entry', $normalizedData))
+        if(is_string($normalizedData['entry'] ?? null))
             $normalizedData['entry'] = $this->commentFormatter->format($normalizedData['entry']);
 
         return $normalizedData;

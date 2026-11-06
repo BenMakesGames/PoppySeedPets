@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Serializer;
 
 use App\Entity\UserLetter;
+use App\Functions\NormalizerHelpers;
 use App\Service\CommentFormatter;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -34,9 +35,9 @@ class UserLetterNormalizer implements NormalizerInterface
      */
     public function normalize($data, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
-        $normalizedData = $this->normalizer->normalize($data, $format, $context);
+        $normalizedData = NormalizerHelpers::normalizeToArray($this->normalizer, $data, $format, $context);
 
-        if(array_key_exists('comment', $normalizedData))
+        if(is_string($normalizedData['comment'] ?? null))
             $normalizedData['comment'] = $this->commentFormatter->format($normalizedData['comment']);
 
         return $normalizedData;

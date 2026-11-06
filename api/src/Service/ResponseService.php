@@ -22,6 +22,7 @@ use App\Entity\User;
 use App\Enum\PetActivityLogInterestingness;
 use App\Enum\SerializationGroupEnum;
 use App\Functions\ArrayFunctions;
+use App\Functions\NormalizerHelpers;
 use App\Functions\UserMenuFunctions;
 use App\Model\PetChangesSummary;
 use Doctrine\ORM\EntityManagerInterface;
@@ -183,7 +184,7 @@ class ResponseService
 
         if($user)
         {
-            $responseData['user'] = $this->normalizer->normalize($user, null, [ 'groups' => [ SerializationGroupEnum::MY_ACCOUNT ] ]);
+            $responseData['user'] = NormalizerHelpers::normalizeToArray($this->normalizer, $user, null, [ 'groups' => [ SerializationGroupEnum::MY_ACCOUNT ] ]);
             $responseData['user']['menu'] = $this->normalizer->normalize(UserMenuFunctions::getUserMenuItems($this->em, $user), null, [ 'groups' => [ SerializationGroupEnum::MY_MENU ] ]);
         }
     }
