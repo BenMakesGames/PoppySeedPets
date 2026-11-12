@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Entity\PetBadge;
 use App\Entity\Survey;
 use App\Entity\SurveyQuestion;
 use App\Entity\SurveyQuestionAnswer;
 use App\Entity\User;
+use App\Entity\UserBadge;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -79,7 +81,7 @@ class ExportSurveyAnswersCommand extends Command
             $column++;
         }
 
-        $output->write('id,name,registered on,moneys,museum points,');
+        $output->write('id,name,registered on,moneys,recycling points,museum points,achievements claimed,pet badges,');
         $output->writeln(ExportSurveyAnswersCommand::arrayToCSVLine($questionText));
 
         for($i = 0; $i < count($ids); $i += 50)
@@ -93,6 +95,20 @@ class ExportSurveyAnswersCommand extends Command
     private function exportUsers(array $ids, array $questionColumns, OutputInterface $output): void
     {
         $users = $this->em->getRepository(User::class)->findBy([ 'id' => $ids ], [ 'id' => 'ASC' ]);
+
+        $achievementCounts = $this->countByUser(
+            'SELECT IDENTITY(b.user) AS userId, COUNT(b.id) AS total FROM ' . UserBadge::class . ' b
+            WHERE b.user IN (:ids) GROUP BY b.user',
+            $ids
+        );
+
+        // counts badges on the pets each player currently owns, including badges earned under a previous owner
+        $petBadgeCounts = $this->countByUser(
+            'SELECT IDENTITY(p.owner) AS userId, COUNT(b.id) AS total FROM ' . PetBadge::class . ' b
+            JOIN b.pet p
+            WHERE p.owner IN (:ids) GROUP BY p.owner',
+            $ids
+        );
 
         foreach($users as $user)
         {
@@ -109,18 +125,46 @@ class ExportSurveyAnswersCommand extends Command
             foreach($answers as $answer)
                 $row[$questionColumns[$answer->getQuestion()->getId()]] = $answer->getAnswer();
 
-            $this->exportAnswers($user, $row, $output);
+            $this->exportAnswers(
+                $user,
+                $achievementCounts[$user->getId()] ?? 0,
+                $petBadgeCounts[$user->getId()] ?? 0,
+                $row,
+                $output
+            );
         }
     }
 
-    private function exportAnswers(User $user, array $row, OutputInterface $output): void
+    /**
+     * @param int[] $userIds
+     * @return array<int, int> user ID => count
+     */
+    private function countByUser(string $dql, array $userIds): array
+    {
+        $results = $this->em->createQuery($dql)
+            ->setParameter('ids', $userIds)
+            ->getArrayResult()
+        ;
+
+        $counts = [];
+
+        foreach($results as $r)
+            $counts[(int)$r['userId']] = (int)$r['total'];
+
+        return $counts;
+    }
+
+    private function exportAnswers(User $user, int $achievementsClaimed, int $petBadges, array $row, OutputInterface $output): void
     {
         $data = [
             $user->getId(),
             $user->getName(),
             $user->getRegisteredOn()->format('Y-m-d H:i:s'),
             $user->getMoneys(),
-            $user->getMuseumPoints()
+            $user->getRecyclePoints(),
+            $user->getMuseumPoints(),
+            $achievementsClaimed,
+            $petBadges,
         ];
 
         foreach($row as $r)
@@ -132,7 +176,7 @@ class ExportSurveyAnswersCommand extends Command
     private static function arrayToCSVLine(array $values): string
     {
         return implode(',', array_map(function ($v) {
-            return '"' . str_replace('"', '""', $v) . '"';
+            return '"' . str_replace('"', '""', (string)$v) . '"';
         }, $values));
     }
 }
