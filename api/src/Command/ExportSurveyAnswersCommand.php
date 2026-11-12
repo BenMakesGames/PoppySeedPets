@@ -59,9 +59,9 @@ class ExportSurveyAnswersCommand extends Command
 
         $qb = $this->em->getRepository(SurveyQuestionAnswer::class)->createQueryBuilder('a');
         $results = $qb
-            ->select('DISTINCT(a.user) AS id')
-            ->where('a.id IN (:answerIds)')
-            ->setParameter('answerIds', $survey->getQuestions()->map(fn (SurveyQuestion $q) => $q->getId()))
+            ->select('DISTINCT IDENTITY(a.user) AS id')
+            ->where('a.question IN (:questionIds)')
+            ->setParameter('questionIds', $survey->getQuestions()->map(fn (SurveyQuestion $q) => $q->getId())->toArray())
             ->getQuery()
             ->getResult()
         ;
