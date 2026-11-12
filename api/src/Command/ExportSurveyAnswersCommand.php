@@ -65,10 +65,18 @@ class ExportSurveyAnswersCommand extends Command
             ->where('a.question IN (:questionIds)')
             ->setParameter('questionIds', $survey->getQuestions()->map(fn (SurveyQuestion $q) => $q->getId())->toArray())
             ->getQuery()
-            ->getResult()
+            ->getSingleColumnResult()
         ;
 
-        $ids = array_map(fn($r) => (int)$r['id'], $results);
+        $ids = [];
+
+        foreach($results as $id)
+        {
+            if(!is_numeric($id))
+                throw new \UnexpectedValueException('Expected numeric user ID; got ' . get_debug_type($id) . '.');
+
+            $ids[] = (int)$id;
+        }
 
         $column = 0;
         $questionColumns = [];
@@ -92,6 +100,10 @@ class ExportSurveyAnswersCommand extends Command
         return 0;
     }
 
+    /**
+     * @param int[] $ids
+     * @param array<int, int> $questionColumns question ID => column index
+     */
     private function exportUsers(array $ids, array $questionColumns, OutputInterface $output): void
     {
         $users = $this->em->getRepository(User::class)->findBy([ 'id' => $ids ], [ 'id' => 'ASC' ]);
@@ -149,11 +161,19 @@ class ExportSurveyAnswersCommand extends Command
         $counts = [];
 
         foreach($results as $r)
+        {
+            if(!is_array($r) || !is_numeric($r['userId'] ?? null) || !is_numeric($r['total'] ?? null))
+                throw new \UnexpectedValueException('countByUser query must select numeric "userId" and "total" columns.');
+
             $counts[(int)$r['userId']] = (int)$r['total'];
+        }
 
         return $counts;
     }
 
+    /**
+     * @param string[] $row
+     */
     private function exportAnswers(User $user, int $achievementsClaimed, int $petBadges, array $row, OutputInterface $output): void
     {
         $data = [
@@ -173,6 +193,9 @@ class ExportSurveyAnswersCommand extends Command
         $output->writeln(ExportSurveyAnswersCommand::arrayToCSVLine($data));
     }
 
+    /**
+     * @param array<string|int|null> $values
+     */
     private static function arrayToCSVLine(array $values): string
     {
         return implode(',', array_map(function ($v) {
