@@ -30,7 +30,7 @@
         <section>
           <markdown [data]="question.title"></markdown>
           <app-form-field label="Answer" [value]="answers[question.id]" [maxLength]="1000">
-            <textarea maxlength="1000" [name]="'answer' + question.id" [(ngModel)]="answers[question.id]"></textarea>
+            <textarea rows="4" maxlength="1000" [name]="'answer' + question.id" [(ngModel)]="answers[question.id]"></textarea>
           </app-form-field>
         </section>
       }

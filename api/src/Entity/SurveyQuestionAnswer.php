@@ -41,6 +41,10 @@ class SurveyQuestionAnswer
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdOn;
 
+    /** @var string[] unique IP addresses the answer was submitted or edited from */
+    #[ORM\Column(type: 'json')]
+    private array $ipAddresses = [];
+
     public function __construct(User $user, SurveyQuestion $question, string $answer)
     {
         $this->user = $user;
@@ -86,5 +90,35 @@ class SurveyQuestionAnswer
     public function getCreatedOn(): \DateTimeImmutable
     {
         return $this->createdOn;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getIpAddresses(): array
+    {
+        return $this->ipAddresses;
+    }
+
+    /**
+     * Ignores null and invalid addresses. Addresses are normalized (ex: IPv6 case and zero-compression), so the same
+     * address in two spellings is only stored once.
+     */
+    public function addIpAddress(?string $ipAddress): self
+    {
+        if($ipAddress === null)
+            return $this;
+
+        $packed = @inet_pton(trim($ipAddress));
+
+        if($packed === false)
+            return $this;
+
+        $normalized = inet_ntop($packed);
+
+        if($normalized !== false && !in_array($normalized, $this->ipAddresses, true))
+            $this->ipAddresses[] = $normalized;
+
+        return $this;
     }
 }
