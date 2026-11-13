@@ -74,7 +74,7 @@ class SurveyService
         ;
     }
 
-    public function upsertAnswer(SurveyQuestion $question, User $user, string $answerText): SurveyQuestionAnswer
+    public function upsertAnswer(SurveyQuestion $question, User $user, string $answerText, ?string $ipAddress): SurveyQuestionAnswer
     {
         $answer = $this->em->getRepository(SurveyQuestionAnswer::class)->findOneBy([
             'user' => $user,
@@ -93,6 +93,8 @@ class SurveyService
         }
         else
             $answer->setAnswer($answerText);
+
+        $answer->addIpAddress($ipAddress);
 
         return $answer;
     }
