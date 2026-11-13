@@ -12,6 +12,10 @@ git pull
 
 php -r 'opcache_reset();'
 
+# delete (don't cache:clear) the compiled container: it may reference classes the pull just removed, and
+# cache:clear - including the one composer install runs - must boot that container first, so it would crash
+sudo rm -rf var/cache/prod
+
 composer install --no-dev --optimize-autoloader
 
 # clear all caches
