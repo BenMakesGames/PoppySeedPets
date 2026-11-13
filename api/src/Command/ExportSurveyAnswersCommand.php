@@ -89,7 +89,7 @@ class ExportSurveyAnswersCommand extends Command
             $column++;
         }
 
-        $output->write('id,name,registered on,moneys,recycling points,museum points,achievements claimed,pet badges,');
+        $output->write('id,name,email,ip addresses,registered on,moneys,recycling points,museum points,achievements claimed,pet badges,');
         $output->writeln(ExportSurveyAnswersCommand::arrayToCSVLine($questionText));
 
         for($i = 0; $i < count($ids); $i += 50)
@@ -134,11 +134,17 @@ class ExportSurveyAnswersCommand extends Command
                 'question' => array_keys($questionColumns)
             ]);
 
+            $ipAddresses = [];
+
             foreach($answers as $answer)
+            {
                 $row[$questionColumns[$answer->getQuestion()->getId()]] = $answer->getAnswer();
+                $ipAddresses = array_merge($ipAddresses, $answer->getIpAddresses());
+            }
 
             $this->exportAnswers(
                 $user,
+                array_values(array_unique($ipAddresses)),
                 $achievementCounts[$user->getId()] ?? 0,
                 $petBadgeCounts[$user->getId()] ?? 0,
                 $row,
@@ -172,13 +178,16 @@ class ExportSurveyAnswersCommand extends Command
     }
 
     /**
+     * @param string[] $ipAddresses
      * @param string[] $row
      */
-    private function exportAnswers(User $user, int $achievementsClaimed, int $petBadges, array $row, OutputInterface $output): void
+    private function exportAnswers(User $user, array $ipAddresses, int $achievementsClaimed, int $petBadges, array $row, OutputInterface $output): void
     {
         $data = [
             $user->getId(),
             $user->getName(),
+            $user->getEmail(),
+            implode(',', $ipAddresses),
             $user->getRegisteredOn()->format('Y-m-d H:i:s'),
             $user->getMoneys(),
             $user->getRecyclePoints(),

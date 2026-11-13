@@ -48,7 +48,7 @@ class SubmitSurveyAnswersController
             $answer = mb_trim($request->request->getString("{$question->getId()}"));
 
             if($answer)
-                $surveyService->upsertAnswer($question, $user, $answer);
+                $surveyService->upsertAnswer($question, $user, $answer, $request->getClientIp());
             else
                 $surveyService->deleteAnswer($question, $user);
         }
