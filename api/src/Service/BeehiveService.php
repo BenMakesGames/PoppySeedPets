@@ -329,13 +329,13 @@ class BeehiveService
     // a couple of these are princesses; sorry about the non-semantic variable name:
     public const array QueenNames = [
         'Acropolitissa', 'Adelaide', 'Adélina', 'Adosinda', 'Ædgyth', 'Ælfthryth', 'Aénor', 'Afzan', 'Agafiya',
-        'Allogia', 'Amalia', 'Anglesia', 'Andregoto', 'Anka', 'Ansi', 'Aphainuchit', 'Aregund', 'Aremburga',
+        'Allogia', 'Amalia', 'Andregoto', 'Anglesia', 'Anka', 'Ansi', 'Aphainuchit', 'Aregund', 'Aremburga',
         'Argentaela', 'Argyra', 'Ashina', 'Aspasia', 'Astrid', 'Aud', 'Austerchild',
 
         'Babukhan', 'Bainun', 'Bao Si', 'Barbara', 'Bartolomea', 'Bé Fáil', 'Berengaria', 'Bertechildis', 'Bian',
         'Bilichild', 'Biltrude', 'Blanche', 'Blotstulka', 'Bonne', 'Božena', 'Brynhildr',
 
-        'Charito', 'Cheng\'ai', 'Chengmu', 'Chen Jiao', 'Chittrawadi', 'Chlothsind', 'Cixilo', 'Claudia', 'Claudine',
+        'Charito', 'Chen Jiao', 'Cheng\'ai', 'Chengmu', 'Chittrawadi', 'Chlothsind', 'Cixilo', 'Claudia', 'Claudine',
         'Clementia', 'Clotilde', 'Cunigunde', 'Cymburgis',
 
         'Danashiri', 'Darejan', 'Darinka', 'Dauphine', 'Debsirindra', 'Doubravka', 'Draginja', 'Drahomíra',
@@ -346,24 +346,24 @@ class BeehiveService
 
         'Faileube', 'Fara', 'Fastrada', 'Fauziah', 'Findelb', 'Folchiade', 'Françoise', 'Froiliuba', 'Frozza',
 
-        'Galswintha', 'Garsinda', 'Genmei', 'Gerperga', 'Ghadana', 'Gisela', 'Goiswintha', 'Gomentrude', 'Gongsi',
-        'Gormflaith', 'Go-Sakuramachi', 'Grimhild', 'Grzymislawa', 'Guanglie', 'Gulkhana', 'Gunhilda', 'Gyrid',
+        'Galswintha', 'Garsinda', 'Genmei', 'Gerperga', 'Ghadana', 'Gisela', 'Go-Sakuramachi', 'Goiswintha', 'Gomentrude', 'Gongsi',
+        'Gormflaith', 'Grimhild', 'Grzymislawa', 'Guanglie', 'Gulkhana', 'Gunhilda', 'Gyrid',
 
         'Haminah', 'Hanthawaddy', 'Hedwig', 'Hellicha', 'Helvis', 'Hildegard', 'Hiltrud', 'Hortense', 'Huansi', 'Huyan',
 
-        'Ikbal', 'Imma', 'Immilla', 'Iñiguez', 'Ingeborg', 'Inoe', 'Isabelle',
+        'Ikbal', 'Imma', 'Immilla', 'Ingeborg', 'Iñiguez', 'Inoe', 'Isabelle',
 
-        'Jadwiga', 'Jemaah', 'Jiāng', 'Jing', 'Jiajak', 'Jigda-Khatun', 'Jimena', 'Jingū', 'Jitō', 'Joan', 'Juana',
+        'Jadwiga', 'Jemaah', 'Jiajak', 'Jiāng', 'Jigda-Khatun', 'Jimena', 'Jing', 'Jingū', 'Jitō', 'Joan', 'Juana',
         'Junshi', 'Jutta',
 
         'Kamāmalu', 'Kantakouzena', 'Kapi\'olani', 'Katranide', 'Ketevan', 'Kezuhun', 'Khongirad', 'Khorashan',
-        'Kira Maria', 'Kōgyoku', 'Konchaka-Agafia', 'Kōken', 'Komnina', 'Kujava', 'Kunigunda', 'Kurshiah',
+        'Kira Maria', 'Kōgyoku', 'Kōken', 'Komnina', 'Konchaka-Agafia', 'Kujava', 'Kunigunda', 'Kurshiah',
 
-        'Li', 'Lingsi', 'Liutperga', 'Ljubica', 'Lotitia', 'Ludmilla', 'Lutgard', 'Lü Zhi',
+        'Li', 'Lingsi', 'Liutperga', 'Ljubica', 'Lotitia', 'Lü Zhi', 'Ludmilla', 'Lutgard',
 
         'Maddalena', 'Maedhbh', 'Máel Muire', 'Manisanda', 'Marcatrude', 'Marguerite', 'Marmohec', 'Marozia',
-        'Mathesuentha', 'Mechtild', 'Meishō', 'Melisende', 'Messalina', 'Milica', 'Mingdao', 'Mingyuan', 'Minkhaung',
-        'Min Pyan', 'Monomachina', 'Morphia', 'Mù', 'Muirenn', 'Murong', 'Musbah', 'Muzhang', 'Myauk',
+        'Mathesuentha', 'Mechtild', 'Meishō', 'Melisende', 'Messalina', 'Milica', 'Min Pyan', 'Mingdao', 'Mingyuan', 'Minkhaung',
+        'Monomachina', 'Morphia', 'Mù', 'Muirenn', 'Murong', 'Musbah', 'Muzhang', 'Myauk',
 
         'Najihah', 'Nambui', 'Nanmadaw', 'Nanthild', 'Nestan-Darejan',
 
@@ -377,9 +377,9 @@ class BeehiveService
         'Rachanurak', 'Radnashiri', 'Regelinda', 'Regintrude', 'Renata', 'Richardis', 'Richenza', 'Rogneda', 'Roscille',
         'Rusudan', 'Ryksa',
 
-        'Sagdukht', 'Sallustia', 'Sālote', 'Sancha', 'Sangwan', 'Sawatdi', 'Saw Sala', 'Saw Thanda', 'Saw Yin', 'Seishi',
+        'Sagdukht', 'Sallustia', 'Sālote', 'Sancha', 'Sangwan', 'Saw Sala', 'Saw Thanda', 'Saw Yin', 'Sawatdi', 'Seishi',
         'Shi', 'Shin Saw', 'Shunlie', 'Sibylla', 'Sigrid', 'Sineenat', 'Siti Aishah', 'Smiltsena', 'Soe Min', 'Song',
-        'Statilia', 'Suavegotha', 'Suiko', 'Supayagyi', 'Suriyawongsa', 'Synadena', 'Swanhilde', 'Świętosława',
+        'Statilia', 'Suavegotha', 'Suiko', 'Supayagyi', 'Suriyawongsa', 'Swanhilde', 'Świętosława', 'Synadena',
 
         'Tai Si', 'Taiwu', 'Taung', 'Teri\'itaria', 'Tetua', 'Thanbula', 'Theodelinda', 'Thermantia', 'Thiri Thuriya',
         'Thonlula', 'Thukomma', 'Thupaba', 'Thyra', 'Tōchi', 'Tove', 'Tsundue',

@@ -579,6 +579,9 @@ class Music
         'Do you belieeeve... in what you see... motionless wheeeel... nothing is reeeal...',
         
         // Nothing Burns Like the Cold, by Snoh Aalegra
-        'Nothin\' burns like the cold, ayy... ayy... (they say nothin\' burns like the cooollld...)'
+        'Nothin\' burns like the cold, ayy... ayy... (they say nothin\' burns like the cooollld...)',
+
+        // Bob's Burgers
+        'Oh, it\'s hot and wet and slick, and it\'s making everybody sick - oil spill!',
     ];
 }
