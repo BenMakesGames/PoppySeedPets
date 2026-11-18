@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Command\Traits\GenerateInsertSqlTrait;
 use App\Entity\Aura;
 use App\Entity\Enchantment;
 use App\Entity\ItemTool;
@@ -21,6 +22,8 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class ExportAuraCommand extends PoppySeedPetsCommand
 {
+    use GenerateInsertSqlTrait;
+
     public function __construct(private readonly EntityManagerInterface $em)
     {
         parent::__construct();
@@ -37,8 +40,7 @@ class ExportAuraCommand extends PoppySeedPetsCommand
 
     protected function doCommand(): int
     {
-        if(strtolower($_SERVER['APP_ENV']) !== 'dev')
-            throw new \Exception('Can only be run in dev environments.');
+        self::assertDevEnvironment();
 
         $name = $this->input->getArgument('aura');
         $aura = $this->em->getRepository(Aura::class)->findOneBy([ 'name' => $name ]);
@@ -54,7 +56,7 @@ class ExportAuraCommand extends PoppySeedPetsCommand
         echo "================================================================================\n";
 
         $statements = [
-            $this->generateSql(Aura::class, $aura, 'the aura itself!')
+            $this->generateInsertSql(Aura::class, $aura, 'the aura itself!')
         ];
 
         $enchantment = $this->em->getRepository(Enchantment::class)->findOneBy([ 'aura' => $aura ]);
@@ -62,8 +64,8 @@ class ExportAuraCommand extends PoppySeedPetsCommand
         if($enchantment)
         {
             $enchantmentTool = $enchantment->getEffects();
-            $statements[] = $this->generateSql(ItemTool::class, $enchantmentTool, 'enchantment effect');
-            $statements[] = $this->generateSql(Enchantment::class, $enchantment, 'enchantment');
+            $statements[] = $this->generateInsertSql(ItemTool::class, $enchantmentTool, 'enchantment effect');
+            $statements[] = $this->generateInsertSql(Enchantment::class, $enchantment, 'enchantment');
         }
 
         echo "\n" . implode("\n\n", $statements);
@@ -75,51 +77,5 @@ class ExportAuraCommand extends PoppySeedPetsCommand
         echo "================================================================================\n\n";
 
         return 0;
-    }
-
-    private function generateSql(string $className, object $entity, string $comment): string
-    {
-        $entityMeta = $this->em->getClassMetadata($className);
-        $tableName = $entityMeta->getTableName();
-
-        /** @var string[] $columns */
-        $columns = array_map(
-            fn($row) => $row['Field'],
-            $this->em->getConnection()->executeQuery("DESCRIBE `$tableName`")->fetchAllAssociative()
-        );
-
-        $columnSql = '`' . implode('`, `', $columns) . '`';
-
-        $encodedValues = array_map(fn($c) => (string)self::encodeValueToSql($entity->{'get' . $entityMeta->getFieldForColumn($c)}()), $columns);
-
-        $valueSql = implode(',', $encodedValues);
-
-        return "-- $comment\nINSERT INTO $tableName ($columnSql) VALUES ($valueSql) ON DUPLICATE KEY UPDATE `id` = `id`;";
-    }
-
-    /**
-     * @return string|numeric
-     */
-    private static function encodeValueToSql(mixed $value): mixed
-    {
-        if($value === true)
-            return 1;
-
-        if($value === false)
-            return 0;
-
-        if($value === null)
-            return 'NULL';
-
-        if(is_array($value))
-            return '"' . addslashes(json_encode($value)) . '"';
-
-        if(is_object($value))
-            return $value->getId();
-
-        if(is_numeric($value))
-            return $value;
-
-        return '"' . addslashes($value) . '"';
     }
 }
