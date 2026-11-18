@@ -2490,16 +2490,16 @@
         },
         {
             "name": "overtrue/chinese-calendar",
-            "version": "1.0.2",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/overtrue/chinese-calendar.git",
-                "reference": "d78e86d66a4b225defac6828bf1de42c4a9d4bdf"
+                "reference": "d3e43afaeaec57a99b56bc4318061338a0f40f98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/overtrue/chinese-calendar/zipball/d78e86d66a4b225defac6828bf1de42c4a9d4bdf",
-                "reference": "d78e86d66a4b225defac6828bf1de42c4a9d4bdf",
+                "url": "https://api.github.com/repos/overtrue/chinese-calendar/zipball/d3e43afaeaec57a99b56bc4318061338a0f40f98",
+                "reference": "d3e43afaeaec57a99b56bc4318061338a0f40f98",
                 "shasum": ""
             },
             "require": {
@@ -2535,9 +2535,9 @@
             ],
             "support": {
                 "issues": "https://github.com/overtrue/chinese-calendar/issues",
-                "source": "https://github.com/overtrue/chinese-calendar/tree/master"
+                "source": "https://github.com/overtrue/chinese-calendar/tree/1.1.0"
             },
-            "time": "2020-03-09T07:21:26+00:00"
+            "time": "2026-08-21T15:51:46+00:00"
         },
         {
             "name": "patreon/patreon",
