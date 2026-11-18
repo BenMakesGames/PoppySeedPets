@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Command\Traits\GenerateInsertSqlTrait;
 use App\Entity\Enchantment;
 use App\Entity\HollowEarthTileCard;
 use App\Entity\Item;
@@ -29,10 +30,11 @@ use App\Entity\Spice;
 use App\Functions\ItemRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Uid\AbstractUid;
 
 class ExportItemCommand extends PoppySeedPetsCommand
 {
+    use GenerateInsertSqlTrait;
+
     public function __construct(private readonly EntityManagerInterface $em)
     {
         parent::__construct();
@@ -49,10 +51,13 @@ class ExportItemCommand extends PoppySeedPetsCommand
 
     protected function doCommand(): int
     {
-        if(strtolower($_SERVER['APP_ENV']) !== 'dev')
-            throw new \Exception('Can only be run in dev environments.');
+        self::assertDevEnvironment();
 
         $name = $this->input->getArgument('item');
+
+        if(!is_string($name))
+            throw new \InvalidArgumentException('item must be a string.');
+
         $item = ItemRepository::findOneByName($this->em, $name);
 
         echo "\n================================================================================\n";
@@ -75,49 +80,49 @@ class ExportItemCommand extends PoppySeedPetsCommand
         if($enchantment)
         {
             $enchantmentTool = $enchantment->getEffects();
-            $statements[] = $this->generateSql(ItemTool::class, $enchantmentTool, 'enchantment effect');
-            $statements[] = $this->generateSql(Enchantment::class, $enchantment, 'enchantment');
+            $statements[] = $this->generateInsertSql(ItemTool::class, $enchantmentTool, 'enchantment effect');
+            $statements[] = $this->generateInsertSql(Enchantment::class, $enchantment, 'enchantment');
         }
 
         if($spice)
         {
             $spiceFood = $spice->getEffects();
-            $statements[] = $this->generateSql(ItemFood::class, $spiceFood, 'spice effect');
-            $statements[] = $this->generateSql(Spice::class, $spice, 'spice');
+            $statements[] = $this->generateInsertSql(ItemFood::class, $spiceFood, 'spice effect');
+            $statements[] = $this->generateInsertSql(Spice::class, $spice, 'spice');
         }
 
         if($treasure)
-            $statements[] = $this->generateSql(ItemTreasure::class, $treasure, 'treasure');
+            $statements[] = $this->generateInsertSql(ItemTreasure::class, $treasure, 'treasure');
 
         if($tool)
-            $statements[] = $this->generateSql(ItemTool::class, $tool, 'tool effect');
+            $statements[] = $this->generateInsertSql(ItemTool::class, $tool, 'tool effect');
 
         if($hat)
-            $statements[] = $this->generateSql(ItemHat::class, $hat, 'hat');
+            $statements[] = $this->generateInsertSql(ItemHat::class, $hat, 'hat');
 
         if($food)
-            $statements[] = $this->generateSql(ItemFood::class, $food, 'food effect');
+            $statements[] = $this->generateInsertSql(ItemFood::class, $food, 'food effect');
 
         if($plant)
         {
-            $statements[] = $this->generateSql(Plant::class, $plant, 'plant');
+            $statements[] = $this->generateInsertSql(Plant::class, $plant, 'plant');
 
             foreach($plant->getPlantYields() as $yield)
             {
-                $statements[] = $this->generateSql(PlantYield::class, $yield, 'plant yield');
+                $statements[] = $this->generateInsertSql(PlantYield::class, $yield, 'plant yield');
 
                 foreach($yield->getItems() as $yieldItem)
-                    $statements[] = $this->generateSql(PlantYieldItem::class, $yieldItem, 'plant yield item');
+                    $statements[] = $this->generateInsertSql(PlantYieldItem::class, $yieldItem, 'plant yield item');
             }
         }
 
         if($tile)
-            $statements[] = $this->generateSql(HollowEarthTileCard::class, $tile, 'hollow earth tile card');
+            $statements[] = $this->generateInsertSql(HollowEarthTileCard::class, $tile, 'hollow earth tile card');
 
-        $statements[] = $this->generateSql(Item::class, $item, 'the item itself!');
+        $statements[] = $this->generateInsertSql(Item::class, $item, 'the item itself!');
 
         if($grammar)
-            $statements[] = $this->generateSql(ItemGrammar::class, $grammar, 'grammar');
+            $statements[] = $this->generateInsertSql(ItemGrammar::class, $grammar, 'grammar');
 
         if(count($groups) > 0)
         {
@@ -147,58 +152,5 @@ class ExportItemCommand extends PoppySeedPetsCommand
         echo "================================================================================\n\n";
 
         return 0;
-    }
-
-    private function generateSql(string $className, object $entity, string $comment): string
-    {
-        $entityMeta = $this->em->getClassMetadata($className);
-        $tableName = $entityMeta->getTableName();
-
-        /** @var string[] $columns */
-        $columns = array_map(
-            fn($row) => $row['Field'],
-            $this->em->getConnection()->executeQuery("DESCRIBE `$tableName`")->fetchAllAssociative()
-        );
-
-        $columnSql = '`' . implode('`, `', $columns) . '`';
-
-        $encodedValues = array_map(fn($c) => (string)self::encodeValueToSql($entity->{'get' . $entityMeta->getFieldForColumn($c)}()), $columns);
-
-        $valueSql = implode(',', $encodedValues);
-
-        return "-- $comment\nINSERT INTO $tableName ($columnSql) VALUES ($valueSql) ON DUPLICATE KEY UPDATE `id` = `id`;";
-    }
-
-    /**
-     * @return string|numeric
-     */
-    private static function encodeValueToSql(mixed $value): mixed
-    {
-        if($value === true)
-            return 1;
-
-        if($value === false)
-            return 0;
-
-        if($value === null)
-            return 'NULL';
-
-        // TODO: would be nice to differentiate between string-backed & int-backed:
-        if($value instanceof \BackedEnum)
-            return '"' . $value->value . '"';
-
-        if(is_array($value))
-            return '"' . addslashes(json_encode($value)) . '"';
-
-        if($value instanceof AbstractUid)
-            return '0x' . bin2hex($value->toBinary());
-
-        if(is_object($value))
-            return $value->getId();
-
-        if(is_numeric($value))
-            return $value;
-
-        return '"' . addslashes($value) . '"';
     }
 }
