@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PoppySeedPets.Editor/PoppySeedPets.Editor.csproj" />
+  <Project Path="PoppySeedPets.Editor.Tests/PoppySeedPets.Editor.Tests.csproj" />
+</Solution>

@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:PoppySeedPets.Editor.Sections"
+             x:Class="PoppySeedPets.Editor.Sections.ListPicker">
+  <Grid RowDefinitions="Auto,8,*">
+    <TextBox x:Name="FilterBox" PlaceholderText="Filter" />
+
+    <ListBox x:Name="RowList" Grid.Row="2">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="local:PickerRow">
+          <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</UserControl>

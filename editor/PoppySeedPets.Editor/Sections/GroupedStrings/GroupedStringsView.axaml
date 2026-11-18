@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sections="using:PoppySeedPets.Editor.Sections"
+             x:Class="PoppySeedPets.Editor.Sections.GroupedStrings.GroupedStringsView">
+  <UserControl.Styles>
+    <!-- The heading reads as a title, not as another field. Hover and focus are what say it's editable.
+         Pseudo-class styles outrank plain ones, so the theme's have to be overridden one by one. -->
+    <Style Selector="TextBox.title">
+      <Setter Property="FontSize" Value="24" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="6,4" />
+    </Style>
+    <Style Selector="TextBox.title /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TextBox.title:pointerover /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="#1AFFFFFF" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TextBox.title:focus /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="#1AFFFFFF" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <SelectableTextBlock x:Name="LoadError" IsVisible="False" Foreground="#FF8A80" TextWrapping="Wrap" />
+
+    <Grid x:Name="Editor" ColumnDefinitions="300,24,*" RowDefinitions="*,8,Auto">
+      <sections:ListPicker x:Name="Picker" />
+
+      <DockPanel Grid.Row="2">
+        <Button x:Name="AddGroupButton" DockPanel.Dock="Left" Content="Add group" />
+        <TextBlock x:Name="Summary" VerticalAlignment="Center" HorizontalAlignment="Right" Opacity="0.7" />
+      </DockPanel>
+
+      <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*">
+        <TextBox x:Name="HeadingBox" Classes="title" PlaceholderText="Heading" />
+        <Rectangle Grid.Row="1" Height="1" Fill="#40FFFFFF" Margin="0,4,0,14" />
+
+        <ScrollViewer Grid.Row="2" Margin="6,0,0,0">
+          <StackPanel x:Name="Lines" Spacing="6" Margin="0,0,16,0" />
+        </ScrollViewer>
+      </Grid>
+
+      <StackPanel Grid.Column="2" Grid.Row="2" Orientation="Horizontal" Spacing="8">
+        <Button x:Name="AddLineButton" Content="Add line" />
+        <Button x:Name="DeleteGroupButton" Content="Delete group" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>
