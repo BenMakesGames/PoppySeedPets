@@ -60,6 +60,7 @@ class InventoryFilterService implements FilterServiceInterface
                 'isFertilizer' => $this->filterIsFertilizer(...),
                 'isTreasure' => $this->filterIsTreasure(...),
                 'isRecyclable' => $this->filterIsRecyclable(...),
+                'itemGroup' => $this->filterItemGroup(...),
             ],
             [
                 'nameExactMatch'
@@ -266,6 +267,17 @@ class InventoryFilterService implements FilterServiceInterface
             $qb->andWhere('item.recycleValue = 0');
         else
             $qb->andWhere('item.recycleValue > 0');
+    }
+    
+    public function filterItemGroup(QueryBuilder $qb, mixed $value): void
+    {
+        if(!in_array('itemGroups', $qb->getAllAliases()))
+            $qb->leftJoin('item.itemGroups', 'itemGroup');
+    
+        $qb
+            ->andWhere('itemGroup.name=:itemGroupName')
+            ->setParameter('itemGroupName', $value)
+        ;
     }
 
     function applyResultCache(Query $qb, string $cacheKey): Query
