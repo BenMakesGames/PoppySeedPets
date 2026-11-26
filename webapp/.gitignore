@@ -7,7 +7,6 @@
 # Only exists if Bazel was run
 /bazel-out
 /.angular/cache
-/storybook-static
 
 # dependencies
 /node_modules
@@ -47,6 +46,5 @@ testem.log
 .DS_Store
 Thumbs.db
 
-*storybook.log
 *.aup3-wal
 *.aup3-shm

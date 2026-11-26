@@ -12,7 +12,6 @@ Poppy Seed Pets is a browser-based pet adoption and activity simulation game (po
 - **API lint**: `composer run php-cs-fixer-dry-run` / `composer run php-cs-fixer` (in `api/`)
 - **API static analysis**: `php vendor/bin/phpstan` (in `api/`)
 - **Cron (manual)**: `php vendor/bin/crunz schedule:run` (in `api/`)
-- **Storybook**: `ng run PoppySeedPetsApp:storybook` (in `webapp/`)
 
 ## Architecture Decisions & Patterns
 
