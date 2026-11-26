@@ -54,7 +54,7 @@ class HouseFairyController
         'Malachite', 'Marigold', 'Marrowfat', 'Melon', 'Milkweed', 'Mint', 'Moss', 'Moth', 'Mulberry', 'Mustardseed',
         'Navi', 'Neráida', 'Nissa',
         'Odelina', 'Onyx', 'Orin', 'Oxblood',
-        'Paprika', 'Peri', 'Peaseblossom', 'Plum', 'Potato', 'Pudding', 'Pumpkin',
+        'Paprika', 'Peaseblossom', 'Peri', 'Plum', 'Potato', 'Pudding', 'Pumpkin',
         'Rhythm', 'Ribbon', 'Riverweed', 'Robin', 'Rockweed', 'Roosevelt', 'Rosewood', 'Rust',
         'Sage', 'Saria', 'Scarlet', 'Seashell', 'Seaweed', 'Sebille', 'Sinopia', 'Sunset',
         'Tania', 'Tapioca', 'Tatiana', 'Tetra', 'Thistle', 'Tibia', 'Timberwolf', 'Tin', 'Tumbleweed',

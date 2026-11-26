@@ -1,9 +1,10 @@
 ## Project Overview
 
-Poppy Seed Pets is a browser-based pet adoption and activity simulation game (poppyseedpets.com). Monorepo with two independent apps:
+Poppy Seed Pets is a browser-based pet adoption and activity simulation game (poppyseedpets.com). Monorepo with independent apps:
 
 - **`api/`** — Symfony 7.3 (PHP 8.4) backend with MySQL + Redis
 - **`webapp/`** — Angular 20 frontend (TypeScript, SCSS, Angular Material)
+- **`editor/`** — Avalonia desktop app (C#) for editing game data in the repo's files; see [editor/CLAUDE.md](editor/CLAUDE.md)
 
 **Path roots (avoid common mistake)**: `docs/`, `docs/tickets/`, `db/`, `proprietary-assets/` all live at the **repo root**. Code lives in `api/` or `webapp/`. If you `cd api` to run `composer`/`phpstan`, remember that Bash & PowerShell cwd persists across calls.
 

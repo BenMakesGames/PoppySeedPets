@@ -1,0 +1,10 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="PoppySeedPets.Editor.MainWindow"
+        Width="1200" Height="760"
+        Title="Poppy Seed Pets Editor">
+  <Grid ColumnDefinitions="180,*">
+    <ListBox x:Name="SectionList" />
+    <ContentControl x:Name="SectionHost" Grid.Column="1" Margin="12" />
+  </Grid>
+</Window>
