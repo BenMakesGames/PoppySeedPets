@@ -506,6 +506,24 @@ class TraderService
                 $user,
                 $quantities
             ),
+            ...array_map(
+                fn(array $upgrade) => TraderOffer::createTradeOffer(
+                    [
+                        TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($this->em, $upgrade[0]), 1),
+                        TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($this->em, 'Pointer'), 1),
+                        TraderOfferCostOrYield::createMoney(100),
+                    ],
+                    [ TraderOfferCostOrYield::createItem(ItemRepository::findOneByName($this->em, $upgrade[1]), 1) ],
+                    'There! I\'ve pointed your ' . $upgrade[0] . ' at the next letter. Enjoy your ' . $upgrade[1] . '!',
+                    $user,
+                    $quantities
+                ),
+                [
+                    [ 'B. PACK', 'C. PACK' ],
+                    [ 'C. PACK', 'D. PACK' ],
+                    [ 'D. PACK', 'E. PACK' ],
+                ]
+            ),
         ];
     }
 
