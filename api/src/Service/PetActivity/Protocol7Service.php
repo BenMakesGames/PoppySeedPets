@@ -128,7 +128,10 @@ class Protocol7Service implements IPetActivity
                 break;
             case 14:
             case 15:
-                $activityLog = $this->exploreInsecurePort($petWithSkills);
+                if($this->rng->rngNextInt(1, 20) === 1)
+                    $activityLog = $this->fightRobotMaster($petWithSkills);
+                else
+                    $activityLog = $this->exploreInsecurePort($petWithSkills);
                 break;
             case 16:
             case 17:
@@ -481,6 +484,40 @@ class Protocol7Service implements IPetActivity
                 ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E' ]))
             ;
             $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Science ], $activityLog);
+        }
+
+        $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::PROTOCOL_7, $success);
+
+        return $activityLog;
+    }
+
+    private function fightRobotMaster(ComputedPetSkills $petWithSkills): PetActivityLog
+    {
+        $pet = $petWithSkills->getPet();
+
+        $roll = $this->rng->rngSkillRoll($petWithSkills->getIntelligence()->getTotal() + $petWithSkills->getScience()->getTotal() + $petWithSkills->getHackingBonus()->getTotal());
+
+        $success = $roll >= 17;
+
+        if($success)
+        {
+            $pet->increaseSafety(2);
+            $pet->increaseEsteem(4);
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' was challenged by a Robot Master in Project-E! After learning the robot\'s attack patterns, ' . ActivityHelpers::PetName($pet) . ' defeated it, and gained their power! ... which is apparently called "B. PACK"??')
+                ->setIcon('items/tool/backpack/b')
+                ->addInterestingness(PetActivityLogInterestingness::UncommonActivity)
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Fighting' ]))
+            ;
+            $this->inventoryService->petCollectsItem('B. PACK', $pet, $pet->getName() . ' defeated a Robot Master in Project-E, and gained its power - this!', $activityLog);
+            $this->petExperienceService->gainExp($pet, 2, [ PetSkillEnum::Science, PetSkillEnum::Brawl ], $activityLog);
+        }
+        else
+        {
+            $pet->increaseSafety(-2);
+            $activityLog = PetActivityLogFactory::createUnreadLog($this->em, $pet, ActivityHelpers::PetName($pet) . ' was challenged by a Robot Master in Project-E, but lost all their lives before they were able to defeat it!')
+                ->addTags(PetActivityLogTagHelpers::findByNames($this->em, [ 'Project-E', 'Fighting' ]))
+            ;
+            $this->petExperienceService->gainExp($pet, 1, [ PetSkillEnum::Science, PetSkillEnum::Brawl ], $activityLog);
         }
 
         $this->petExperienceService->spendTime($pet, $this->rng->rngNextInt(45, 75), PetActivityStatEnum::PROTOCOL_7, $success);
